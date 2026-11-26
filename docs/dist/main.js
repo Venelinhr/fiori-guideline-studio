@@ -343,6 +343,14 @@ async function review(number, event, body) {
 async function merge(number) {
   await api(`/pulls/${number}/merge`, { method: "PUT", json: { merge_method: "squash" } }, true);
 }
+async function whoami() {
+  const tok = getToken();
+  if (!tok) throw new GhError(401, "No token saved yet.");
+  const r = await fetch("https://api.github.com/user", { headers: { accept: "application/vnd.github+json", authorization: `Bearer ${tok}` } });
+  if (r.status === 401) throw new GhError(401, "GitHub did not accept this token. Check that you copied all of it.");
+  if (!r.ok) throw new GhError(r.status, `GitHub answered ${r.status}. Try again.`);
+  return (await r.json()).login;
+}
 function toBase64(buf) {
   let s = "";
   const u = new Uint8Array(buf);
@@ -1278,12 +1286,32 @@ async function load(s) {
   const list = await listGuidelines();
   const tokenBox = $("#token");
   tokenBox.placeholder = getToken() ? "Token saved in this browser" : "Paste GitHub token";
-  tokenBox.addEventListener("change", () => {
-    setToken(tokenBox.value);
-    tokenBox.value = "";
-    tokenBox.placeholder = getToken() ? "Token saved in this browser" : "Paste GitHub token";
+  const showToken = (msg, ok) => {
+    $("#saved").textContent = msg;
+    $("#saved").style.color = ok ? "#256f3a" : "#aa0808";
+  };
+  const checkToken = async () => {
+    if (!getToken()) {
+      tokenBox.placeholder = "Paste GitHub token";
+      return;
+    }
+    tokenBox.placeholder = "Token saved \u2713";
     renderBar();
+    try {
+      const who = await whoami();
+      showToken(`Connected to GitHub as ${who}. You can save versions now.`, true);
+    } catch (e) {
+      showToken(e.message, false);
+    }
+  };
+  tokenBox.addEventListener("change", () => {
+    const v = tokenBox.value.trim();
+    if (!v) return;
+    setToken(v);
+    tokenBox.value = "";
+    checkToken();
   });
+  checkToken();
   $("#commit").addEventListener("click", async () => {
     try {
       await commitVersion(`${title()}: saved by ${me()}`);

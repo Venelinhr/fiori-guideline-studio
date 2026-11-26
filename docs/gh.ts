@@ -93,6 +93,15 @@ export async function merge(number: number) {
   await api(`/pulls/${number}/merge`, { method: "PUT", json: { merge_method: "squash" } }, true);
 }
 
+// Checks the saved token with GitHub. Returns the login name, or throws a readable message.
+export async function whoami(): Promise<string> {
+  const tok = getToken(); if (!tok) throw new GhError(401, "No token saved yet.");
+  const r = await fetch("https://api.github.com/user", { headers: { accept: "application/vnd.github+json", authorization: `Bearer ${tok}` } });
+  if (r.status === 401) throw new GhError(401, "GitHub did not accept this token. Check that you copied all of it.");
+  if (!r.ok) throw new GhError(r.status, `GitHub answered ${r.status}. Try again.`);
+  return (await r.json()).login as string;
+}
+
 export function toBase64(buf: ArrayBuffer): string {
   let s = ""; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000));
   return btoa(s);

@@ -500,7 +500,16 @@ async function load(s: string) {
   rules = (await gh.rules()) as Rules;
   const list: { slug: string; title: string }[] = await gh.listGuidelines();
   const tokenBox = $<HTMLInputElement>("#token"); tokenBox.placeholder = gh.getToken() ? "Token saved in this browser" : "Paste GitHub token";
-  tokenBox.addEventListener("change", () => { gh.setToken(tokenBox.value); tokenBox.value = ""; tokenBox.placeholder = gh.getToken() ? "Token saved in this browser" : "Paste GitHub token"; renderBar(); });
+  // Paste, then Enter or click away: the token is saved and checked with GitHub. The message says what happened.
+  const showToken = (msg: string, ok: boolean) => { $("#saved").textContent = msg; $("#saved").style.color = ok ? "#256f3a" : "#aa0808"; };
+  const checkToken = async () => {
+    if (!gh.getToken()) { tokenBox.placeholder = "Paste GitHub token"; return; }
+    tokenBox.placeholder = "Token saved ✓"; renderBar();
+    try { const who = await gh.whoami(); showToken(`Connected to GitHub as ${who}. You can save versions now.`, true); }
+    catch (e) { showToken((e as Error).message, false); }
+  };
+  tokenBox.addEventListener("change", () => { const v = tokenBox.value.trim(); if (!v) return; gh.setToken(v); tokenBox.value = ""; checkToken(); });
+  checkToken();
   $("#commit").addEventListener("click", async () => { try { await commitVersion(`${title()}: saved by ${me()}`); } catch (e) { $("#saved").textContent = `Not saved: ${(e as Error).message}`; } });
   const sel = $<HTMLSelectElement>("#guideline"); list.forEach((g) => sel.add(new Option(g.title, g.slug)));
   $<HTMLInputElement>("#name").value = store.get("name");
