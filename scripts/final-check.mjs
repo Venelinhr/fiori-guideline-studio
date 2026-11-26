@@ -163,7 +163,7 @@ function auditModel(m, R) {
   return F;
 }
 
-// checks/final-check.ts
+// checks/rules.ts
 var ENT2 = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" };
 var plain2 = (h) => h.replace(/<[^>]+>/g, "").replace(/&(amp|lt|gt|quot|#39);/g, (m) => ENT2[m]).replace(/&nbsp;/g, "\xA0").trim();
 function htmlItems2(html, where) {
@@ -230,6 +230,8 @@ function checkGuideline(slug, doc, rules) {
   const hints = findings.filter((f) => f.severity !== "error" && f.severity !== "info").length;
   return { slug, title: model.pageTitle ?? model.component, errors, hints, findings, state: errors ? "failure" : "success" };
 }
+
+// checks/final-check.ts
 var description = (r) => {
   const first = r.findings.find((f) => f.severity === "error");
   const d = r.errors ? `${r.errors} error${r.errors > 1 ? "s" : ""}, ${r.hints} hints. First: ${first.message}` : `No errors, ${r.hints} hints.`;
@@ -269,8 +271,3 @@ if (process.argv[1] && /final-check/.test(process.argv[1])) main().catch((e) => 
   console.error(e);
   process.exit(2);
 });
-export {
-  bodyItems,
-  checkGuideline,
-  patternFindings
-};

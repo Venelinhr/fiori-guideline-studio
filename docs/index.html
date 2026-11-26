@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guideline Studio</title>
-<link rel="stylesheet" href="./studio.css?v=20261126214717">
+<link rel="stylesheet" href="./studio.css?v=20261126220020">
 </head>
 <body>
 <!-- The article, as on the portal. Every text is editable in place. -->
@@ -54,6 +54,7 @@
   <input id="token" type="password" size="14" title="GitHub token with Contents and Pull requests write access to this repo. Stored in this browser only." autocomplete="off">
   <button id="commit" class="primary" disabled>Save version</button>
   <a id="commitlink" class="commit-link" target="_blank" rel="noopener" href="#" title="Open the last saved change on GitHub. Right-click to copy the link.">Commit ↗</a>
+  <button id="runcheck" title="Check rules, wording, full stops, commas, alt text and links. Shows a report with fixes. Anyone can run it at any time.">Run check</button>
   <span id="actions" class="actions"></span>
   <button id="drawerBtn" class="drawer-btn">Review panel</button>
 </div>
@@ -72,6 +73,6 @@
 </aside>
 
 <input type="file" id="file" accept="image/png" hidden>
-<script type="module" src="./dist/main.js?v=20261126214717"></script>
+<script type="module" src="./dist/main.js?v=20261126220020"></script>
 </body>
 </html>

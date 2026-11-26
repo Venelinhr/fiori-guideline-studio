@@ -113,6 +113,13 @@ export async function whoami(): Promise<string> {
   return (await r.json()).login as string;
 }
 
+// Asks GitHub Copilot to review the pull request. Returns false when Copilot review is not available for this account.
+export async function requestCopilot(prNumber: number): Promise<boolean> {
+  await api(`/pulls/${prNumber}/requested_reviewers`, { method: "POST", json: { reviewers: ["copilot-pull-request-reviewer[bot]"] } }, true);
+  const pr = await api<any>(`/pulls/${prNumber}`);
+  return (pr.requested_reviewers ?? []).some((r: any) => /copilot/i.test(r.login));
+}
+
 // Result of the final check (GitHub Actions) for one guideline on main. Posted as the commit status "final-check/<slug>".
 export interface CheckResult { state: "success" | "failure" | "pending" | "error" | "none"; description: string; url?: string; time?: string }
 export async function finalCheck(slug: string): Promise<CheckResult> {

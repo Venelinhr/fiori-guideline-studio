@@ -4,6 +4,7 @@ import type { GuidelineModel, Block, ImageBlock } from "../src/model";
 import { auditModel, type Finding, type Rules } from "../src/export/ruleAudit";
 import { imageFile, renderGuidelineMd } from "../src/export/mdRender";
 import * as gh from "./gh";
+import { patternFindings } from "../checks/rules";
 
 type Kind = "html" | "inline" | "plain";
 interface Field { key: string; kind: Kind; label: string; section: string; where: string; get(): string; set(v: string): void }
@@ -11,7 +12,7 @@ interface Sug { id: string; key: string; label: string; section: string; old: st
 interface Hist { key: string; label: string; section: string; old: string; new: string; author: string; time: string; kind: "edit" | "suggestion" | "fix" | "restore" | "image"; acceptedBy?: string }
 interface Sign { role: string; name: string; action: string; time: string }
 type Stage = "draft" | "writer" | "designer" | "editor" | "approved" | "uploaded";
-interface State { status?: Stage; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
+interface State { status?: Stage; lastCheck?: { by: string; role: string; time: string; errors: number; hints: number; copilot: string }; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T;
 const h = (tag: string, cls = "", text = ""): HTMLElement => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
@@ -50,6 +51,9 @@ const JIRA_KEY = /[A-Za-z][A-Za-z0-9]+-\d+/;
 let slug = "", model: GuidelineModel, baseline: GuidelineModel | null = null, rules: Rules;
 let review: { suggestions: Sug[]; history: Hist[]; state: State } = { suggestions: [], history: [], state: {} };
 let F = new Map<string, Field>(), findings: Finding[] = [], tab = store.get("tab") || "checks", selKey = "", before = "", imgBust = Date.now();
+
+// Rules and writing checks. The same code runs in GitHub Actions as the final check.
+function allFindings(): Finding[] { return [...auditModel(model, rules), ...patternFindings(model)]; }
 
 // ---------- ids and fields ----------
 // First time: ids come from the position, so the last committed version gets the same ids. Later blocks keep their id.
@@ -274,7 +278,7 @@ function commit(key: string, val: string, kind: Hist["kind"] = "edit") {
   changed(key);
 }
 function changed(key?: string) {
-  F = collect(model); findings = auditModel(model, rules);
+  F = collect(model); findings = allFindings();
   if (key) refreshField(key); else renderPage();
   renderSide(); renderBar(); save();
 }
@@ -364,6 +368,24 @@ function fixOf(f: Finding): ((v: string, kind: Kind) => string) | null {
   if (f.rule === "heading-ampersand") return (v, k) => onText(k, v, (t) => t.replace(/\s*&\s*/g, " and "));
   if (f.rule === "heading-punctuation") return (v, k) => onText(k, v, (t) => t.replace(/[.:;,]+$/, ""));
   if (f.rule === "link-protocol") return (v) => v.replace(/href="http:\/\//g, 'href="https://');
+  if (f.rule === "space-before-punctuation") return (v, k) => onText(k, v, (t) => t.replace(/\s+([,;.!?])(?=\s|$)/g, "$1"));
+  if (f.rule === "missing-space-after-comma") return (v, k) => onText(k, v, (t) => t.replace(/([a-z])([,;])([A-Za-z])/g, "$1$2 $3"));
+  if (f.rule === "double-space") return (v, k) => onText(k, v, (t) => t.replace(/([^\s ]) {2,}(?=[^\s])/g, "$1 "));
+  if (f.rule === "repeated-word") return (v, k) => onText(k, v, (t) => t.replace(/\b([A-Za-z]{2,})(\s+\1\b)+/gi, "$1"));
+  if (f.rule === "missing-comma-after-opener") return (v, k) => onText(k, v, (t) => t.replace(/(^|[.!?]\s+)(However|Therefore|Moreover|Furthermore|For example|For instance|In addition)\s+(?=[a-z])/g, "$1$2, "));
+  if (f.rule === "missing-full-stop") return (v, k) => {
+    // Adds a full stop at the end of each paragraph or list item of four words or more that has none.
+    if (k === "plain") return /[.!?:)]$/.test(v.trim()) ? v : `${v.trim()}.`;
+    const doc = new DOMParser().parseFromString(`<body>${v}</body>`, "text/html");
+    const blocks = [...doc.body.querySelectorAll("p, li")]; if (!blocks.length) blocks.push(doc.body);
+    for (const b of blocks) {
+      const text = (b.textContent ?? "").trim(); if (text.split(/\s+/).length < 4 || /[.!?:)"”’]$/.test(text)) continue;
+      const w = doc.createTreeWalker(b, NodeFilter.SHOW_TEXT); let last: Node | null = null, n: Node | null;
+      while ((n = w.nextNode())) if ((n.nodeValue ?? "").trim()) last = n;
+      if (last) last.nodeValue = (last.nodeValue ?? "").replace(/\s+$/, "") + ".";
+    }
+    return clean(doc.body.innerHTML, k === "inline");
+  };
   return null;
 }
 function applyFix(f: Finding) { const fx = fixOf(f); if (!fx) return; for (const k of keysAt(f)) { const fl = F.get(k)!; const v = fx(fl.get(), fl.kind); if (v !== fl.get()) commit(k, v, "fix"); } }
@@ -395,6 +417,8 @@ function renderSide() {
   if (tab === "checks") {
     const s = h("div", "sum"); s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at · ${findings.filter((f) => f.severity === "info").length} notes`)); p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
+    const lc = review.state.lastCheck;
+    p.append(h("p", "muted", lc ? `Last check: ${lc.by} (${lc.role}) · ${when(lc.time)} · ${lc.errors} errors, ${lc.hints} hints · Copilot: ${lc.copilot}` : "Nobody has run the check yet. Click Run check in the bar."));
     for (const f of [...findings].sort((a, b) => order[a.severity] - order[b.severity])) {
       const keys = keysAt(f); const c = card([h("span", `sev ${f.severity}`, f.severity === "error" ? "Fix" : f.severity === "warning" ? "Look" : "Note"), f.where], document.createTextNode(f.message + (f.suggestion ? `\n→ ${f.suggestion}` : "")), keys[0]);
       if (fixOf(f) && keys.length && !locked()) { const r = h("div", "row"); r.append(btn(suggesting() ? "Suggest this fix" : "Fix", () => applyFix(f), "small primary")); c.append(r); }
@@ -537,12 +561,13 @@ async function sign(action: string, status: Stage) {
   try {
     (review.state.signoffs ??= []).push({ role: $<HTMLSelectElement>("#role").value, name: who, action, time: now() });
     review.state.status = status;
-    if (action === "sent") {
-      await commitVersion(`${title()}: sent for review by ${who}`);
+    if (action === "sent" || action === "to-writer" || action === "to-editor") {
+      const had = !!review.state.pr;
+      await commitVersion(`${title()}: ${action === "to-editor" ? "sent to editor" : "sent to UX writer"} by ${who}`);
       const pr = await gh.openPR(targetBranch(),`${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
         `Sent for review by ${who}.\n\nChecks: ${errors()} errors, ${findings.filter((f) => f.severity === "warning").length} warnings.\nOpen text suggestions: ${opens().length}.`);
       review.state.pr = pr;
-      await commitVersion(`${title()}: pull request #${pr.number}`);
+      if (!had) await commitVersion(`${title()}: pull request #${pr.number}`);
     } else {
       await commitVersion(`${title()}: ${action} by ${who}`);
       // The editor's approval merges the pull request: the article is then done in GitHub.
@@ -566,17 +591,20 @@ function renderBar() {
   const cl = $<HTMLAnchorElement>("#commitlink"); cl.href = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
   const a = $("#actions"); a.replaceChildren();
   const add = (text: string, fn: () => void, cls: string, off = "") => { const b = btn(text, fn, cls); if (off) { b.disabled = true; b.title = off; } a.append(b); };
-  // Flow: designer -> UX writer -> designer decides -> editor reviews and approves -> upload to AEM.
+  // Flow: designer <-> UX writer as often as needed -> either sends to the editor -> the editor reviews, fixes it or sends it back -> Approve -> upload to AEM.
   const stage = (st as string) in LEGACY ? LEGACY[st as string] : st;
-  if (role === "designer" && stage === "draft") add("Send to UX writer", () => sign("sent", "writer"), "primary", errors() ? "Fix the errors in Checks first" : "");
-  if (role === "designer" && stage === "designer") {
-    add("Back to UX writer", () => sign("to-writer", "writer"), "");
-    add("Send to editor", () => sign("to-editor", "editor"), "ok", opens().length ? "Accept or reject the open suggestions first" : errors() ? "Fix the errors in Checks first" : "");
+  const toEditorBlock = opens().length ? "Open suggestions are waiting for the designer to accept or reject" : errors() ? "Run the check and fix the errors first" : "";
+  if (role === "designer" && (stage === "draft" || stage === "designer")) {
+    add("Send to UX writer", () => sign(stage === "draft" ? "sent" : "to-writer", "writer"), stage === "draft" ? "primary" : "", stage === "draft" && errors() ? "Fix the errors in Checks first" : "");
+    add("Send to editor", () => sign("to-editor", "editor"), "ok", toEditorBlock);
   }
-  if (role === "writer" && stage === "writer") add("Return to designer", () => sign("returned", "designer"), "primary");
+  if (role === "writer" && stage === "writer") {
+    add("Return to designer", () => sign("returned", "designer"), "primary");
+    add("Send to editor", () => sign("to-editor", "editor"), "ok", toEditorBlock);
+  }
   if (role === "editor" && stage === "editor") {
     add("Send back to designer", () => sign("back", "designer"), "");
-    add("Approve", () => sign("approved", "approved"), "ok", opens().length ? "Open suggestions are still waiting for the designer" : "");
+    add("Approve", () => sign("approved", "approved"), "ok", opens().length ? "Open suggestions are still waiting for the designer" : errors() ? "Fix the errors yourself, or send it back to the designer" : "");
   }
   if (role === "editor" && stage === "approved") {
     const fc = finalCheck?.state;
@@ -664,6 +692,18 @@ function showMissing(s: string, v: string, pub: string) {
   const latest = h("a", "", `Show the latest published version (${pub})`) as HTMLAnchorElement; latest.href = `#/${s}`;
   card.append(start, latest); box.append(card);
 }
+// Run check: rules, wording, full stops, commas, alt text, links. Anyone can run it at any time. The report shows the fixes.
+// Where Copilot review is available (company GitHub), the same click also asks Copilot to review the pull request.
+async function runCheck() {
+  findings = allFindings();
+  const errs = errors(), hints = findings.filter((f) => f.severity === "warning").length;
+  let copilot = "not asked (no pull request yet)";
+  const n = review.state.pr?.number ?? (version && gh.getToken() ? (await gh.findPR(targetBranch()).catch(() => undefined))?.number : undefined);
+  if (n && gh.getToken()) copilot = (await gh.requestCopilot(n).catch(() => false)) ? "review requested on the pull request" : "not available for this GitHub account";
+  review.state.lastCheck = { by: me(), role: $<HTMLSelectElement>("#role").value, time: now(), errors: errs, hints, copilot };
+  tab = "checks"; document.body.classList.add("drawer-open"); renderSide(); renderBar(); save();
+  toast(`Check done: ${errs} error${errs === 1 ? "" : "s"}, ${hints} hints. Copilot: ${copilot}.`, errs ? "err" : "ok");
+}
 async function load(s: string, v = "", allowStart = false) {
   slug = s; store.set("slug", s); selKey = ""; pending.clear();
   $<HTMLSelectElement>("#guideline").value = s; $<HTMLInputElement>("#version").value = v;
@@ -693,7 +733,7 @@ async function load(s: string, v = "", allowStart = false) {
   if (draft) { try { const d = JSON.parse(draft); model = d.model; review = d.review; dirty = true; note = "Unsaved draft from this browser restored"; } catch { /* bad draft: ignore */ } }
   else dirty = false;
   assignIds(model); if (baseline) assignIds(baseline);
-  F = collect(model); findings = auditModel(model, rules);
+  F = collect(model); findings = allFindings();
   finalCheck = null; renderPage(); renderSide(); renderBar(); $("#saved").textContent = note;
   if (review.state.status === "approved" || review.state.status === "uploaded") refreshFinalCheck();
 }
@@ -711,6 +751,7 @@ async function load(s: string, v = "", allowStart = false) {
   };
   tokenBox.addEventListener("change", () => { const v = tokenBox.value.trim(); if (!v) return; gh.setToken(v); tokenBox.value = ""; checkToken(); });
   checkToken();
+  $("#runcheck").addEventListener("click", () => { runCheck().catch((e) => toast(`Check failed: ${(e as Error).message}`, "err")); });
   $("#commit").addEventListener("click", async () => {
     if (!gh.getToken()) { toast("No GitHub token yet. Paste it in the token box at the bottom right, then press Enter.", "err"); return; }
     try { await commitVersion(`${title()}: saved by ${me()}`); } catch (e) { saveFailed(e); }

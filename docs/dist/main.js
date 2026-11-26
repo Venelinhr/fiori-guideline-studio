@@ -357,6 +357,11 @@ async function whoami() {
   if (!r.ok) throw new GhError(r.status, `GitHub answered ${r.status}. Try again.`);
   return (await r.json()).login;
 }
+async function requestCopilot(prNumber) {
+  await api(`/pulls/${prNumber}/requested_reviewers`, { method: "POST", json: { reviewers: ["copilot-pull-request-reviewer[bot]"] } }, true);
+  const pr = await api(`/pulls/${prNumber}`);
+  return (pr.requested_reviewers ?? []).some((r) => /copilot/i.test(r.login));
+}
 async function finalCheck(slug3) {
   const list = await api(`/commits/${MAIN}/statuses?per_page=100`);
   const hit = list.find((x) => x.context === `final-check/${slug3}`);
@@ -367,6 +372,67 @@ function toBase64(buf) {
   const u = new Uint8Array(buf);
   for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode(...u.subarray(i, i + 32768));
   return btoa(s);
+}
+
+// checks/rules.ts
+var ENT3 = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" };
+var plain2 = (h2) => h2.replace(/<[^>]+>/g, "").replace(/&(amp|lt|gt|quot|#39);/g, (m) => ENT3[m]).replace(/&nbsp;/g, "\xA0").trim();
+function htmlItems2(html, where) {
+  const out = [];
+  const re = /<(li|p)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+  let m;
+  let any = false;
+  while (m = re.exec(html)) {
+    any = true;
+    const t = plain2(m[2]);
+    if (t) out.push({ where, kind: m[1].toLowerCase(), text: t });
+  }
+  if (!any) {
+    const t = plain2(html);
+    if (t) out.push({ where, kind: "p", text: t });
+  }
+  return out;
+}
+function bodyItems(m) {
+  const out = [];
+  let parent = "";
+  for (const s of m.sections) {
+    if (!s.noTitle && s.titleLevel !== "h3" && s.titleLevel !== "h4") parent = s.title;
+    const base = s.noTitle || parent === s.title ? s.title : `${parent} > ${s.title}`;
+    if (/^related links/i.test(parent)) continue;
+    let n = 0;
+    const visit = (b, prefix, prev) => {
+      const where = `${base} > ${prefix}block ${++n} (${b.type})`;
+      if (b.type === "text" && prev?.type === "image") {
+        const items = htmlItems2(b.html, where);
+        if (items.length === 1 && items[0].kind === "p" && items[0].text.split(/\s+/).length <= 14) return;
+      }
+      if (b.type === "text" || b.type === "info" || b.type === "message-strip") out.push(...htmlItems2(b.html, where));
+      else if (b.type === "when-to-use") b.items.forEach((it) => out.push(...htmlItems2(it.html, where)));
+      else if (b.type === "columns") b.columns.forEach((col) => col.forEach((c, i) => visit(c, "column > ", col[i - 1])));
+    };
+    s.blocks.forEach((b, i) => visit(b, "", s.blocks[i - 1]));
+  }
+  return out;
+}
+var OPENERS = ["However", "Therefore", "Moreover", "Furthermore", "For example", "For instance", "In addition"];
+function patternFindings(m) {
+  const F2 = [];
+  const add = (severity, rule, message, where, text) => F2.push({ severity, agent: "content", rule, message, where, suggestion: text.length > 120 ? `${text.slice(0, 117)}\u2026` : text });
+  for (const it of bodyItems(m)) {
+    const t = it.text;
+    const words = t.split(/\s+/).length;
+    if (t.startsWith(":badge")) continue;
+    if (words >= 4 && !/[.!?:)"”’]$/.test(t.replace(/ /g, " ").trim()) && !/^https?:\/\//.test(t))
+      add(it.kind === "p" ? "error" : "warning", "missing-full-stop", `Missing full stop at the end: "\u2026${t.slice(-40)}"`, it.where, t);
+    if (/\s[,;.!?](?=\s|$)/.test(t.replace(/ /g, " "))) add("warning", "space-before-punctuation", "A space before , ; . ! or ?", it.where, t);
+    if (/[a-z][,;][A-Za-z]/.test(t)) add("warning", "missing-space-after-comma", "A comma or semicolon without a space after it.", it.where, t);
+    if (/[^\s ] {2,}[^\s]/.test(t)) add("warning", "double-space", "Two spaces in a row.", it.where, t);
+    const rep = t.match(/\b([A-Za-z]{2,})\s+\1\b/i);
+    if (rep) add("warning", "repeated-word", `The word "${rep[1]}" is repeated.`, it.where, t);
+    for (const o of OPENERS) if (new RegExp(`(^|[.!?]\\s+)${o}\\s+(?!,)[a-z]`).test(t)) add("warning", "missing-comma-after-opener", `Add a comma after "${o}".`, it.where, t);
+  }
+  return F2;
 }
 
 // docs/main.ts
@@ -433,6 +499,9 @@ var tab = store.get("tab") || "checks";
 var selKey = "";
 var before = "";
 var imgBust = Date.now();
+function allFindings() {
+  return [...auditModel(model, rules2), ...patternFindings(model)];
+}
 function assignIds(m) {
   const walk = (bs, p) => bs.forEach((b, i) => {
     b.id ??= `${p}b${i}`;
@@ -845,7 +914,7 @@ function commit(key, val, kind = "edit") {
 }
 function changed(key) {
   F = collect(model);
-  findings = auditModel(model, rules2);
+  findings = allFindings();
   if (key) refreshField(key);
   else renderPage();
   renderSide();
@@ -973,6 +1042,26 @@ function fixOf(f) {
   if (f.rule === "heading-ampersand") return (v, k) => onText(k, v, (t) => t.replace(/\s*&\s*/g, " and "));
   if (f.rule === "heading-punctuation") return (v, k) => onText(k, v, (t) => t.replace(/[.:;,]+$/, ""));
   if (f.rule === "link-protocol") return (v) => v.replace(/href="http:\/\//g, 'href="https://');
+  if (f.rule === "space-before-punctuation") return (v, k) => onText(k, v, (t) => t.replace(/\s+([,;.!?])(?=\s|$)/g, "$1"));
+  if (f.rule === "missing-space-after-comma") return (v, k) => onText(k, v, (t) => t.replace(/([a-z])([,;])([A-Za-z])/g, "$1$2 $3"));
+  if (f.rule === "double-space") return (v, k) => onText(k, v, (t) => t.replace(/([^\s ]) {2,}(?=[^\s])/g, "$1 "));
+  if (f.rule === "repeated-word") return (v, k) => onText(k, v, (t) => t.replace(/\b([A-Za-z]{2,})(\s+\1\b)+/gi, "$1"));
+  if (f.rule === "missing-comma-after-opener") return (v, k) => onText(k, v, (t) => t.replace(/(^|[.!?]\s+)(However|Therefore|Moreover|Furthermore|For example|For instance|In addition)\s+(?=[a-z])/g, "$1$2, "));
+  if (f.rule === "missing-full-stop") return (v, k) => {
+    if (k === "plain") return /[.!?:)]$/.test(v.trim()) ? v : `${v.trim()}.`;
+    const doc = new DOMParser().parseFromString(`<body>${v}</body>`, "text/html");
+    const blocks = [...doc.body.querySelectorAll("p, li")];
+    if (!blocks.length) blocks.push(doc.body);
+    for (const b of blocks) {
+      const text = (b.textContent ?? "").trim();
+      if (text.split(/\s+/).length < 4 || /[.!?:)"”’]$/.test(text)) continue;
+      const w = doc.createTreeWalker(b, NodeFilter.SHOW_TEXT);
+      let last = null, n;
+      while (n = w.nextNode()) if ((n.nodeValue ?? "").trim()) last = n;
+      if (last) last.nodeValue = (last.nodeValue ?? "").replace(/\s+$/, "") + ".";
+    }
+    return clean(doc.body.innerHTML, k === "inline");
+  };
   return null;
 }
 function applyFix(f) {
@@ -1031,6 +1120,8 @@ function renderSide() {
     s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at \xB7 ${findings.filter((f) => f.severity === "info").length} notes`));
     p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
+    const lc = review.state.lastCheck;
+    p.append(h("p", "muted", lc ? `Last check: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lc.errors} errors, ${lc.hints} hints \xB7 Copilot: ${lc.copilot}` : "Nobody has run the check yet. Click Run check in the bar."));
     for (const f of [...findings].sort((a, b) => order[a.severity] - order[b.severity])) {
       const keys = keysAt(f);
       const c = card([h("span", `sev ${f.severity}`, f.severity === "error" ? "Fix" : f.severity === "warning" ? "Look" : "Note"), f.where], document.createTextNode(f.message + (f.suggestion ? `
@@ -1281,8 +1372,9 @@ async function sign(action, status) {
   try {
     (review.state.signoffs ??= []).push({ role: $("#role").value, name: who, action, time: now() });
     review.state.status = status;
-    if (action === "sent") {
-      await commitVersion(`${title()}: sent for review by ${who}`);
+    if (action === "sent" || action === "to-writer" || action === "to-editor") {
+      const had = !!review.state.pr;
+      await commitVersion(`${title()}: ${action === "to-editor" ? "sent to editor" : "sent to UX writer"} by ${who}`);
       const pr = await openPR(
         targetBranch(),
         `${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
@@ -1292,7 +1384,7 @@ Checks: ${errors()} errors, ${findings.filter((f) => f.severity === "warning").l
 Open text suggestions: ${opens().length}.`
       );
       review.state.pr = pr;
-      await commitVersion(`${title()}: pull request #${pr.number}`);
+      if (!had) await commitVersion(`${title()}: pull request #${pr.number}`);
     } else {
       await commitVersion(`${title()}: ${action} by ${who}`);
       if (action === "approved") {
@@ -1338,15 +1430,18 @@ function renderBar() {
     a.append(b);
   };
   const stage = st in LEGACY ? LEGACY[st] : st;
-  if (role === "designer" && stage === "draft") add("Send to UX writer", () => sign("sent", "writer"), "primary", errors() ? "Fix the errors in Checks first" : "");
-  if (role === "designer" && stage === "designer") {
-    add("Back to UX writer", () => sign("to-writer", "writer"), "");
-    add("Send to editor", () => sign("to-editor", "editor"), "ok", opens().length ? "Accept or reject the open suggestions first" : errors() ? "Fix the errors in Checks first" : "");
+  const toEditorBlock = opens().length ? "Open suggestions are waiting for the designer to accept or reject" : errors() ? "Run the check and fix the errors first" : "";
+  if (role === "designer" && (stage === "draft" || stage === "designer")) {
+    add("Send to UX writer", () => sign(stage === "draft" ? "sent" : "to-writer", "writer"), stage === "draft" ? "primary" : "", stage === "draft" && errors() ? "Fix the errors in Checks first" : "");
+    add("Send to editor", () => sign("to-editor", "editor"), "ok", toEditorBlock);
   }
-  if (role === "writer" && stage === "writer") add("Return to designer", () => sign("returned", "designer"), "primary");
+  if (role === "writer" && stage === "writer") {
+    add("Return to designer", () => sign("returned", "designer"), "primary");
+    add("Send to editor", () => sign("to-editor", "editor"), "ok", toEditorBlock);
+  }
   if (role === "editor" && stage === "editor") {
     add("Send back to designer", () => sign("back", "designer"), "");
-    add("Approve", () => sign("approved", "approved"), "ok", opens().length ? "Open suggestions are still waiting for the designer" : "");
+    add("Approve", () => sign("approved", "approved"), "ok", opens().length ? "Open suggestions are still waiting for the designer" : errors() ? "Fix the errors yourself, or send it back to the designer" : "");
   }
   if (role === "editor" && stage === "approved") {
     const fc = finalCheck2?.state;
@@ -1547,6 +1642,20 @@ function showMissing(s, v, pub) {
   card2.append(start, latest);
   box.append(card2);
 }
+async function runCheck() {
+  findings = allFindings();
+  const errs = errors(), hints = findings.filter((f) => f.severity === "warning").length;
+  let copilot = "not asked (no pull request yet)";
+  const n = review.state.pr?.number ?? (version && getToken() ? (await findPR(targetBranch()).catch(() => void 0))?.number : void 0);
+  if (n && getToken()) copilot = await requestCopilot(n).catch(() => false) ? "review requested on the pull request" : "not available for this GitHub account";
+  review.state.lastCheck = { by: me(), role: $("#role").value, time: now(), errors: errs, hints, copilot };
+  tab = "checks";
+  document.body.classList.add("drawer-open");
+  renderSide();
+  renderBar();
+  save();
+  toast(`Check done: ${errs} error${errs === 1 ? "" : "s"}, ${hints} hints. Copilot: ${copilot}.`, errs ? "err" : "ok");
+}
 async function load(s, v = "", allowStart = false) {
   slug2 = s;
   store.set("slug", s);
@@ -1597,7 +1706,7 @@ async function load(s, v = "", allowStart = false) {
   assignIds(model);
   if (baseline) assignIds(baseline);
   F = collect(model);
-  findings = auditModel(model, rules2);
+  findings = allFindings();
   finalCheck2 = null;
   renderPage();
   renderSide();
@@ -1637,6 +1746,9 @@ async function load(s, v = "", allowStart = false) {
     checkToken();
   });
   checkToken();
+  $("#runcheck").addEventListener("click", () => {
+    runCheck().catch((e) => toast(`Check failed: ${e.message}`, "err"));
+  });
   $("#commit").addEventListener("click", async () => {
     if (!getToken()) {
       toast("No GitHub token yet. Paste it in the token box at the bottom right, then press Enter.", "err");
