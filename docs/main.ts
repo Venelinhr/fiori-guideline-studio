@@ -517,9 +517,7 @@ async function load(s: string) {
     history: await gh.readJson(`content/${s}/review/history.json`, branch, []),
     state: await gh.readJson(`content/${s}/review/state.json`, branch, {}),
   };
-  // Opened from a Jira link (…/fiori-guideline-studio/?jira=FIORIDESIGN-17845): the ticket is filled in, nobody pastes it.
-  const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
-  if (fromLink && review.state.jira !== fromLink.toUpperCase()) { review.state.jira = fromLink.toUpperCase(); save(); }
+  // The Jira key is never put in the page link. It is saved only in this update's state file (review/state.json).
   // A draft from an unsaved session in this browser comes back, so nothing is lost on reload.
   const draft = store.get(`draft:${s}`);
   let note = branch === gh.MAIN ? "No open update yet. Your first save creates one." : `Open update: ${branch}`;

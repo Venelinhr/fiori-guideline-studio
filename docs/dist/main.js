@@ -1315,11 +1315,6 @@ async function load(s) {
     history: await readJson(`content/${s}/review/history.json`, branch, []),
     state: await readJson(`content/${s}/review/state.json`, branch, {})
   };
-  const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
-  if (fromLink && review2.state.jira !== fromLink.toUpperCase()) {
-    review2.state.jira = fromLink.toUpperCase();
-    save();
-  }
   const draft = store.get(`draft:${s}`);
   let note = branch === MAIN ? "No open update yet. Your first save creates one." : `Open update: ${branch}`;
   if (draft) {
