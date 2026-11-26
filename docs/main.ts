@@ -135,9 +135,18 @@ function fieldEl(key: string, tag: string, ph = ""): HTMLElement {
     el.classList.add("sug");
     const t = h("div", "txt"); t.append(diffNode(toText(sug.old, f.kind), toText(sug.new, f.kind)));
     const meta = h("div", "meta"); meta.append(h("span", "", `Suggested by ${sug.author} · ${when(sug.time)}`));
-    const ok = h("button", "small ok", "Accept"); ok.dataset.act = "accept"; ok.dataset.id = sug.id;
-    const no = h("button", "small", "Reject"); no.dataset.act = "reject"; no.dataset.id = sug.id;
-    meta.append(ok, no); el.append(t, meta); return el;
+    const role = $<HTMLSelectElement>("#role").value;
+    if (role === "designer") {
+      const ok = h("button", "small ok", "Accept"); ok.dataset.act = "accept"; ok.dataset.id = sug.id;
+      const no = h("button", "small", "Reject"); no.dataset.act = "reject"; no.dataset.id = sug.id;
+      meta.append(ok, no);
+    } else if (sug.author === me()) {
+      // The writer can change or cancel their own suggestion until the designer decides.
+      const ed = h("button", "small", "Edit"); ed.dataset.act = "edit"; ed.dataset.id = sug.id;
+      const cx = h("button", "small", "Cancel"); cx.dataset.act = "cancel"; cx.dataset.id = sug.id;
+      meta.append(ed, cx);
+    } else meta.append(h("span", "muted", "Waiting for the designer"));
+    el.append(t, meta); return el;
   }
   if (f.kind === "plain") el.textContent = f.get(); else el.innerHTML = clean(f.get(), f.kind === "inline");
   if (!locked()) { el.contentEditable = "true"; el.spellcheck = true; }
@@ -254,6 +263,21 @@ function changed(key?: string) {
   if (key) refreshField(key); else renderPage();
   renderSide(); renderBar(); save();
 }
+// The writer changes the new wording of their own open suggestion.
+function editSuggestion(id: string) {
+  const s = review.suggestions.find((x) => x.id === id); if (!s || s.status !== "open") return;
+  const f = F.get(s.key); const cur = toText(s.new, f?.kind ?? "plain");
+  const v = window.prompt("Change your suggestion:", cur); if (v === null) return;
+  const text = v.trim(); if (!text) return;
+  s.new = f?.kind === "plain" ? text : `<p>${esc(text)}</p>`; s.time = now();
+  changed(s.key);
+}
+// The writer removes their own open suggestion.
+function cancelSuggestion(id: string) {
+  const s = review.suggestions.find((x) => x.id === id); if (!s || s.status !== "open") return;
+  review.suggestions = review.suggestions.filter((x) => x.id !== id);
+  changed(s.key);
+}
 function decide(id: string, accept: boolean) {
   const s = review.suggestions.find((x) => x.id === id); if (!s || s.status !== "open") return;
   const f = F.get(s.key);
@@ -366,8 +390,8 @@ function renderSide() {
     const s = h("div", "sum"); s.append(h("strong", "", `${ch.length} changed`), h("span", "muted", `${opens().length} open suggestions · compared with the last saved version in git`)); p.append(s);
     if (!baseline) p.append(h("p", "muted", "No earlier version to compare with."));
     if (opens().length) p.append(h("h5", "", "Open suggestions"));
-    for (const sg of opens()) { const f = F.get(sg.key); const c = card([h("strong", "", sg.label), sg.section, `· ${sg.author}`], diffNode(toText(sg.old, f?.kind ?? "plain"), toText(sg.new, f?.kind ?? "plain")), sg.key); const r = h("div", "row"); r.append(btn("Accept", () => decide(sg.id, true), "small ok"), btn("Reject", () => decide(sg.id, false))); c.append(r); p.append(c); }
-    if (opens().length > 1) p.append(btn("Accept all suggestions", () => opens().forEach((x) => decide(x.id, true)), "small ok"));
+    for (const sg of opens()) { const f = F.get(sg.key); const c = card([h("strong", "", sg.label), sg.section, `· ${sg.author}`], diffNode(toText(sg.old, f?.kind ?? "plain"), toText(sg.new, f?.kind ?? "plain")), sg.key); const r = h("div", "row"); if ($<HTMLSelectElement>("#role").value === "designer") r.append(btn("Accept", () => decide(sg.id, true), "small ok"), btn("Reject", () => decide(sg.id, false))); c.append(r); p.append(c); }
+    if (opens().length > 1 && $<HTMLSelectElement>("#role").value === "designer") p.append(btn("Accept all suggestions", () => opens().forEach((x) => decide(x.id, true)), "small ok"));
     if (ch.length) p.append(h("h5", "", "Changed in the article"));
     for (const { f, old } of ch) p.append(card([h("strong", "", f.label), f.section], diffNode(toText(old, f.kind), toText(f.get(), f.kind)), f.key));
     if (review.history.length) { p.append(h("h5", "", "Copy change report")); p.append(btn("Copy report as a table", () => navigator.clipboard?.writeText(report()).then(() => { $("#saved").textContent = "Report copied"; }))); }
@@ -453,7 +477,8 @@ async function sign(action: string, status: State["status"]) {
       await commitVersion(`${title()}: ${action} by ${who}`);
       // The pull request number is saved on the first send. If it is missing, find the open pull request for this branch.
       const n = review.state.pr?.number ?? (await gh.findPR(targetBranch()))?.number;
-      if (n && action === "approved") await gh.review(n, "APPROVE", `UX copy approved by ${who}`);
+      // GitHub only allows approval by an account other than the one that opened the pull request.
+      if (n && action === "approved" && $<HTMLSelectElement>("#role").value === "writer") await gh.review(n, "APPROVE", `UX copy approved by ${who}`);
       if (n && action === "changes") await gh.review(n, "REQUEST_CHANGES", `Changes wanted by ${who}`);
       if (n && action === "shipped") await gh.merge(n);
     }
@@ -471,7 +496,9 @@ function renderBar() {
   const a = $("#actions"); a.replaceChildren();
   const add = (text: string, fn: () => void, cls: string, off = "") => { const b = btn(text, fn, cls); if (off) { b.disabled = true; b.title = off; } a.append(b); };
   if (role === "designer" && (st === "draft" || st === "changes")) add("Send for review", () => sign("sent", "review"), "primary", errors() ? "Fix the errors in Checks first" : "");
-  if (role === "writer" && st === "review") { add("Ask for changes", () => sign("changes", "changes"), ""); add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Accept or reject the open suggestions first" : ""); }
+  // The designer decides the suggestions and approves. The writer only suggests. The editor approves and ships.
+  if (role === "designer" && st === "review") add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Accept or reject the open suggestions first" : "");
+  if (role === "editor" && st === "review") add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Waiting for the designer to accept or reject the suggestions" : "");
   if (role === "editor" && st === "ready") add("Approve and ship", () => sign("shipped", "shipped"), "primary", errors() ? "Fix the errors first" : "");
   if (st === "shipped") add("Start a new update", () => { review.state.status = "draft"; renderPage(); renderBar(); renderSide(); save(); }, "");
 }
@@ -484,7 +511,8 @@ page.addEventListener("input", (e) => (e.target as HTMLElement).closest?.("[data
 page.addEventListener("keydown", (e) => { const el = (e.target as HTMLElement).closest<HTMLElement>("[data-key][contenteditable=true]"); if (!el) return; if (e.key === "Escape") { el.blur(); } if (e.key === "Enter" && F.get(el.dataset.key!)!.kind !== "html") { e.preventDefault(); el.blur(); } });
 page.addEventListener("paste", (e) => { if (!(e.target as HTMLElement).closest("[contenteditable=true]")) return; e.preventDefault(); document.execCommand("insertText", false, e.clipboardData?.getData("text/plain") ?? ""); });
 page.addEventListener("click", (e) => {
-  const t = e.target as HTMLElement; const act = t.closest<HTMLElement>("[data-act]"); if (act) return decide(act.dataset.id!, act.dataset.act === "accept");
+  const t = e.target as HTMLElement; const act = t.closest<HTMLElement>("[data-act]");
+  if (act) { if (act.dataset.act === "edit") return editSuggestion(act.dataset.id!); if (act.dataset.act === "cancel") return cancelSuggestion(act.dataset.id!); return decide(act.dataset.id!, act.dataset.act === "accept"); }
   const a = t.closest("a"); if (a && t.closest("[contenteditable=true]")) e.preventDefault();
   const box = t.closest<HTMLElement>(".imgbox"); if (box && !locked()) { pickFor = box.dataset.img!; $<HTMLInputElement>("#file").click(); }
 });

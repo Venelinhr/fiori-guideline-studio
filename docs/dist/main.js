@@ -574,13 +574,24 @@ function fieldEl(key, tag, ph = "") {
     t.append(diffNode(toText(sug.old, f.kind), toText(sug.new, f.kind)));
     const meta = h("div", "meta");
     meta.append(h("span", "", `Suggested by ${sug.author} \xB7 ${when(sug.time)}`));
-    const ok = h("button", "small ok", "Accept");
-    ok.dataset.act = "accept";
-    ok.dataset.id = sug.id;
-    const no = h("button", "small", "Reject");
-    no.dataset.act = "reject";
-    no.dataset.id = sug.id;
-    meta.append(ok, no);
+    const role = $("#role").value;
+    if (role === "designer") {
+      const ok = h("button", "small ok", "Accept");
+      ok.dataset.act = "accept";
+      ok.dataset.id = sug.id;
+      const no = h("button", "small", "Reject");
+      no.dataset.act = "reject";
+      no.dataset.id = sug.id;
+      meta.append(ok, no);
+    } else if (sug.author === me()) {
+      const ed = h("button", "small", "Edit");
+      ed.dataset.act = "edit";
+      ed.dataset.id = sug.id;
+      const cx = h("button", "small", "Cancel");
+      cx.dataset.act = "cancel";
+      cx.dataset.id = sug.id;
+      meta.append(ed, cx);
+    } else meta.append(h("span", "muted", "Waiting for the designer"));
     el.append(t, meta);
     return el;
   }
@@ -821,6 +832,25 @@ function changed(key) {
   renderBar();
   save();
 }
+function editSuggestion(id) {
+  const s = review2.suggestions.find((x) => x.id === id);
+  if (!s || s.status !== "open") return;
+  const f = F.get(s.key);
+  const cur = toText(s.new, f?.kind ?? "plain");
+  const v = window.prompt("Change your suggestion:", cur);
+  if (v === null) return;
+  const text = v.trim();
+  if (!text) return;
+  s.new = f?.kind === "plain" ? text : `<p>${esc2(text)}</p>`;
+  s.time = now();
+  changed(s.key);
+}
+function cancelSuggestion(id) {
+  const s = review2.suggestions.find((x) => x.id === id);
+  if (!s || s.status !== "open") return;
+  review2.suggestions = review2.suggestions.filter((x) => x.id !== id);
+  changed(s.key);
+}
 function decide(id, accept) {
   const s = review2.suggestions.find((x) => x.id === id);
   if (!s || s.status !== "open") return;
@@ -1003,11 +1033,11 @@ function renderSide() {
       const f = F.get(sg.key);
       const c = card([h("strong", "", sg.label), sg.section, `\xB7 ${sg.author}`], diffNode(toText(sg.old, f?.kind ?? "plain"), toText(sg.new, f?.kind ?? "plain")), sg.key);
       const r = h("div", "row");
-      r.append(btn("Accept", () => decide(sg.id, true), "small ok"), btn("Reject", () => decide(sg.id, false)));
+      if ($("#role").value === "designer") r.append(btn("Accept", () => decide(sg.id, true), "small ok"), btn("Reject", () => decide(sg.id, false)));
       c.append(r);
       p.append(c);
     }
-    if (opens().length > 1) p.append(btn("Accept all suggestions", () => opens().forEach((x) => decide(x.id, true)), "small ok"));
+    if (opens().length > 1 && $("#role").value === "designer") p.append(btn("Accept all suggestions", () => opens().forEach((x) => decide(x.id, true)), "small ok"));
     if (ch.length) p.append(h("h5", "", "Changed in the article"));
     for (const { f, old } of ch) p.append(card([h("strong", "", f.label), f.section], diffNode(toText(old, f.kind), toText(f.get(), f.kind)), f.key));
     if (review2.history.length) {
@@ -1148,7 +1178,7 @@ Open text suggestions: ${opens().length}.`
     } else {
       await commitVersion(`${title()}: ${action} by ${who}`);
       const n = review2.state.pr?.number ?? (await findPR(targetBranch()))?.number;
-      if (n && action === "approved") await review(n, "APPROVE", `UX copy approved by ${who}`);
+      if (n && action === "approved" && $("#role").value === "writer") await review(n, "APPROVE", `UX copy approved by ${who}`);
       if (n && action === "changes") await review(n, "REQUEST_CHANGES", `Changes wanted by ${who}`);
       if (n && action === "shipped") await merge(n);
     }
@@ -1185,10 +1215,8 @@ function renderBar() {
     a.append(b);
   };
   if (role === "designer" && (st === "draft" || st === "changes")) add("Send for review", () => sign("sent", "review"), "primary", errors() ? "Fix the errors in Checks first" : "");
-  if (role === "writer" && st === "review") {
-    add("Ask for changes", () => sign("changes", "changes"), "");
-    add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Accept or reject the open suggestions first" : "");
-  }
+  if (role === "designer" && st === "review") add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Accept or reject the open suggestions first" : "");
+  if (role === "editor" && st === "review") add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Waiting for the designer to accept or reject the suggestions" : "");
   if (role === "editor" && st === "ready") add("Approve and ship", () => sign("shipped", "shipped"), "primary", errors() ? "Fix the errors first" : "");
   if (st === "shipped") add("Start a new update", () => {
     review2.state.status = "draft";
@@ -1235,7 +1263,11 @@ page.addEventListener("paste", (e) => {
 page.addEventListener("click", (e) => {
   const t = e.target;
   const act = t.closest("[data-act]");
-  if (act) return decide(act.dataset.id, act.dataset.act === "accept");
+  if (act) {
+    if (act.dataset.act === "edit") return editSuggestion(act.dataset.id);
+    if (act.dataset.act === "cancel") return cancelSuggestion(act.dataset.id);
+    return decide(act.dataset.id, act.dataset.act === "accept");
+  }
   const a = t.closest("a");
   if (a && t.closest("[contenteditable=true]")) e.preventDefault();
   const box = t.closest(".imgbox");
