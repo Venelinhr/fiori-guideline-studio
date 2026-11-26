@@ -516,8 +516,12 @@ $("#drawerBtn").addEventListener("click", () => document.body.classList.toggle("
 $("#drawerClose").addEventListener("click", () => document.body.classList.remove("drawer-open"));
 $("#hints").addEventListener("change", (e) => document.body.classList.toggle("no-hints", !(e.target as HTMLInputElement).checked));
 $("#tabs").addEventListener("click", (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>("[data-tab]"); if (!b) return; tab = b.dataset.tab!; store.set("tab", tab); renderSide(); });
-$("#name").addEventListener("change", () => store.set("name", $<HTMLInputElement>("#name").value));
-$("#role").addEventListener("change", () => { const r = $<HTMLSelectElement>("#role").value; store.set("role", r); $<HTMLInputElement>("#suggest").checked = r === "writer"; renderBar(); renderSide(); });
+// One name per role. The box shows the name of the role you are in.
+const DEFAULT_NAMES: Record<string, string> = { designer: "Veni", writer: "Alex", editor: "Krisi" };
+const namesByRole = (): Record<string, string> => { try { return { ...DEFAULT_NAMES, ...JSON.parse(store.get("names") || "{}") }; } catch { return { ...DEFAULT_NAMES }; } };
+const shownName = (role: string) => namesByRole()[role] ?? "";
+$("#name").addEventListener("change", () => { const r = $<HTMLSelectElement>("#role").value; const all = namesByRole(); all[r] = $<HTMLInputElement>("#name").value.trim(); store.set("names", JSON.stringify(all)); });
+$("#role").addEventListener("change", () => { const r = $<HTMLSelectElement>("#role").value; store.set("role", r); $<HTMLInputElement>("#name").value = shownName(r); $<HTMLInputElement>("#suggest").checked = r === "writer"; renderBar(); renderSide(); });
 $("#suggest").addEventListener("change", renderSide);
 $("#guideline").addEventListener("change", () => { location.hash = `#/${$<HTMLSelectElement>("#guideline").value}`; });
 window.addEventListener("hashchange", route);
@@ -599,8 +603,7 @@ async function load(s: string, v = "", allowStart = false) {
     try { await commitVersion(`${title()}: saved by ${me()}`); } catch (e) { saveFailed(e); }
   });
   const sel = $<HTMLSelectElement>("#guideline"); list.forEach((g) => sel.add(new Option(g.title, g.slug)));
-  $<HTMLInputElement>("#name").value = store.get("name");
-  const role = store.get("role") || "designer"; $<HTMLSelectElement>("#role").value = role; $<HTMLInputElement>("#suggest").checked = role === "writer";
+  const role = store.get("role") || "designer"; $<HTMLSelectElement>("#role").value = role; $<HTMLInputElement>("#suggest").checked = role === "writer"; $<HTMLInputElement>("#name").value = shownName(role);
   const first = list.find((g) => g.slug === store.get("slug"))?.slug ?? list[0]?.slug;
   if (location.hash.length > 2) route();
   else if (first) { location.hash = `#/${first}`; }

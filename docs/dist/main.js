@@ -1314,10 +1314,25 @@ $("#tabs").addEventListener("click", (e) => {
   store.set("tab", tab);
   renderSide();
 });
-$("#name").addEventListener("change", () => store.set("name", $("#name").value));
+var DEFAULT_NAMES = { designer: "Veni", writer: "Alex", editor: "Krisi" };
+var namesByRole = () => {
+  try {
+    return { ...DEFAULT_NAMES, ...JSON.parse(store.get("names") || "{}") };
+  } catch {
+    return { ...DEFAULT_NAMES };
+  }
+};
+var shownName = (role) => namesByRole()[role] ?? "";
+$("#name").addEventListener("change", () => {
+  const r = $("#role").value;
+  const all = namesByRole();
+  all[r] = $("#name").value.trim();
+  store.set("names", JSON.stringify(all));
+});
 $("#role").addEventListener("change", () => {
   const r = $("#role").value;
   store.set("role", r);
+  $("#name").value = shownName(r);
   $("#suggest").checked = r === "writer";
   renderBar();
   renderSide();
@@ -1461,10 +1476,10 @@ async function load(s, v = "", allowStart = false) {
   });
   const sel = $("#guideline");
   list.forEach((g) => sel.add(new Option(g.title, g.slug)));
-  $("#name").value = store.get("name");
   const role = store.get("role") || "designer";
   $("#role").value = role;
   $("#suggest").checked = role === "writer";
+  $("#name").value = shownName(role);
   const first = list.find((g) => g.slug === store.get("slug"))?.slug ?? list[0]?.slug;
   if (location.hash.length > 2) route();
   else if (first) {
