@@ -825,7 +825,31 @@ function save() {
   renderBar();
 }
 var stamp = () => (/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+var toastTimer = 0;
+function toast(msg, kind, link) {
+  const t = $("#toast");
+  t.className = `toast ${kind}`;
+  t.replaceChildren();
+  const icon2 = kind === "busy" ? "\u23F3" : kind === "ok" ? "\u2705" : "\u26A0\uFE0F";
+  t.append(h("span", "toast-icon", icon2), h("span", "", msg));
+  if (link) {
+    const a = h("a", "", link.text);
+    a.href = link.href;
+    a.target = "_blank";
+    a.rel = "noopener";
+    t.append(a);
+  }
+  const close = h("button", "toast-x", "\u2715");
+  close.addEventListener("click", () => t.hidden = true);
+  t.append(close);
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  if (kind === "ok") toastTimer = window.setTimeout(() => t.hidden = true, 8e3);
+}
 async function commitVersion(message) {
+  toast("Saving to GitHub\u2026", "busy");
+  $("#commit").disabled = true;
+  $("#commit").textContent = "Saving\u2026";
   docRef.model = model;
   const dir = `content/${slug2}`;
   const files = [
@@ -843,6 +867,18 @@ async function commitVersion(message) {
   store.set(`draft:${slug2}`, "");
   imgBust = Date.now();
   $("#saved").textContent = `Saved to GitHub ${stamp()} \xB7 ${branch}`;
+  const short = r.sha.slice(0, 7);
+  toast(
+    `Saved to GitHub at ${stamp()}. Version ${short} is on branch ${branch}.`,
+    "ok",
+    { href: `https://github.com/${REPO}/commit/${r.sha}`, text: "See the change on GitHub" }
+  );
+  renderBar();
+}
+function saveFailed(e) {
+  const msg = `Not saved: ${e.message}`;
+  toast(msg, "err");
+  $("#saved").textContent = msg;
   renderBar();
 }
 function fixOf(f) {
@@ -1076,8 +1112,7 @@ Open text suggestions: ${opens().length}.`
   } catch (e) {
     review2.state.signoffs = (review2.state.signoffs ?? []).slice(0, n0);
     review2.state.status = prevStatus;
-    renderBar();
-    $("#saved").textContent = `Not done: ${e.message}`;
+    saveFailed(e);
     return;
   }
   tab = "jira";
@@ -1314,10 +1349,14 @@ async function load(s) {
   });
   checkToken();
   $("#commit").addEventListener("click", async () => {
+    if (!getToken()) {
+      toast("No GitHub token yet. Paste it in the token box at the bottom right, then press Enter.", "err");
+      return;
+    }
     try {
       await commitVersion(`${title()}: saved by ${me()}`);
     } catch (e) {
-      $("#saved").textContent = `Not saved: ${e.message}`;
+      saveFailed(e);
     }
   });
   const sel = $("#guideline");

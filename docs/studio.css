@@ -180,3 +180,17 @@ body.drawer-open .drawer { transform: none; }
 pre.jira { background: var(--bgsoft); border: 1px solid var(--line); border-radius: 8px; padding: 12px; font: 12px/1.6 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
 h5 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--grey8); }
 .jirakey { width: 100%; margin-bottom: 8px; border: 1px solid #5b738b; border-radius: 8px; padding: 4px 8px; }
+
+/* ---------- Message box (saving, saved, errors) ---------- */
+.toast { position: fixed; z-index: 40; left: 50%; bottom: 72px; transform: translateX(-50%); width: min(720px, calc(100vw - 32px)); display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 8px; border: 1px solid; box-shadow: 0 4px 16px rgba(34, 54, 73, .25); font: 600 15px/20px var(--font); }
+.toast[hidden] { display: none; }
+.toast.busy { background: #ebf8ff; border-color: #0070f2; color: #0a4f9e; }
+.toast.ok { background: #f1fcf3; border-color: #188918; color: #155c15; }
+.toast.err { background: #fff1f1; border-color: #d20a0a; color: #8a0606; }
+.toast span:last-of-type { flex: 1; }
+.toast a { color: inherit; text-decoration: underline; white-space: nowrap; }
+.toast-x { border: 0; background: none; cursor: pointer; font-size: 16px; color: inherit; padding: 0 4px; }
+.toast-icon { flex: none; }
+.toast.busy .toast-icon { animation: spin 1.2s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#commit:disabled { opacity: .6; }

@@ -260,7 +260,20 @@ function save() {
 }
 const stamp = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 // One commit on update/<slug> with the text, the Markdown, the review files and new pictures.
+// A message box that is easy to see, above the work bar. kind: busy | ok | err.
+let toastTimer = 0;
+function toast(msg: string, kind: "busy" | "ok" | "err", link?: { href: string; text: string }) {
+  const t = $("#toast"); t.className = `toast ${kind}`; t.replaceChildren();
+  const icon = kind === "busy" ? "⏳" : kind === "ok" ? "✅" : "⚠️";
+  t.append(h("span", "toast-icon", icon), h("span", "", msg));
+  if (link) { const a = h("a", "", link.text) as HTMLAnchorElement; a.href = link.href; a.target = "_blank"; a.rel = "noopener"; t.append(a); }
+  const close = h("button", "toast-x", "✕"); close.addEventListener("click", () => t.hidden = true); t.append(close);
+  t.hidden = false; clearTimeout(toastTimer);
+  if (kind === "ok") toastTimer = window.setTimeout(() => (t.hidden = true), 8000);
+}
 async function commitVersion(message: string): Promise<void> {
+  toast("Saving to GitHub…", "busy");
+  $<HTMLButtonElement>("#commit").disabled = true; $("#commit").textContent = "Saving…";
   docRef.model = model;
   const dir = `content/${slug}`;
   const files: { path: string; content?: string; base64?: string }[] = [
@@ -275,8 +288,13 @@ async function commitVersion(message: string): Promise<void> {
   branch = r.branch; pending.clear(); dirty = false; store.set(`draft:${slug}`, "");
   imgBust = Date.now();
   $("#saved").textContent = `Saved to GitHub ${stamp()} · ${branch}`;
+  const short = r.sha.slice(0, 7);
+  toast(`Saved to GitHub at ${stamp()}. Version ${short} is on branch ${branch}.`, "ok",
+    { href: `https://github.com/${gh.REPO}/commit/${r.sha}`, text: "See the change on GitHub" });
   renderBar();
 }
+// Shows a failed save in the message box, and sets the button back so it can be tried again.
+function saveFailed(e: unknown) { const msg = `Not saved: ${(e as Error).message}`; toast(msg, "err"); $("#saved").textContent = msg; renderBar(); }
 
 // ---------- one-click fixes (safe ones only) ----------
 function fixOf(f: Finding): ((v: string, kind: Kind) => string) | null {
@@ -413,7 +431,7 @@ async function sign(action: string, status: State["status"]) {
     }
   } catch (e) {
     review.state.signoffs = (review.state.signoffs ?? []).slice(0, n0); review.state.status = prevStatus;
-    renderBar(); $("#saved").textContent = `Not done: ${(e as Error).message}`; return;
+    saveFailed(e); return;
   }
   tab = "jira"; document.body.classList.add("drawer-open"); renderPage(); renderSide(); renderBar();
 }
@@ -510,7 +528,10 @@ async function load(s: string) {
   };
   tokenBox.addEventListener("change", () => { const v = tokenBox.value.trim(); if (!v) return; gh.setToken(v); tokenBox.value = ""; checkToken(); });
   checkToken();
-  $("#commit").addEventListener("click", async () => { try { await commitVersion(`${title()}: saved by ${me()}`); } catch (e) { $("#saved").textContent = `Not saved: ${(e as Error).message}`; } });
+  $("#commit").addEventListener("click", async () => {
+    if (!gh.getToken()) { toast("No GitHub token yet. Paste it in the token box at the bottom right, then press Enter.", "err"); return; }
+    try { await commitVersion(`${title()}: saved by ${me()}`); } catch (e) { saveFailed(e); }
+  });
   const sel = $<HTMLSelectElement>("#guideline"); list.forEach((g) => sel.add(new Option(g.title, g.slug)));
   $<HTMLInputElement>("#name").value = store.get("name");
   const role = store.get("role") || "designer"; $<HTMLSelectElement>("#role").value = role; $<HTMLInputElement>("#suggest").checked = role === "writer";
