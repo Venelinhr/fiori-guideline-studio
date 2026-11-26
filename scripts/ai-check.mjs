@@ -19,7 +19,7 @@ const text = await res.text();
 if (!res.ok) { console.error(`GitHub Models answered ${res.status}: ${text.slice(0, 500)}`); process.exit(1); }
 let findings = [];
 try { findings = JSON.parse(JSON.parse(text).choices[0].message.content).findings ?? []; }
-catch (e) { console.error("The answer was not the expected JSON:", text.slice(0, 500)); process.exit(1); }
+catch (e) { console.error(`The answer was not the expected JSON (status ${res.status}, type ${res.headers.get("content-type")}, url ${res.url}):`, text.slice(0, 500)); process.exit(1); }
 const report = { time: new Date().toISOString(), model: MODEL, ref: process.env.GITHUB_REF_NAME ?? "", slug, errors: findings.filter((f) => f.severity === "error").length, hints: findings.filter((f) => f.severity !== "error").length, findings };
 const lines = [`## AI check: ${slug}`, `${report.errors} errors, ${report.hints} hints (model ${MODEL})`, "", ...findings.map((f) => `- **${f.severity}** · ${f.where}: ${f.problem}\n  - now: ${f.original}\n  - fix: ${f.fix}`)];
 console.log(lines.join("\n"));
