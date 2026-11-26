@@ -370,7 +370,14 @@ function renderSide() {
   }
   if (tab === "jira") {
     const inp = h("input", "jirakey") as HTMLInputElement; inp.placeholder = "Jira key, for example FIORIDESIGN-17845"; inp.value = review.state.jira ?? "";
-    inp.addEventListener("change", () => { review.state.jira = inp.value.trim().toUpperCase(); save(); renderSide(); });
+    // Accepts the key (FIORIDESIGN-17845) or a full Jira link. Keeps only the key, in capitals.
+    inp.addEventListener("change", () => {
+      const raw = inp.value.trim(); const m = raw.match(/[A-Za-z][A-Za-z0-9]+-\d+/);
+      if (!raw) { review.state.jira = undefined; }
+      else if (m) { review.state.jira = m[0].toUpperCase(); }
+      else { review.state.jira = raw; }
+      save(); renderSide();
+    });
     p.append(h("h5", "", "Jira task"), inp, h("h5", "", "Status card (one comment, always current)"), h("pre", "jira", statusCard()));
     p.append(h("h5", "", "Sign-off lines (one comment per click)"));
     const lines = (review.state.signoffs ?? []).map(signLine); p.append(h("pre", "jira", lines.length ? lines.join("\n") : "No sign-offs yet."));

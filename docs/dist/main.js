@@ -1031,7 +1031,15 @@ function renderSide() {
     inp.placeholder = "Jira key, for example FIORIDESIGN-17845";
     inp.value = review2.state.jira ?? "";
     inp.addEventListener("change", () => {
-      review2.state.jira = inp.value.trim().toUpperCase();
+      const raw = inp.value.trim();
+      const m = raw.match(/[A-Za-z][A-Za-z0-9]+-\d+/);
+      if (!raw) {
+        review2.state.jira = void 0;
+      } else if (m) {
+        review2.state.jira = m[0].toUpperCase();
+      } else {
+        review2.state.jira = raw;
+      }
       save();
       renderSide();
     });
