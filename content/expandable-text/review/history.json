@@ -1,0 +1,23 @@
+[
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
+    "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 111111</p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T17:06:05.534Z",
+    "kind": "suggestion",
+    "acceptedBy": "Venelin Hristov"
+  },
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 111111</p>",
+    "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T17:06:14.353Z",
+    "kind": "edit"
+  }
+]
