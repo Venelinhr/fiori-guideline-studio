@@ -12,7 +12,7 @@ interface Sug { id: string; key: string; label: string; section: string; old: st
 interface Hist { key: string; label: string; section: string; old: string; new: string; author: string; time: string; kind: "edit" | "suggestion" | "fix" | "restore" | "image"; acceptedBy?: string }
 interface Sign { role: string; name: string; action: string; time: string }
 type Stage = "draft" | "writer" | "designer" | "editor" | "approved" | "uploaded";
-interface State { status?: Stage; lastCheck?: { by: string; role: string; time: string; errors: number; hints: number; copilot: string }; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
+interface State { status?: Stage; lastCheck?: { by: string; role: string; time: string; errors: number; hints: number; fixes: number; copilot: string; skipped?: boolean }; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T;
 const h = (tag: string, cls = "", text = ""): HTMLElement => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
@@ -418,7 +418,8 @@ function renderSide() {
     const s = h("div", "sum"); s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at · ${findings.filter((f) => f.severity === "info").length} notes`)); p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
-    p.append(h("p", "muted", lc ? `Last check: ${lc.by} (${lc.role}) · ${when(lc.time)} · ${lc.errors} errors, ${lc.hints} hints · Copilot: ${lc.copilot}` : "Nobody has run the check yet. Click Run check in the bar."));
+    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) · ${when(lc.time)} · ${lc.errors} errors, ${lc.hints} recommendations, ${lc.fixes} fixes made · Copilot: ${lc.copilot}${checkIsStale() ? " · the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
+    const cop = h("div", "fc"); cop.append(h("p", "", "Copilot chat: ask your GitHub Copilot to review this article."), btn("Copy the prompt and open Copilot", () => { askCopilotChat(); }, "small")); p.append(cop);
     for (const f of [...findings].sort((a, b) => order[a.severity] - order[b.severity])) {
       const keys = keysAt(f); const c = card([h("span", `sev ${f.severity}`, f.severity === "error" ? "Fix" : f.severity === "warning" ? "Look" : "Note"), f.where], document.createTextNode(f.message + (f.suggestion ? `\n→ ${f.suggestion}` : "")), keys[0]);
       if (fixOf(f) && keys.length && !locked()) { const r = h("div", "row"); r.append(btn(suggesting() ? "Suggest this fix" : "Fix", () => applyFix(f), "small primary")); c.append(r); }
@@ -480,7 +481,7 @@ function renderFinalCheck(p: HTMLElement, ready: boolean) {
   else say("⚠️", `Could not read the result. ${fc.description}`);
   if (fc?.url) { const a = h("a", "", "Open the full report ↗") as HTMLAnchorElement; a.href = fc.url; a.target = "_blank"; a.rel = "noopener"; wrap.append(a); }
   const again = h("button", "small", "Refresh"); again.addEventListener("click", () => { finalCheck = null; renderSide(); refreshFinalCheck(); }); wrap.append(again);
-  if (fc?.state === "failure") wrap.append(h("p", "muted", "Fix the problems: the editor clicks Send back to designer. After the fix, the new version goes through the same steps."));
+  if (fc?.state === "failure") wrap.append(h("p", "muted", "Fix the problems yourself, or click Send back to designer. You can also skip the check if you checked the article by hand: you are asked before the upload."));
   p.append(wrap);
 }
 // The AEM tab: where the approved article goes, and the approved files to take there.
@@ -587,6 +588,13 @@ async function sign(action: string, status: Stage) {
 function renderBar() {
   const raw = (review.state.status ?? "draft") as string, st = (LEGACY[raw] ?? raw) as Stage, role = $<HTMLSelectElement>("#role").value;
   const pill = $("#status"); pill.textContent = STATUS[st]; pill.className = `pill ${st}`;
+  // The check mark: who ran the check, when, how many errors, fixes and recommendations.
+  const lc = review.state.lastCheck, mark = $("#checkbadge"), stale = checkIsStale();
+  const nice = (x: string) => new Date(x).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  if (!lc) { mark.className = "checkbadge none"; mark.textContent = "No check run yet"; mark.title = "Click Run check. A person can also skip it and check by hand."; }
+  else if (lc.skipped) { mark.className = `checkbadge skipped${stale ? " stale" : ""}`; mark.textContent = `⏭ Check skipped by ${lc.by} · ${nice(lc.time)} · human check${stale ? " · text changed since" : ""}`; mark.title = "A person checked the article by hand."; }
+  else if (lc.errors === 0) { mark.className = `checkbadge pass${stale ? " stale" : ""}`; mark.textContent = `✓ Check passed · ${lc.by} · ${nice(lc.time)} · ${lc.errors} errors · ${lc.fixes} fixes · ${lc.hints} recommendations${stale ? " · text changed since" : ""}`; mark.title = "Click to see the report."; }
+  else { mark.className = `checkbadge fail${stale ? " stale" : ""}`; mark.textContent = `⚠ Check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} · ${lc.by} · ${nice(lc.time)} · ${lc.fixes} fixes`; mark.title = "Click to see the report."; }
   const c = $<HTMLButtonElement>("#commit"); c.disabled = !dirty; c.textContent = branch === gh.MAIN ? "Save version (new update)" : "Save version";
   const cl = $<HTMLAnchorElement>("#commitlink"); cl.href = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
   const a = $("#actions"); a.replaceChildren();
@@ -609,7 +617,7 @@ function renderBar() {
   if (role === "editor" && stage === "approved") {
     const fc = finalCheck?.state;
     if (fc === "failure") add("Send back to designer", () => sign("back", "designer"), "");
-    add("Mark uploaded to AEM", () => sign("uploaded", "uploaded"), "primary", fc === "success" ? "" : fc === "failure" ? "The final check found errors. Send it back to the designer." : "Wait for the final check to pass (see the AEM tab).");
+    add("Mark uploaded to AEM", async () => { if (await gateOk()) sign("uploaded", "uploaded"); }, "primary");
   }
   if (stage === "uploaded") add("Start a new update", () => { review.state.status = "draft"; renderPage(); renderBar(); renderSide(); save(); }, "");
 }
@@ -651,6 +659,7 @@ $("#tools").addEventListener("mousedown", (e) => {
   if (b.dataset.cmd === "link") { const url = window.prompt("Link address (https://…). Leave empty to remove the link."); if (url === null) return; if (!url.trim()) document.execCommand("unlink"); else if (/^https?:\/\//i.test(url.trim())) document.execCommand("createLink", false, url.trim()); }
   else document.execCommand(b.dataset.cmd!);
 });
+$("#checkbadge").addEventListener("click", () => { tab = "checks"; document.body.classList.add("drawer-open"); renderSide(); });
 $("#drawerBtn").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
 $("#drawerClose").addEventListener("click", () => document.body.classList.remove("drawer-open"));
 $("#hints").addEventListener("change", (e) => document.body.classList.toggle("no-hints", !(e.target as HTMLInputElement).checked));
@@ -692,6 +701,46 @@ function showMissing(s: string, v: string, pub: string) {
   const latest = h("a", "", `Show the latest published version (${pub})`) as HTMLAnchorElement; latest.href = `#/${s}`;
   card.append(start, latest); box.append(card);
 }
+// How many one-click fixes were applied, and when the text last changed. Used by the check mark and the question before AEM.
+const fixesMade = () => review.history.filter((x) => x.kind === "fix").length;
+const lastEdit = () => review.history.reduce((m, x) => (x.time > m ? x.time : m), "");
+const checkIsStale = () => !!review.state.lastCheck && lastEdit() > review.state.lastCheck.time;
+// A person says: I checked this myself. The mark in the bar then shows who skipped the check, and when.
+function skipCheck() {
+  review.state.lastCheck = { by: me(), role: $<HTMLSelectElement>("#role").value, time: now(), errors: errors(), hints: findings.filter((f) => f.severity === "warning").length, fixes: fixesMade(), copilot: "skipped, checked by a person", skipped: true };
+  renderBar(); renderSide(); save();
+}
+// Before the article is marked uploaded to AEM: if no check passed on this version, ask. The person decides: run it, or skip it.
+function gateReason(): string {
+  const lc = review.state.lastCheck, fc = finalCheck;
+  if (fc?.state === "success" || (lc && !checkIsStale() && (lc.skipped || lc.errors === 0))) return "";
+  if (!lc && fc?.state === "failure") return `The automatic final check found errors: ${fc.description}`;
+  if (!lc) return "Nobody has run the check on this version.";
+  if (checkIsStale()) return `The text changed after the last check (${lc.by}, ${when(lc.time)}).`;
+  return `The last check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} (${lc.by}, ${when(lc.time)}).`;
+}
+function askCheck(reason: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const d = $<HTMLDialogElement>("#gate"); d.replaceChildren(); let done = false;
+    const end = (ok: boolean) => { if (done) return; done = true; if (d.open) d.close(); resolve(ok); };
+    d.onclose = () => end(false);
+    d.append(h("h3", "", "Before this goes to AEM"), h("p", "", reason), h("p", "muted", "You decide: run the check now, or skip it if you checked the article yourself. Skipping is written in the record with your name."));
+    const row = h("div", "row");
+    row.append(btn("Run check now", () => { end(false); runCheck().catch((e) => toast(`Check failed: ${(e as Error).message}`, "err")); }, "small primary"),
+      btn("Skip: I checked it myself", () => { skipCheck(); end(true); }, "small"), btn("Cancel", () => end(false), "small"));
+    d.append(row); d.showModal();
+  });
+}
+async function gateOk(): Promise<boolean> { const why = gateReason(); return why ? askCheck(why) : true; }
+// Copilot chat (works with Copilot on your GitHub account): copies a ready prompt and opens Copilot.
+async function askCopilotChat() {
+  const ref = branch === gh.MAIN ? gh.MAIN : branch;
+  const url = `https://raw.githubusercontent.com/${gh.REPO}/${ref}/content/${slug}/guideline.md`;
+  const prompt = `Review the guideline article at ${url}. Use the rules in .github/copilot-instructions.md of the repository ${gh.REPO}. List each problem with: where it is, what is wrong, and the corrected text. Check wording, full stops, commas, terms, and alt text.`;
+  try { await navigator.clipboard.writeText(prompt); toast("Prompt copied. Paste it in Copilot (the new tab).", "ok"); }
+  catch { toast(`Could not copy. Use this prompt in Copilot: ${prompt}`, "err"); }
+  window.open("https://github.com/copilot", "_blank", "noopener");
+}
 // Run check: rules, wording, full stops, commas, alt text, links. Anyone can run it at any time. The report shows the fixes.
 // Where Copilot review is available (company GitHub), the same click also asks Copilot to review the pull request.
 async function runCheck() {
@@ -700,7 +749,7 @@ async function runCheck() {
   let copilot = "not asked (no pull request yet)";
   const n = review.state.pr?.number ?? (version && gh.getToken() ? (await gh.findPR(targetBranch()).catch(() => undefined))?.number : undefined);
   if (n && gh.getToken()) copilot = (await gh.requestCopilot(n).catch(() => false)) ? "review requested on the pull request" : "not available for this GitHub account";
-  review.state.lastCheck = { by: me(), role: $<HTMLSelectElement>("#role").value, time: now(), errors: errs, hints, copilot };
+  review.state.lastCheck = { by: me(), role: $<HTMLSelectElement>("#role").value, time: now(), errors: errs, hints, fixes: fixesMade(), copilot };
   tab = "checks"; document.body.classList.add("drawer-open"); renderSide(); renderBar(); save();
   toast(`Check done: ${errs} error${errs === 1 ? "" : "s"}, ${hints} hints. Copilot: ${copilot}.`, errs ? "err" : "ok");
 }

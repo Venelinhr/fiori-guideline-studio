@@ -213,3 +213,18 @@ h5 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spac
 .drawer a { color: var(--link); }
 .fc { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .fc p { margin: 0; }
+
+.checkbadge { font: 600 12px/18px var(--font); padding: 3px 10px; border-radius: 999px; border: 1px solid; cursor: pointer; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.checkbadge.none { background: #eaecee; border-color: #d5dadd; color: var(--grey8); }
+.checkbadge.pass { background: #f1fcf3; border-color: var(--do); color: #155c15; }
+.checkbadge.fail { background: #fff1f1; border-color: var(--dont); color: #8a0606; }
+.checkbadge.skipped { background: #ebf8ff; border-color: #0070f2; color: #0a4f9e; }
+.checkbadge.stale { border-style: dashed; }
+dialog.gate { border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; max-width: 520px; box-shadow: 0 8px 32px rgba(34, 54, 73, .35); font: 15px/22px var(--font); color: var(--text); }
+dialog.gate::backdrop { background: rgba(34, 54, 73, .45); }
+dialog.gate h3 { margin: 0 0 8px; font: 700 18px/24px var(--font); }
+dialog.gate p { margin: 0 0 10px; }
+dialog.gate .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+dialog.gate button { border: 1px solid #bcc3ca; background: #fff; border-radius: 8px; padding: 6px 12px; min-height: 32px; cursor: pointer; color: var(--link); font: 600 14px var(--font); }
+dialog.gate button:hover { background: #eaecee; }
+dialog.gate button.primary { background: #0070f2; border-color: #0070f2; color: #fff; }

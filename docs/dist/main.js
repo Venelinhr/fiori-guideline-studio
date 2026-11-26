@@ -1121,7 +1121,12 @@ function renderSide() {
     p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
-    p.append(h("p", "muted", lc ? `Last check: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lc.errors} errors, ${lc.hints} hints \xB7 Copilot: ${lc.copilot}` : "Nobody has run the check yet. Click Run check in the bar."));
+    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lc.errors} errors, ${lc.hints} recommendations, ${lc.fixes} fixes made \xB7 Copilot: ${lc.copilot}${checkIsStale() ? " \xB7 the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
+    const cop = h("div", "fc");
+    cop.append(h("p", "", "Copilot chat: ask your GitHub Copilot to review this article."), btn("Copy the prompt and open Copilot", () => {
+      askCopilotChat();
+    }, "small"));
+    p.append(cop);
     for (const f of [...findings].sort((a, b) => order[a.severity] - order[b.severity])) {
       const keys = keysAt(f);
       const c = card([h("span", `sev ${f.severity}`, f.severity === "error" ? "Fix" : f.severity === "warning" ? "Look" : "Note"), f.where], document.createTextNode(f.message + (f.suggestion ? `
@@ -1253,7 +1258,7 @@ function renderFinalCheck(p, ready) {
     refreshFinalCheck();
   });
   wrap.append(again);
-  if (fc?.state === "failure") wrap.append(h("p", "muted", "Fix the problems: the editor clicks Send back to designer. After the fix, the new version goes through the same steps."));
+  if (fc?.state === "failure") wrap.append(h("p", "muted", "Fix the problems yourself, or click Send back to designer. You can also skip the check if you checked the article by hand: you are asked before the upload."));
   p.append(wrap);
 }
 function renderAem(p) {
@@ -1414,6 +1419,25 @@ function renderBar() {
   const pill = $("#status");
   pill.textContent = STATUS[st];
   pill.className = `pill ${st}`;
+  const lc = review.state.lastCheck, mark = $("#checkbadge"), stale = checkIsStale();
+  const nice = (x) => new Date(x).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  if (!lc) {
+    mark.className = "checkbadge none";
+    mark.textContent = "No check run yet";
+    mark.title = "Click Run check. A person can also skip it and check by hand.";
+  } else if (lc.skipped) {
+    mark.className = `checkbadge skipped${stale ? " stale" : ""}`;
+    mark.textContent = `\u23ED Check skipped by ${lc.by} \xB7 ${nice(lc.time)} \xB7 human check${stale ? " \xB7 text changed since" : ""}`;
+    mark.title = "A person checked the article by hand.";
+  } else if (lc.errors === 0) {
+    mark.className = `checkbadge pass${stale ? " stale" : ""}`;
+    mark.textContent = `\u2713 Check passed \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.errors} errors \xB7 ${lc.fixes} fixes \xB7 ${lc.hints} recommendations${stale ? " \xB7 text changed since" : ""}`;
+    mark.title = "Click to see the report.";
+  } else {
+    mark.className = `checkbadge fail${stale ? " stale" : ""}`;
+    mark.textContent = `\u26A0 Check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.fixes} fixes`;
+    mark.title = "Click to see the report.";
+  }
   const c = $("#commit");
   c.disabled = !dirty;
   c.textContent = branch === MAIN ? "Save version (new update)" : "Save version";
@@ -1446,7 +1470,9 @@ function renderBar() {
   if (role === "editor" && stage === "approved") {
     const fc = finalCheck2?.state;
     if (fc === "failure") add("Send back to designer", () => sign("back", "designer"), "");
-    add("Mark uploaded to AEM", () => sign("uploaded", "uploaded"), "primary", fc === "success" ? "" : fc === "failure" ? "The final check found errors. Send it back to the designer." : "Wait for the final check to pass (see the AEM tab).");
+    add("Mark uploaded to AEM", async () => {
+      if (await gateOk()) sign("uploaded", "uploaded");
+    }, "primary");
   }
   if (stage === "uploaded") add("Start a new update", () => {
     review.state.status = "draft";
@@ -1566,6 +1592,11 @@ $("#tools").addEventListener("mousedown", (e) => {
     else if (/^https?:\/\//i.test(url.trim())) document.execCommand("createLink", false, url.trim());
   } else document.execCommand(b.dataset.cmd);
 });
+$("#checkbadge").addEventListener("click", () => {
+  tab = "checks";
+  document.body.classList.add("drawer-open");
+  renderSide();
+});
 $("#drawerBtn").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
 $("#drawerClose").addEventListener("click", () => document.body.classList.remove("drawer-open"));
 $("#hints").addEventListener("change", (e) => document.body.classList.toggle("no-hints", !e.target.checked));
@@ -1642,13 +1673,75 @@ function showMissing(s, v, pub) {
   card2.append(start, latest);
   box.append(card2);
 }
+var fixesMade = () => review.history.filter((x) => x.kind === "fix").length;
+var lastEdit = () => review.history.reduce((m, x) => x.time > m ? x.time : m, "");
+var checkIsStale = () => !!review.state.lastCheck && lastEdit() > review.state.lastCheck.time;
+function skipCheck() {
+  review.state.lastCheck = { by: me(), role: $("#role").value, time: now(), errors: errors(), hints: findings.filter((f) => f.severity === "warning").length, fixes: fixesMade(), copilot: "skipped, checked by a person", skipped: true };
+  renderBar();
+  renderSide();
+  save();
+}
+function gateReason() {
+  const lc = review.state.lastCheck, fc = finalCheck2;
+  if (fc?.state === "success" || lc && !checkIsStale() && (lc.skipped || lc.errors === 0)) return "";
+  if (!lc && fc?.state === "failure") return `The automatic final check found errors: ${fc.description}`;
+  if (!lc) return "Nobody has run the check on this version.";
+  if (checkIsStale()) return `The text changed after the last check (${lc.by}, ${when(lc.time)}).`;
+  return `The last check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} (${lc.by}, ${when(lc.time)}).`;
+}
+function askCheck(reason) {
+  return new Promise((resolve) => {
+    const d = $("#gate");
+    d.replaceChildren();
+    let done = false;
+    const end = (ok) => {
+      if (done) return;
+      done = true;
+      if (d.open) d.close();
+      resolve(ok);
+    };
+    d.onclose = () => end(false);
+    d.append(h("h3", "", "Before this goes to AEM"), h("p", "", reason), h("p", "muted", "You decide: run the check now, or skip it if you checked the article yourself. Skipping is written in the record with your name."));
+    const row = h("div", "row");
+    row.append(
+      btn("Run check now", () => {
+        end(false);
+        runCheck().catch((e) => toast(`Check failed: ${e.message}`, "err"));
+      }, "small primary"),
+      btn("Skip: I checked it myself", () => {
+        skipCheck();
+        end(true);
+      }, "small"),
+      btn("Cancel", () => end(false), "small")
+    );
+    d.append(row);
+    d.showModal();
+  });
+}
+async function gateOk() {
+  const why = gateReason();
+  return why ? askCheck(why) : true;
+}
+async function askCopilotChat() {
+  const ref = branch === MAIN ? MAIN : branch;
+  const url = `https://raw.githubusercontent.com/${REPO}/${ref}/content/${slug2}/guideline.md`;
+  const prompt = `Review the guideline article at ${url}. Use the rules in .github/copilot-instructions.md of the repository ${REPO}. List each problem with: where it is, what is wrong, and the corrected text. Check wording, full stops, commas, terms, and alt text.`;
+  try {
+    await navigator.clipboard.writeText(prompt);
+    toast("Prompt copied. Paste it in Copilot (the new tab).", "ok");
+  } catch {
+    toast(`Could not copy. Use this prompt in Copilot: ${prompt}`, "err");
+  }
+  window.open("https://github.com/copilot", "_blank", "noopener");
+}
 async function runCheck() {
   findings = allFindings();
   const errs = errors(), hints = findings.filter((f) => f.severity === "warning").length;
   let copilot = "not asked (no pull request yet)";
   const n = review.state.pr?.number ?? (version && getToken() ? (await findPR(targetBranch()).catch(() => void 0))?.number : void 0);
   if (n && getToken()) copilot = await requestCopilot(n).catch(() => false) ? "review requested on the pull request" : "not available for this GitHub account";
-  review.state.lastCheck = { by: me(), role: $("#role").value, time: now(), errors: errs, hints, copilot };
+  review.state.lastCheck = { by: me(), role: $("#role").value, time: now(), errors: errs, hints, fixes: fixesMade(), copilot };
   tab = "checks";
   document.body.classList.add("drawer-open");
   renderSide();

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guideline Studio</title>
-<link rel="stylesheet" href="./studio.css?v=20261126220020">
+<link rel="stylesheet" href="./studio.css?v=20261126221102">
 </head>
 <body>
 <!-- The article, as on the portal. Every text is editable in place. -->
@@ -26,6 +26,9 @@
   <span>Privacy</span><span>Legal Disclosure</span><span>Copyright</span><span>Terms of Use</span><span>Cookie Preferences</span>
 </footer>
 
+<!-- Question before AEM: run the check or skip it -->
+<dialog id="gate" class="gate"></dialog>
+
 <!-- Message box: shows saving, saved and errors -->
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
@@ -34,6 +37,7 @@
   <select id="guideline" title="Guideline"></select>
   <input id="version" placeholder="Version" size="7" title="Version of this update, for example v1-158. Saves go to a branch named <version>/<guideline>.">
   <span id="status" class="pill"></span>
+  <span id="checkbadge" class="checkbadge none" role="button" tabindex="0"></span>
   <span id="tools" class="tools">
     <button data-cmd="bold" title="Bold"><b>B</b></button>
     <button data-cmd="italic" title="Italic"><i>I</i></button>
@@ -73,6 +77,6 @@
 </aside>
 
 <input type="file" id="file" accept="image/png" hidden>
-<script type="module" src="./dist/main.js?v=20261126220020"></script>
+<script type="module" src="./dist/main.js?v=20261126221102"></script>
 </body>
 </html>
