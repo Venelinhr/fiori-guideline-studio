@@ -201,3 +201,6 @@ h5 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spac
 .missing p { margin: 0; }
 .missing button { align-self: flex-start; border: 1px solid #0070f2; background: #0070f2; color: #fff; border-radius: 8px; padding: 8px 14px; font: 600 14px var(--font); cursor: pointer; }
 .workbar #version { width: 90px; border: 1px solid #5b738b; border-radius: 8px; padding: 4px 8px; min-height: 30px; }
+
+.commit-link { color: var(--link); font-weight: 600; text-decoration: none; white-space: nowrap; padding: 0 4px; }
+.commit-link:hover { text-decoration: underline; }

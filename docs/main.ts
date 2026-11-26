@@ -467,6 +467,7 @@ function renderBar() {
   const st = review.state.status ?? "draft", role = $<HTMLSelectElement>("#role").value;
   const pill = $("#status"); pill.textContent = STATUS[st]; pill.className = `pill ${st}`;
   const c = $<HTMLButtonElement>("#commit"); c.disabled = !dirty; c.textContent = branch === gh.MAIN ? "Save version (new update)" : "Save version";
+  const cl = $<HTMLAnchorElement>("#commitlink"); cl.href = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
   const a = $("#actions"); a.replaceChildren();
   const add = (text: string, fn: () => void, cls: string, off = "") => { const b = btn(text, fn, cls); if (off) { b.disabled = true; b.title = off; } a.append(b); };
   if (role === "designer" && (st === "draft" || st === "changes")) add("Send for review", () => sign("sent", "review"), "primary", errors() ? "Fix the errors in Checks first" : "");
@@ -510,12 +511,6 @@ $("#tools").addEventListener("mousedown", (e) => {
   const kind = F.get(el.dataset.key!)!.kind; if (kind === "plain" || (kind === "inline" && b.dataset.cmd!.startsWith("insert"))) return;
   if (b.dataset.cmd === "link") { const url = window.prompt("Link address (https://…). Leave empty to remove the link."); if (url === null) return; if (!url.trim()) document.execCommand("unlink"); else if (/^https?:\/\//i.test(url.trim())) document.execCommand("createLink", false, url.trim()); }
   else document.execCommand(b.dataset.cmd!);
-});
-// Copies the link to the last saved change. Without one yet, it copies the link to the branch history.
-$("#copylink").addEventListener("click", async () => {
-  const url = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
-  try { await navigator.clipboard.writeText(url); toast(`Copied: ${url}`, "ok"); }
-  catch { toast(`Could not copy. Select and copy this link: ${url}`, "err"); }
 });
 $("#drawerBtn").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
 $("#drawerClose").addEventListener("click", () => document.body.classList.remove("drawer-open"));

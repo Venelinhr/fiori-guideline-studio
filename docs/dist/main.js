@@ -1172,6 +1172,8 @@ function renderBar() {
   const c = $("#commit");
   c.disabled = !dirty;
   c.textContent = branch === MAIN ? "Save version (new update)" : "Save version";
+  const cl = $("#commitlink");
+  cl.href = lastCommitUrl || `https://github.com/${REPO}/commits/${branch}`;
   const a = $("#actions");
   a.replaceChildren();
   const add = (text, fn, cls, off = "") => {
@@ -1301,15 +1303,6 @@ $("#tools").addEventListener("mousedown", (e) => {
     if (!url.trim()) document.execCommand("unlink");
     else if (/^https?:\/\//i.test(url.trim())) document.execCommand("createLink", false, url.trim());
   } else document.execCommand(b.dataset.cmd);
-});
-$("#copylink").addEventListener("click", async () => {
-  const url = lastCommitUrl || `https://github.com/${REPO}/commits/${branch}`;
-  try {
-    await navigator.clipboard.writeText(url);
-    toast(`Copied: ${url}`, "ok");
-  } catch {
-    toast(`Could not copy. Select and copy this link: ${url}`, "err");
-  }
 });
 $("#drawerBtn").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
 $("#drawerClose").addEventListener("click", () => document.body.classList.remove("drawer-open"));
