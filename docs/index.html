@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guideline Studio</title>
+<link rel="stylesheet" href="./studio.css">
+</head>
+<body>
+<header id="bar">
+  <strong class="brand">Guideline Studio</strong>
+  <select id="guideline" title="Guideline"></select>
+  <span id="status" class="pill"></span>
+  <span class="grow"></span>
+  <span id="saved" class="muted"></span>
+  <input id="token" type="password" size="16" title="GitHub token with Contents and Pull requests write access to this repo. Stored in this browser only." autocomplete="off">
+  <button id="commit" class="primary" disabled>Save version</button>
+  <label class="who">I am <input id="name" placeholder="Your name" size="12"></label>
+  <select id="role" title="Your role">
+    <option value="designer">Designer</option>
+    <option value="writer">UX writer</option>
+    <option value="editor">Editor</option>
+  </select>
+  <label class="toggle" title="Your text changes become suggestions. The article does not change until someone accepts."><input type="checkbox" id="suggest"> Suggest mode</label>
+  <span id="actions"></span>
+</header>
+<div id="tools">
+  <button data-cmd="bold" title="Bold"><b>B</b></button>
+  <button data-cmd="italic" title="Italic"><i>I</i></button>
+  <button data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+  <button data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+  <button data-cmd="link" title="Add or change a link">Link</button>
+  <span class="muted">Click any text to change it. Click an image to replace it.</span>
+  <span class="grow"></span>
+  <span class="muted test">Connected to GitHub (public test repo). Jira and AEM: not connected yet.</span>
+</div>
+<main>
+  <article id="page"></article>
+  <aside id="side">
+    <nav id="tabs">
+      <button data-tab="checks">Checks</button>
+      <button data-tab="changes">What changed</button>
+      <button data-tab="history">Text history</button>
+      <button data-tab="jira">Jira</button>
+    </nav>
+    <div id="panel"></div>
+  </aside>
+</main>
+<input type="file" id="file" accept="image/png" hidden>
+<script type="module" src="./dist/main.js"></script>
+</body>
+</html>

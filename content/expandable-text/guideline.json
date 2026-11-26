@@ -1,0 +1,580 @@
+{
+  "meta": {
+    "figmaUrl": "https://www.figma.com/design/M0n1mwb5Jv5cd2XFDH55ns/TEST",
+    "fileKey": "M0n1mwb5Jv5cd2XFDH55ns"
+  },
+  "model": {
+    "component": "expandable-text",
+    "source": "figma",
+    "sections": [
+      {
+        "title": "Message Strip",
+        "noTitle": true,
+        "blocks": [
+          {
+            "type": "message-strip",
+            "style": "information",
+            "html": "<p>This guideline now covers both SAPUI5 and SAP Web Components. Learn More.</p>"
+          }
+        ]
+      },
+      {
+        "title": "Intro",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2714",
+            "figmaName": "01_Expandable text_Intro_v1.151",
+            "caption": "Expandable text",
+            "variant": "large",
+            "alt": "An expandable text in the collapsed state, showing 'The request includes read access to the financial reporting module and write access to...' followed by a 'Show More' link."
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Component availability",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>This component is available in the following libraries:</p>"
+          },
+          {
+            "type": "table",
+            "rows": [
+              [
+                "<strong>Library</strong>",
+                "<strong>Technical Name</strong>",
+                "<strong>Identifier</strong>"
+              ],
+              [
+                "SAPUI5 Demo Kit",
+                "<a href=\"https://ui5.sap.com/#/entity/sap.m.ExpandableText\">sap.m.ExpandableText</a>",
+                "<p>:badge, info, large, _, SAPUI5:</p>"
+              ],
+              [
+                "SAP Web Components",
+                "<a href=\"https://ui5.github.io/webcomponents/components/ExpandableText/\">ui5-expandable-text</a>",
+                "<p>:badge, info, large, _, SAP Web Components:</p>"
+              ],
+              [
+                "SAP Web UI Kit (Figma)",
+                "<a href=\"https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=1216-2955\">Expandable text</a>",
+                "<p>:badge, info, large, _, Figma:</p>"
+              ]
+            ]
+          },
+          {
+            "type": "info",
+            "infoClass": "toptip",
+            "html": "<ul><li>Choose inline expansion when space allows and the surrounding context helps users understand the full text.</li><li>Choose expanded in <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/popover\">popover</a> mode when inline expansion would disrupt the layout.</li><li>Set the character limit based on the use case. For example, a form and a list row may need very different thresholds.</li><li>Rewrite the text instead of relying on truncation whenever it can be shortened without losing meaning.</li><li>Use expandable text only for optional details. If users need the full content to complete a task, show it by default.</li></ul>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "When to Use",
+        "blocks": [
+          {
+            "type": "when-to-use",
+            "items": [
+              {
+                "doOrDont": "do",
+                "html": "<p>Use the expandable text to:</p><ul><li>Handle long texts or descriptions inside a responsive table, list or form.</li><li>Provide access to truncated text.</li></ul>",
+                "showDivider": false
+              },
+              {
+                "doOrDont": "dont",
+                "html": "<p>Don't use the expandable text to:</p><ul><li>Handle text overflow in UI tables (grid table, tree table, analytical table) or the Gantt chart.</li><li>Display content for which a short and meaningful alternative exists.</li><li>Hide only non-critical content. Use short descriptions that fit into the available space instead.</li></ul>",
+                "showDivider": false
+              }
+            ]
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Anatomy",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The expandable text consists of the following elements:</p>"
+          },
+          {
+            "type": "text",
+            "html": "<ol><li><strong>Main text: </strong>The truncated content displayed when the component is in its collapsed state.</li><li><strong>Popover with expanded text: </strong>A floating container that displays the full text content. The <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/popover\">popover</a> can include an arrow pointer on any of its four sides.</li><li><strong>Expand/collapse link: </strong>A <em>Show More</em>/<em>Show Less</em> link that expands or collapses the component.</li></ol><p><strong>Note</strong>: The <em>Show More</em>/<em>Show Less</em> link labels are predefined and cannot be changed. Translations are handled automatically by the component.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2789",
+            "figmaName": "02_Expandable text_Anatomy_v1.151",
+            "caption": "Expandable text anatomy",
+            "variant": "large",
+            "alt": "Anatomy diagram of an Expandable text with three numbered callout labels: (1) the main text in its collapsed state with truncated content, (2) the 'Show More' expand text link, and (3) a popover on the right displaying the full text."
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Types",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Collapsed text",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The initial state of the component. Content is truncated and followed by a <em>Show More </em>link.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2816",
+            "figmaName": "03_Expandable Text_Types_v1.151",
+            "caption": "Expandable text - collapsed",
+            "variant": "large",
+            "alt": "An expandable text in the collapsed state, showing 'This is a product description. It provides supplementary information about the item without taking...' followed by a 'Show More' link."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Expanded in place",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Displays the full content within the same container, replacing the truncated text. Show <em>Less link</em> is added at the end to let the user collapse it back.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2831",
+            "figmaName": "04_Expandable Text_Types_v1.151",
+            "caption": "Expandable text - expanded in place",
+            "variant": "large",
+            "alt": "An expandable text expanded in place, showing the full paragraph text ending with '...revealed only when the user needs more context.' followed by a 'Show Less' link."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Expanded in popover",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Displays the full content in a floating popover positioned relative to the expand text link - see the <a href=\"https://www.figma.com/design/6ABLVcHviDazNmcCG503pg?node-id=11-2458\">Anatomy section.</a></p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "States",
+        "blocks": []
+      },
+      {
+        "title": "Component states",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The enabled state is the default state of the expandable text.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2855",
+            "figmaName": "05_Expandable Text_States_v1.151",
+            "caption": "Enabled state of the expandable text",
+            "variant": "large",
+            "alt": "An expandable text in the enabled component state, showing the full paragraph text ending with '...revealed only when the user needs more context.' followed by a 'Show Less' link."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Interaction states",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The expandable text component inherits the interaction states for the Show More/Show Less link only. </p><p><strong>A. Regular: </strong>The default state of the link.</p><p><strong>B. Hover: </strong>Displayed when the cursor moves over the link.</p><p><strong>C. Down: </strong>Displayed while the link is being activated.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2870",
+            "figmaName": "06_Expandable Text_States_v1.151",
+            "caption": "For more information, see Interaction States.",
+            "variant": "large",
+            "alt": "Three expandable text items labeled A–C showing truncated text. B displays an underlined \"Show More\" link, while A and C do not."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Focus",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The focus state indicates the element that currently has keyboard focus. In the expandable text component, focus is applied to the Show More/Show Less link only.</p><p><strong>A. Unfocused:</strong> The default state of the link when it has not received focus.</p><p><strong>B. Focused: </strong>Displayed when the link receives focus, visualized with a focus highlight around it.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2896",
+            "figmaName": "07_Expandable Text_States_v1.151",
+            "caption": "For more information, see Focus state.",
+            "variant": "large",
+            "alt": "Two expandable text items labeled A and B, each showing truncated text. B displays a blue focus outline around the \"Show More\" link, while A does not."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Empty state",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Display an en dash (–) to denote empty content and make values easier to scan in forms and similar contexts.  The symbol may vary depending on the user's language.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2920",
+            "figmaName": "08_Expandable Text_States_v1.151",
+            "caption": "Expandable text - empty state",
+            "variant": "large",
+            "alt": "A responsive table with columns 'Product', 'Attribute 1', and 'Attribute 2': 'Product 1' shows truncated text 'This is a product description. It provides supplementary information about the item without taking...' in the Attribute 1 column, while 'Product 2' shows a dash (–) indicating no content."
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/foundations/best-practices/global-patterns/designing-for-empty-states\">Empty States</a>.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Behavior and Interaction",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Expanding/Collapsing",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The expandable text expands either inline or in a popover. Clicking <em>Show More</em> reveals the full content. The text is selectable and the user can copy it in both collapsed and expanded modes.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2955",
+            "figmaName": "09_Expandable Text_Behavior_And_Interaction_v1.151",
+            "caption": "",
+            "variant": "large",
+            "alt": "Two interaction steps labeled A and B: (A) a collapsed Expandable Text showing truncated text '...without taking... Show More', and (B) the same text expanded in place showing the full paragraph followed by a 'Show Less' link."
+          },
+          {
+            "type": "text",
+            "html": "<p>Collapsed (A) and expanded in place (B)</p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>Clicking Show Less or outside the popover collapses the text. </p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:2981",
+            "figmaName": "10_Expandable Text_Behavior_And_Interaction_v1.151",
+            "caption": "",
+            "variant": "large",
+            "alt": "Two interaction steps labeled C and D: (C) a collapsed Expandable Text showing truncated text '...without taking... Show More', and (D) a popover appearing alongside the text displaying the full paragraph ending with '...revealed only when the user needs more context.'"
+          },
+          {
+            "type": "text",
+            "html": "<p>Collapsed (C) and expanded in popover (D)</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Gestures & Mapping",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The behavior is similar to mouse interaction.</p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/foundations/interaction/gestures#tap-press-and-release\">Gestures</a>.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Responsiveness",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "0:3028",
+            "figmaName": "11_Expandable Text_Responsiveness_v1.151",
+            "caption": "Expandable text on mobile device",
+            "variant": "large",
+            "alt": "Two mobile layouts. The left shows collapsed expandable text with a \"Show More\" link, and the right shows the expanded text in a full-screen view with a \"Close\" button."
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/foundations/visual/cozy-compact\">Content Density</a>.</p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>The expandable text is responsive and supports all screen sizes. It does not change size between compact and cozy content densities.</p><p> The expandable text supports inline and popover expansion on all screen sizes. On mobile, popovers don't float, they open as a full-screen overlay, making it easier to read and interact with the content.</p>"
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Accessibility",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>SAP follows international standards, such as WCAG and WAI-ARIA, and strives to make our business solutions accessible and inclusive. For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/discover/sap-design-system/product-standards/accessibility-in-sap-fiori\">Accessibility in SAP Fiori</a> and the <a href=\"https://www.sap.com/documents/2023/11/bc210d8b-977e-0010-bca6-c68f7e60039b.html\">Accessibility Design Tools Handbook</a>. </p>"
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Keyboard Navigation",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Keyboard interaction is supported through the Show More / Show Less link, which follows the keyboard behavior of the <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/link\">Link</a> component.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Screen Reader Support",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Screen readers read plain text through the virtual cursor, also known as browse mode or the virtual PC cursor.</p><p>Plain text cannot receive keyboard focus, so users do not navigate to it using the Tab key. Instead, screen reader users read plain text using commands that move by line, word, character, heading, list, or section.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Content",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Wrapping and Truncation",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The expandable text wraps and truncates according to the available space. Text exceeding 100 characters is truncated and followed by a <em>Show More</em> link.</p><p><strong>A. More than 100 characters: </strong>Text truncates and shows a <em>Show More</em> link.</p><p><strong>B.</strong> <strong>Less than 100 characters: </strong>Text is displayed in full and no <em>Show More</em> link.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:3152",
+            "figmaName": "12_Expandable Text_Wrapping and Truncation_v1.151",
+            "caption": "Truncation in the expandable text",
+            "variant": "large",
+            "alt": "Two expandable text items labeled A and B: (A) shows truncated text '...without taking...' followed by a 'Show More' link, and (B) shows the shorter complete text 'This is a product description. It provides supplementary information.' with no expand link."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Hyphenation",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>When hyphenation is enabled, it affects both the collapsed and expanded states.</p><p><strong>A. Collapsed mode with hyphenation: </strong>Text truncates and shows a <em>Show More</em> link.</p><p><strong>B. Expanded in popover with hyphenation: </strong>The full content in the popover is displayed with hyphenation.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "0:3172",
+            "figmaName": "13_Expandable Text_Wrapping and Truncation_v1.151",
+            "caption": "Collapsed with hyphenation (A) and expanded in a popover with hyphenation (B)",
+            "variant": "large",
+            "alt": "Two expandable text items labeled A and B: (A) shows collapsed text with a 'Show More' link, and (B) shows the same collapsed text alongside an open popover displaying the full paragraph ending with '...revealed only when the user needs more context.'"
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/foundations/interaction/wrapping-and-truncation\">Wrapping &amp; Truncation</a>  and <a href=\"https://www.sap.com/design-system/fiori-design-web/foundations/writing-and-wording/ux-writing/wrapping-and-truncating-text\">Wrapping and Truncating Text</a>.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Localization",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The expandable text supports left-to-right (LTR) and right-to-left (RTL) reading directions. All features are supported in both directions.</p>"
+          },
+          {
+            "type": "columns",
+            "columnCount": 2,
+            "columns": [
+              [
+                {
+                  "type": "image",
+                  "ref": "0:3201",
+                  "figmaName": "14_Expandable Text_Localization_v1.151",
+                  "caption": "Expandable text in left-to-right mode",
+                  "variant": "small",
+                  "alt": "Expandable text with left-aligned English text followed by a \"Show More\" link."
+                }
+              ],
+              [
+                {
+                  "type": "image",
+                  "ref": "0:3209",
+                  "figmaName": "15_Expandable Text_Localization_v1.151",
+                  "caption": "Expandable text in right-to-left mode",
+                  "variant": "small",
+                  "alt": "Expandable text with right-aligned Arabic text followed by a \"Show More\" link in Arabic."
+                }
+              ]
+            ]
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Features",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Preserve white space",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "0:3225",
+            "caption": "",
+            "figmaName": "16_Expandable Text_Features_v1.151",
+            "variant": "large",
+            "alt": "Two expandable text items labeled A and B: (A) shows text with consecutive whitespaces collapsed to normal spacing by the browser, and (B) shows the same text with whitespaces preserved, resulting in visibly expanded spacing between words."
+          },
+          {
+            "type": "text",
+            "html": "<p>Expandable text with preserved white spaces</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Text align",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "0:3245",
+            "caption": "",
+            "figmaName": "17_Expandable Text_Features_v1.151",
+            "variant": "large",
+            "alt": "Three expandable text items labeled A, B, and C showing different text alignment options: (A) left-aligned text with a left-aligned 'Show More' link, (B) center-aligned text with a centered 'Show More' link, and (C) right-aligned text with a right-aligned 'Show More' link."
+          },
+          {
+            "type": "text",
+            "html": "<p>Text alignment - left, right, and center</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Framework Comparison",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>There are no differences between SAPUI5 and SAP Web Components regarding thе component's behaviors and framework-specific patterns.</p>"
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Related Links",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Guidelines",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Components</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text\">Text</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link\">Link</a> </p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover\">Popover</a> </p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Implementation",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>SAPUI5</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.ExpandableText\">Expandable text</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/api/sap.m.ExpandableText\">Expandable text</a> (API reference)</p><p>UI5 Web Components</p><p><a href=\"https://ui5.github.io/webcomponents/components/ExpandableText/\">Expandable text</a></p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Specifications",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p><a href=\"https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698915836/Text+Horizon\">Text</a> (visual design)</p><p><a href=\"https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698914103/Link+Horizon\">Link</a> (visual design)</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "SAP Web UI Kit",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p><a href=\"https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=224294-72\">Text</a></p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Related Links (external only)",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Guidelines",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Components</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text\">Text</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link\">Link</a> </p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover\">Popover</a> </p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Implementation",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>SAPUI5</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.ExpandableText\">Expandable text</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/api/sap.m.ExpandableText\">Expandable text</a> (API reference)</p><p>UI5 Web Components</p><p><a href=\"https://ui5.github.io/webcomponents/components/ExpandableText/\">Expandable text</a></p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "UI Kit (Figma)",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p><a href=\"https://www.figma.com/community/file/1494295794601744471\">SAP Fiori for Web UI Kit </a><a href=\"https://www.figma.com/community/file/1494295794601744471\">/</a></p><p>Text</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      }
+    ],
+    "pageTitle": "Expandable Text"
+  },
+  "mergedDuplicateSections": [],
+  "textFramesConverted": [],
+  "removedNonGuidelineImages": []
+}
