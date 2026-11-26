@@ -597,7 +597,7 @@ const DEFAULT_NAMES: Record<string, string> = { designer: "Veni", writer: "Alex"
 const namesByRole = (): Record<string, string> => { try { return { ...DEFAULT_NAMES, ...JSON.parse(store.get("names") || "{}") }; } catch { return { ...DEFAULT_NAMES }; } };
 const shownName = (role: string) => namesByRole()[role] ?? "";
 $("#name").addEventListener("change", () => { const r = $<HTMLSelectElement>("#role").value; const all = namesByRole(); all[r] = $<HTMLInputElement>("#name").value.trim(); store.set("names", JSON.stringify(all)); });
-$("#role").addEventListener("change", () => { const r = $<HTMLSelectElement>("#role").value; store.set("role", r); $<HTMLInputElement>("#name").value = shownName(r); $<HTMLInputElement>("#suggest").checked = r === "writer"; renderBar(); renderSide(); });
+$("#role").addEventListener("change", () => { const r = $<HTMLSelectElement>("#role").value; store.set("role", r); $<HTMLInputElement>("#name").value = shownName(r); $<HTMLInputElement>("#suggest").checked = r === "writer"; renderPage(); renderBar(); renderSide(); });
 $("#suggest").addEventListener("change", renderSide);
 $("#guideline").addEventListener("change", () => { location.hash = `#/${$<HTMLSelectElement>("#guideline").value}`; });
 window.addEventListener("hashchange", route);

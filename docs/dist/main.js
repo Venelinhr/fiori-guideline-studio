@@ -1440,6 +1440,7 @@ $("#role").addEventListener("change", () => {
   store.set("role", r);
   $("#name").value = shownName(r);
   $("#suggest").checked = r === "writer";
+  renderPage();
   renderBar();
   renderSide();
 });
