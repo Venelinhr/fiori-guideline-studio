@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guideline Studio</title>
-<link rel="stylesheet" href="./studio.css?v=20261126221226">
+<link rel="stylesheet" href="./studio.css?v=20261126222914">
 </head>
 <body>
 <!-- The article, as on the portal. Every text is editable in place. -->
@@ -34,8 +34,8 @@
 
 <!-- Work bar: the only part that is not the template -->
 <div id="bar" class="workbar">
-  <select id="guideline" title="Guideline"></select>
-  <input id="version" placeholder="Version" size="7" title="Version of this update, for example v1-158. Saves go to a branch named <version>/<guideline>.">
+  <select id="guideline" title="Guideline" hidden></select>
+  <input id="version" hidden placeholder="Version" size="7" title="Version of this update, for example v1-158. Saves go to a branch named <version>/<guideline>.">
   <span id="status" class="pill"></span>
   <span id="checkbadge" class="checkbadge none" role="button" tabindex="0"></span>
   <span id="tools" class="tools">
@@ -77,6 +77,6 @@
 </aside>
 
 <input type="file" id="file" accept="image/png" hidden>
-<script type="module" src="./dist/main.js?v=20261126221226"></script>
+<script type="module" src="./dist/main.js?v=20261126222914"></script>
 </body>
 </html>

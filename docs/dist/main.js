@@ -1121,7 +1121,7 @@ function renderSide() {
     p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
-    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lc.errors} errors, ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made \xB7 Copilot: ${lc.copilot}${checkIsStale() ? " \xB7 the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
+    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lc.errors} errors, ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made ${lc.copilot.startsWith("review requested") ? "\xB7 Copilot review requested" : ""}${checkIsStale() ? " \xB7 the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
     const cop = h("div", "fc");
     cop.append(h("p", "", "Copilot chat: ask your GitHub Copilot to review this article."), btn("Copy the prompt and open Copilot", () => {
       askCopilotChat();
@@ -1330,7 +1330,7 @@ function statusCard() {
   const st = review.state.status ?? "draft", ed = lastSign("editor");
   const ch = changesVsBaseline();
   const acc = ch.some((c) => /^Accessibility/i.test(c.f.section));
-  const img = review.history.some((x) => x.kind === "image") || ch.some((c) => c.f.label.startsWith("Image"));
+  const img = review.history.some((x) => x.kind === "image");
   const warn = findings.filter((f) => f.severity === "warning").length;
   const after = (...s) => s.includes(st);
   return [
@@ -1747,7 +1747,7 @@ async function runCheck() {
   renderSide();
   renderBar();
   save();
-  toast(`Check done: ${errs} error${errs === 1 ? "" : "s"}, ${hints} hints. Copilot: ${copilot}.`, errs ? "err" : "ok");
+  toast(`Check done: ${errs} error${errs === 1 ? "" : "s"}, ${hints} hint${hints === 1 ? "" : "s"}.${copilot.startsWith("review requested") ? " Copilot review requested on the pull request." : ""}`, errs ? "err" : "ok");
 }
 async function load(s, v = "", allowStart = false) {
   slug2 = s;
