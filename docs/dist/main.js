@@ -1301,6 +1301,7 @@ async function load(s) {
       const who = await whoami();
       showToken(`Connected to GitHub as ${who}. You can save versions now.`, true);
     } catch (e) {
+      tokenBox.placeholder = "Token not accepted";
       showToken(e.message, false);
     }
   };

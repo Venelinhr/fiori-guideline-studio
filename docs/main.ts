@@ -506,7 +506,7 @@ async function load(s: string) {
     if (!gh.getToken()) { tokenBox.placeholder = "Paste GitHub token"; return; }
     tokenBox.placeholder = "Token saved ✓"; renderBar();
     try { const who = await gh.whoami(); showToken(`Connected to GitHub as ${who}. You can save versions now.`, true); }
-    catch (e) { showToken((e as Error).message, false); }
+    catch (e) { tokenBox.placeholder = "Token not accepted"; showToken((e as Error).message, false); }
   };
   tokenBox.addEventListener("change", () => { const v = tokenBox.value.trim(); if (!v) return; gh.setToken(v); tokenBox.value = ""; checkToken(); });
   checkToken();
