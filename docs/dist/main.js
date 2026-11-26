@@ -1313,10 +1313,11 @@ $("#version").addEventListener("change", () => {
   }
   location.hash = `#/${v}/${slug2}`;
 });
+var slugOf = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 function route() {
   const parts = decodeURIComponent(location.hash.replace(/^#\/?/, "")).split("/").filter(Boolean);
-  const s = parts[parts.length - 1] ?? "";
-  const v = parts.length > 1 ? parts[0] : "";
+  const s = slugOf(parts[parts.length - 1] ?? "");
+  const v = parts.length > 1 ? parts[0].toLowerCase() : "";
   if (!s) return;
   load(s, v).catch((e) => toast(`Could not open ${s}: ${e.message}`, "err"));
 }
