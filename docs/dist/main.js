@@ -847,7 +847,13 @@ function toast(msg, kind, link) {
   clearTimeout(toastTimer);
   if (kind === "ok") toastTimer = window.setTimeout(() => t.hidden = true, 8e3);
 }
-async function commitVersion(message) {
+var saveChain = Promise.resolve();
+function commitVersion(message) {
+  const run = saveChain.then(() => doCommit(message));
+  saveChain = run.catch(() => void 0);
+  return run;
+}
+async function doCommit(message) {
   toast("Saving to GitHub\u2026", "busy");
   $("#commit").disabled = true;
   $("#commit").textContent = "Saving\u2026";

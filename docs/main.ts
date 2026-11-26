@@ -278,7 +278,14 @@ function toast(msg: string, kind: "busy" | "ok" | "err", link?: { href: string; 
   t.hidden = false; clearTimeout(toastTimer);
   if (kind === "ok") toastTimer = window.setTimeout(() => (t.hidden = true), 8000);
 }
-async function commitVersion(message: string): Promise<void> {
+// Saves run one after another. Two overlapping saves would make GitHub refuse the second one.
+let saveChain: Promise<void> = Promise.resolve();
+function commitVersion(message: string): Promise<void> {
+  const run = saveChain.then(() => doCommit(message));
+  saveChain = run.catch(() => undefined);
+  return run;
+}
+async function doCommit(message: string): Promise<void> {
   toast("Saving to GitHub…", "busy");
   $<HTMLButtonElement>("#commit").disabled = true; $("#commit").textContent = "Saving…";
   docRef.model = model;
