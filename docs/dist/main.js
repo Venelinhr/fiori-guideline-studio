@@ -1377,26 +1377,21 @@ async function sign(action, status) {
   try {
     (review.state.signoffs ??= []).push({ role: $("#role").value, name: who, action, time: now() });
     review.state.status = status;
-    if (action === "sent" || action === "to-writer" || action === "to-editor") {
-      const had = !!review.state.pr;
-      await commitVersion(`${title()}: ${action === "to-editor" ? "sent to editor" : "sent to UX writer"} by ${who}`);
-      const pr = await openPR(
+    const said = { sent: "sent to UX writer", "to-writer": "sent to UX writer", "to-editor": "sent to editor", returned: "returned to designer", back: "sent back to designer", approved: "approved", uploaded: "marked uploaded to AEM" };
+    await commitVersion(`${title()}: ${said[action] ?? action} by ${who}`);
+    if (action === "approved") {
+      const lc = review.state.lastCheck;
+      let pr = review.state.pr ?? await findPR(targetBranch());
+      if (!pr) pr = await openPR(
         targetBranch(),
         `${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
-        `Sent for review by ${who}.
+        `Approved by ${who} (editor).
 
-Checks: ${errors()} errors, ${findings.filter((f) => f.severity === "warning").length} warnings.
-Open text suggestions: ${opens().length}.`
+${lc ? `${lc.skipped ? "Check skipped" : "Check run"} by ${lc.by} on ${lc.time}: ${lc.errors} errors, ${lc.hints} recommendations, ${lc.fixes} fixes made.` : "No check was run."}`
       );
       review.state.pr = pr;
-      if (!had) await commitVersion(`${title()}: pull request #${pr.number}`);
-    } else {
-      await commitVersion(`${title()}: ${action} by ${who}`);
-      if (action === "approved") {
-        const n = review.state.pr?.number ?? (await findPR(targetBranch()))?.number;
-        if (!n) throw new Error("No open pull request for this version. Send it to the UX writer first.");
-        await merge(n);
-      }
+      await commitVersion(`${title()}: pull request #${pr.number}`);
+      await merge(pr.number);
     }
   } catch (e) {
     review.state.signoffs = (review.state.signoffs ?? []).slice(0, n0);
@@ -1465,7 +1460,9 @@ function renderBar() {
   }
   if (role === "editor" && stage === "editor") {
     add("Send back to designer", () => sign("back", "designer"), "");
-    add("Approve", () => sign("approved", "approved"), "ok", opens().length ? "Open suggestions are still waiting for the designer" : errors() ? "Fix the errors yourself, or send it back to the designer" : "");
+    add("Approve", async () => {
+      if (await gateOk()) sign("approved", "approved");
+    }, "ok", opens().length ? "Open suggestions are still waiting for the designer" : "");
   }
   if (role === "editor" && stage === "approved") {
     const fc = finalCheck2?.state;
