@@ -1,0 +1,35 @@
+# AI check in the background. Started by hand or by the editor's "Run check" button. No pull request needed.
+# It reads the article on the chosen branch, asks a model (GitHub Models) to check it with the rules in
+# .github/copilot-instructions.md, and saves the report in content/<guideline>/review/ai-report.json on that branch.
+name: AI check
+on:
+  workflow_dispatch:
+    inputs:
+      slug: { description: "Guideline folder, for example expandable-text", required: true }
+      ref: { description: "Branch with the article, for example v1-157/expandable-text", required: true }
+      commit: { description: "Save the report on the branch", required: false, default: "true" }
+permissions:
+  contents: write
+  models: read
+jobs:
+  ai:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check the article
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ai-check.mjs "${{ inputs.slug }}" ${{ inputs.commit == 'true' && '--commit' || '' }}
+      - name: Save the report on the branch
+        if: ${{ inputs.commit == 'true' }}
+        run: |
+          git config user.name "guideline-bot"
+          git config user.email "guideline-bot@users.noreply.github.com"
+          git add "content/${{ inputs.slug }}/review/ai-report.json"
+          git diff --cached --quiet || git commit -m "AI check report for ${{ inputs.slug }}"
+          git push origin "HEAD:${{ inputs.ref }}"
