@@ -24,6 +24,20 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 let branch = gh.MAIN, version = "", docRef: any = {}, dirty = false;
 // Link to the last saved change on this branch. It is kept after a reload.
 let lastCommitUrl = "";
+// Result of the final check (rules and writing patterns) that GitHub runs after the editor approves.
+let finalCheck: gh.CheckResult | null = null, finalTimer = 0;
+async function refreshFinalCheck(): Promise<void> {
+  try { finalCheck = await gh.finalCheck(slug); } catch (e) { finalCheck = { state: "error", description: (e as Error).message }; }
+  renderBar(); if (tab === "aem") renderSide();
+}
+// After the editor approves, the check needs about a minute. Look every 8 seconds, up to 4 minutes.
+function pollFinalCheck(round = 0) {
+  clearTimeout(finalTimer);
+  finalTimer = window.setTimeout(async () => {
+    await refreshFinalCheck();
+    if ((!finalCheck || finalCheck.state === "none" || finalCheck.state === "pending") && round < 30) pollFinalCheck(round + 1);
+  }, 8000);
+}
 // Saves go to <version>/<component>. Without a version nothing can be saved.
 function targetBranch(): string {
   if (!version) throw new Error("Set the version first in the bar, for example v1-158.");
@@ -430,6 +444,21 @@ function renderSide() {
     p.append(h("p", "muted", "Preview only. Jira is not connected yet. The GitHub pull request is the record for now."));
   }
 }
+// Final check: rules and writing patterns, run by GitHub after the editor approves. Upload to AEM waits for it.
+function renderFinalCheck(p: HTMLElement, ready: boolean) {
+  p.append(h("h5", "", "Final check before AEM"));
+  if (!ready) { p.append(h("p", "muted", "Runs by itself after the editor clicks Approve. It checks the rules, wording, full stops, commas, alt text and links.")); return; }
+  const fc = finalCheck, wrap = h("div", "fc");
+  const say = (icon: string, text: string) => wrap.append(h("p", "", `${icon} ${text}`));
+  if (!fc || fc.state === "none" || fc.state === "pending") say("⏳", "Running. This takes about a minute.");
+  else if (fc.state === "success") say("✅", `Passed. ${fc.description}`);
+  else if (fc.state === "failure") say("❌", `Not passed. ${fc.description}`);
+  else say("⚠️", `Could not read the result. ${fc.description}`);
+  if (fc?.url) { const a = h("a", "", "Open the full report ↗") as HTMLAnchorElement; a.href = fc.url; a.target = "_blank"; a.rel = "noopener"; wrap.append(a); }
+  const again = h("button", "small", "Refresh"); again.addEventListener("click", () => { finalCheck = null; renderSide(); refreshFinalCheck(); }); wrap.append(again);
+  if (fc?.state === "failure") wrap.append(h("p", "muted", "Fix the problems: the editor clicks Send back to designer. After the fix, the new version goes through the same steps."));
+  p.append(wrap);
+}
 // The AEM tab: where the approved article goes, and the approved files to take there.
 function renderAem(p: HTMLElement) {
   const stage = ((review.state.status as Stage | undefined) ?? "draft");
@@ -438,6 +467,7 @@ function renderAem(p: HTMLElement) {
   const link = (text: string, href: string) => { const a = h("a", "", text) as HTMLAnchorElement; a.href = href; a.target = "_blank"; a.rel = "noopener"; return a; };
   const line = (...n: Node[]) => { const d = h("div", "aem-line"); d.append(...n); return d; };
   p.append(h("h5", "", "Status"), h("p", "", ready ? "✅ Approved in GitHub. Ready for AEM." : `Not ready yet. The article is "${STATUS[stage]}". The editor approves first.`));
+  renderFinalCheck(p, ready);
   p.append(h("h5", "", "Where it goes in AEM"));
   const baseIn = h("input", "jirakey") as HTMLInputElement; baseIn.placeholder = "AEM folder link of the guidelines (paste once)"; baseIn.value = base;
   baseIn.addEventListener("change", () => { store.set("aem:base", baseIn.value.trim()); renderSide(); });
@@ -526,7 +556,8 @@ async function sign(action: string, status: Stage) {
     review.state.signoffs = (review.state.signoffs ?? []).slice(0, n0); review.state.status = prevStatus;
     saveFailed(e); return;
   }
-  tab = "jira"; document.body.classList.add("drawer-open"); renderPage(); renderSide(); renderBar();
+  if (status === "approved") { finalCheck = null; pollFinalCheck(); }
+  tab = status === "approved" ? "aem" : "jira"; document.body.classList.add("drawer-open"); renderPage(); renderSide(); renderBar();
 }
 function renderBar() {
   const raw = (review.state.status ?? "draft") as string, st = (LEGACY[raw] ?? raw) as Stage, role = $<HTMLSelectElement>("#role").value;
@@ -547,7 +578,11 @@ function renderBar() {
     add("Send back to designer", () => sign("back", "designer"), "");
     add("Approve", () => sign("approved", "approved"), "ok", opens().length ? "Open suggestions are still waiting for the designer" : "");
   }
-  if (role === "editor" && stage === "approved") add("Mark uploaded to AEM", () => sign("uploaded", "uploaded"), "primary");
+  if (role === "editor" && stage === "approved") {
+    const fc = finalCheck?.state;
+    if (fc === "failure") add("Send back to designer", () => sign("back", "designer"), "");
+    add("Mark uploaded to AEM", () => sign("uploaded", "uploaded"), "primary", fc === "success" ? "" : fc === "failure" ? "The final check found errors. Send it back to the designer." : "Wait for the final check to pass (see the AEM tab).");
+  }
   if (stage === "uploaded") add("Start a new update", () => { review.state.status = "draft"; renderPage(); renderBar(); renderSide(); save(); }, "");
 }
 
@@ -659,7 +694,8 @@ async function load(s: string, v = "", allowStart = false) {
   else dirty = false;
   assignIds(model); if (baseline) assignIds(baseline);
   F = collect(model); findings = auditModel(model, rules);
-  renderPage(); renderSide(); renderBar(); $("#saved").textContent = note;
+  finalCheck = null; renderPage(); renderSide(); renderBar(); $("#saved").textContent = note;
+  if (review.state.status === "approved" || review.state.status === "uploaded") refreshFinalCheck();
 }
 (async () => {
   rules = (await gh.rules()) as Rules;

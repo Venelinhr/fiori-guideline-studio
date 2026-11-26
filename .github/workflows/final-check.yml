@@ -1,0 +1,32 @@
+# Final check before AEM. Runs after the editor approves (the pull request is merged to main).
+# It checks every guideline and posts one result per guideline as a commit status "final-check/<guideline>".
+# The editor shows the result in the AEM tab. Upload to AEM is only offered when it passed.
+name: Final check
+on:
+  push:
+    branches: [main]
+    paths: ["content/**", "standards/**", "scripts/final-check.mjs"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  statuses: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run the rules and writing checks
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/final-check.mjs --publish
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-check-report
+          path: |
+            final-check-report.md
+            final-check-report.json

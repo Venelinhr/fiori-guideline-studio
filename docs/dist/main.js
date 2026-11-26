@@ -357,6 +357,11 @@ async function whoami() {
   if (!r.ok) throw new GhError(r.status, `GitHub answered ${r.status}. Try again.`);
   return (await r.json()).login;
 }
+async function finalCheck(slug3) {
+  const list = await api(`/commits/${MAIN}/statuses?per_page=100`);
+  const hit = list.find((x) => x.context === `final-check/${slug3}`);
+  return hit ? { state: hit.state, description: hit.description ?? "", url: hit.target_url ?? void 0, time: hit.updated_at } : { state: "none", description: "" };
+}
 function toBase64(buf) {
   let s = "";
   const u = new Uint8Array(buf);
@@ -392,6 +397,24 @@ var version = "";
 var docRef = {};
 var dirty = false;
 var lastCommitUrl = "";
+var finalCheck2 = null;
+var finalTimer = 0;
+async function refreshFinalCheck() {
+  try {
+    finalCheck2 = await finalCheck(slug2);
+  } catch (e) {
+    finalCheck2 = { state: "error", description: e.message };
+  }
+  renderBar();
+  if (tab === "aem") renderSide();
+}
+function pollFinalCheck(round = 0) {
+  clearTimeout(finalTimer);
+  finalTimer = window.setTimeout(async () => {
+    await refreshFinalCheck();
+    if ((!finalCheck2 || finalCheck2.state === "none" || finalCheck2.state === "pending") && round < 30) pollFinalCheck(round + 1);
+  }, 8e3);
+}
 function targetBranch() {
   if (!version) throw new Error("Set the version first in the bar, for example v1-158.");
   return branchName(version, slug2);
@@ -1113,6 +1136,35 @@ function renderSide() {
     p.append(h("p", "muted", "Preview only. Jira is not connected yet. The GitHub pull request is the record for now."));
   }
 }
+function renderFinalCheck(p, ready) {
+  p.append(h("h5", "", "Final check before AEM"));
+  if (!ready) {
+    p.append(h("p", "muted", "Runs by itself after the editor clicks Approve. It checks the rules, wording, full stops, commas, alt text and links."));
+    return;
+  }
+  const fc = finalCheck2, wrap = h("div", "fc");
+  const say = (icon2, text) => wrap.append(h("p", "", `${icon2} ${text}`));
+  if (!fc || fc.state === "none" || fc.state === "pending") say("\u23F3", "Running. This takes about a minute.");
+  else if (fc.state === "success") say("\u2705", `Passed. ${fc.description}`);
+  else if (fc.state === "failure") say("\u274C", `Not passed. ${fc.description}`);
+  else say("\u26A0\uFE0F", `Could not read the result. ${fc.description}`);
+  if (fc?.url) {
+    const a = h("a", "", "Open the full report \u2197");
+    a.href = fc.url;
+    a.target = "_blank";
+    a.rel = "noopener";
+    wrap.append(a);
+  }
+  const again = h("button", "small", "Refresh");
+  again.addEventListener("click", () => {
+    finalCheck2 = null;
+    renderSide();
+    refreshFinalCheck();
+  });
+  wrap.append(again);
+  if (fc?.state === "failure") wrap.append(h("p", "muted", "Fix the problems: the editor clicks Send back to designer. After the fix, the new version goes through the same steps."));
+  p.append(wrap);
+}
 function renderAem(p) {
   const stage = review.state.status ?? "draft";
   const ready = stage === "approved" || stage === "uploaded";
@@ -1130,6 +1182,7 @@ function renderAem(p) {
     return d;
   };
   p.append(h("h5", "", "Status"), h("p", "", ready ? "\u2705 Approved in GitHub. Ready for AEM." : `Not ready yet. The article is "${STATUS[stage]}". The editor approves first.`));
+  renderFinalCheck(p, ready);
   p.append(h("h5", "", "Where it goes in AEM"));
   const baseIn = h("input", "jirakey");
   baseIn.placeholder = "AEM folder link of the guidelines (paste once)";
@@ -1254,7 +1307,11 @@ Open text suggestions: ${opens().length}.`
     saveFailed(e);
     return;
   }
-  tab = "jira";
+  if (status === "approved") {
+    finalCheck2 = null;
+    pollFinalCheck();
+  }
+  tab = status === "approved" ? "aem" : "jira";
   document.body.classList.add("drawer-open");
   renderPage();
   renderSide();
@@ -1291,7 +1348,11 @@ function renderBar() {
     add("Send back to designer", () => sign("back", "designer"), "");
     add("Approve", () => sign("approved", "approved"), "ok", opens().length ? "Open suggestions are still waiting for the designer" : "");
   }
-  if (role === "editor" && stage === "approved") add("Mark uploaded to AEM", () => sign("uploaded", "uploaded"), "primary");
+  if (role === "editor" && stage === "approved") {
+    const fc = finalCheck2?.state;
+    if (fc === "failure") add("Send back to designer", () => sign("back", "designer"), "");
+    add("Mark uploaded to AEM", () => sign("uploaded", "uploaded"), "primary", fc === "success" ? "" : fc === "failure" ? "The final check found errors. Send it back to the designer." : "Wait for the final check to pass (see the AEM tab).");
+  }
   if (stage === "uploaded") add("Start a new update", () => {
     review.state.status = "draft";
     renderPage();
@@ -1537,10 +1598,12 @@ async function load(s, v = "", allowStart = false) {
   if (baseline) assignIds(baseline);
   F = collect(model);
   findings = auditModel(model, rules2);
+  finalCheck2 = null;
   renderPage();
   renderSide();
   renderBar();
   $("#saved").textContent = note;
+  if (review.state.status === "approved" || review.state.status === "uploaded") refreshFinalCheck();
 }
 (async () => {
   rules2 = await rules();

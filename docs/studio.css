@@ -211,3 +211,5 @@ h5 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spac
 .pill.uploaded { background: var(--do); color: #fff; }
 .aem-line { margin-bottom: 4px; }
 .drawer a { color: var(--link); }
+.fc { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.fc p { margin: 0; }

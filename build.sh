@@ -4,6 +4,7 @@
 set -e
 cd "$(dirname "$0")"
 "${ESBUILD:-esbuild}" docs/main.ts --bundle --format=esm --outfile=docs/dist/main.js --log-level=warning
+"${ESBUILD:-esbuild}" checks/final-check.ts --bundle --platform=node --format=esm --outfile=scripts/final-check.mjs --log-level=warning
 v=$(date +%Y%m%d%H%M%S)
 sed -i '' -E "s#\./studio\.css(\?v=[0-9]+)?#./studio.css?v=$v#; s#\./dist/main\.js(\?v=[0-9]+)?#./dist/main.js?v=$v#" docs/index.html
 echo "built $v"

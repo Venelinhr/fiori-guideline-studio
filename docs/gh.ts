@@ -113,6 +113,14 @@ export async function whoami(): Promise<string> {
   return (await r.json()).login as string;
 }
 
+// Result of the final check (GitHub Actions) for one guideline on main. Posted as the commit status "final-check/<slug>".
+export interface CheckResult { state: "success" | "failure" | "pending" | "error" | "none"; description: string; url?: string; time?: string }
+export async function finalCheck(slug: string): Promise<CheckResult> {
+  const list = await api<any[]>(`/commits/${MAIN}/statuses?per_page=100`); // newest first
+  const hit = list.find((x) => x.context === `final-check/${slug}`);
+  return hit ? { state: hit.state, description: hit.description ?? "", url: hit.target_url ?? undefined, time: hit.updated_at } : { state: "none", description: "" };
+}
+
 export function toBase64(buf: ArrayBuffer): string {
   let s = ""; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000));
   return btoa(s);
