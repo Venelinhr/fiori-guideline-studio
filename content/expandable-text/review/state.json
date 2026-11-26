@@ -6,7 +6,13 @@
       "name": "Venelin Hristov",
       "action": "sent",
       "time": "2026-11-26T18:39:12.606Z"
+    },
+    {
+      "role": "writer",
+      "name": "Alex",
+      "action": "returned",
+      "time": "2026-11-26T20:23:10.375Z"
     }
   ],
-  "status": "review"
+  "status": "designer"
 }
