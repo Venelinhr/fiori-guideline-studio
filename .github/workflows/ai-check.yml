@@ -16,17 +16,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
+          path: branch
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Check the article
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ARTICLE_DIR: branch
         run: node scripts/ai-check.mjs "${{ inputs.slug }}" ${{ inputs.commit == 'true' && '--commit' || '' }}
       - name: Save the report on the branch
         if: ${{ inputs.commit == 'true' }}
+        working-directory: branch
         run: |
           git config user.name "guideline-bot"
           git config user.email "guideline-bot@users.noreply.github.com"

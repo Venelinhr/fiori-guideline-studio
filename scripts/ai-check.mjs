@@ -6,8 +6,9 @@ import { readFileSync, writeFileSync, mkdirSync, appendFileSync } from "node:fs"
 const slug = process.argv[2]; const commit = process.argv.includes("--commit");
 if (!slug) { console.error("Usage: node scripts/ai-check.mjs <slug> [--commit]"); process.exit(2); }
 const MODEL = process.env.AI_MODEL || "openai/gpt-4.1";
+const dir0 = process.env.ARTICLE_DIR || "."; // the checked-out branch with the article. The script and the rules come from main.
 const rules = readFileSync(".github/copilot-instructions.md", "utf8");
-const article = readFileSync(`content/${slug}/guideline.md`, "utf8");
+const article = readFileSync(`${dir0}/content/${slug}/guideline.md`, "utf8");
 const system = `${rules}\n\nAnswer ONLY with JSON: {"findings":[{"where":"section > heading or first words","severity":"error|hint","problem":"what is wrong","original":"the exact wrong text","fix":"the corrected text"}]}. Return {"findings":[]} when nothing is wrong. Do not invent problems. Do not repeat what a correct sentence already does.`;
 const res = await fetch("https://models.github.ai/inference/chat/completions", {
   method: "POST",
@@ -23,4 +24,4 @@ const report = { time: new Date().toISOString(), model: MODEL, ref: process.env.
 const lines = [`## AI check: ${slug}`, `${report.errors} errors, ${report.hints} hints (model ${MODEL})`, "", ...findings.map((f) => `- **${f.severity}** · ${f.where}: ${f.problem}\n  - now: ${f.original}\n  - fix: ${f.fix}`)];
 console.log(lines.join("\n"));
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
-if (commit) { const dir = `content/${slug}/review`; mkdirSync(dir, { recursive: true }); writeFileSync(`${dir}/ai-report.json`, JSON.stringify(report, null, 2) + "\n"); }
+if (commit) { const dir = `${dir0}/content/${slug}/review`; mkdirSync(dir, { recursive: true }); writeFileSync(`${dir}/ai-report.json`, JSON.stringify(report, null, 2) + "\n"); }
