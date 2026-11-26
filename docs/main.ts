@@ -418,7 +418,7 @@ function renderSide() {
     const s = h("div", "sum"); s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at · ${findings.filter((f) => f.severity === "info").length} notes`)); p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
-    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) · ${when(lc.time)} · ${lc.errors} errors, ${lc.hints} recommendations, ${lc.fixes} fixes made · Copilot: ${lc.copilot}${checkIsStale() ? " · the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
+    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) · ${when(lc.time)} · ${lc.errors} errors, ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made · Copilot: ${lc.copilot}${checkIsStale() ? " · the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
     const cop = h("div", "fc"); cop.append(h("p", "", "Copilot chat: ask your GitHub Copilot to review this article."), btn("Copy the prompt and open Copilot", () => { askCopilotChat(); }, "small")); p.append(cop);
     for (const f of [...findings].sort((a, b) => order[a.severity] - order[b.severity])) {
       const keys = keysAt(f); const c = card([h("span", `sev ${f.severity}`, f.severity === "error" ? "Fix" : f.severity === "warning" ? "Look" : "Note"), f.where], document.createTextNode(f.message + (f.suggestion ? `\n→ ${f.suggestion}` : "")), keys[0]);
@@ -593,8 +593,8 @@ function renderBar() {
   const nice = (x: string) => new Date(x).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   if (!lc) { mark.className = "checkbadge none"; mark.textContent = "No check run yet"; mark.title = "Click Run check. A person can also skip it and check by hand."; }
   else if (lc.skipped) { mark.className = `checkbadge skipped${stale ? " stale" : ""}`; mark.textContent = `⏭ Check skipped by ${lc.by} · ${nice(lc.time)} · human check${stale ? " · text changed since" : ""}`; mark.title = "A person checked the article by hand."; }
-  else if (lc.errors === 0) { mark.className = `checkbadge pass${stale ? " stale" : ""}`; mark.textContent = `✓ Check passed · ${lc.by} · ${nice(lc.time)} · ${lc.errors} errors · ${lc.fixes} fixes · ${lc.hints} recommendations${stale ? " · text changed since" : ""}`; mark.title = "Click to see the report."; }
-  else { mark.className = `checkbadge fail${stale ? " stale" : ""}`; mark.textContent = `⚠ Check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} · ${lc.by} · ${nice(lc.time)} · ${lc.fixes} fixes`; mark.title = "Click to see the report."; }
+  else if (lc.errors === 0) { mark.className = `checkbadge pass${stale ? " stale" : ""}`; mark.textContent = `✓ Check passed · ${lc.by} · ${nice(lc.time)} · ${lc.errors} errors · ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} · ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}${stale ? " · text changed since" : ""}`; mark.title = "Click to see the report."; }
+  else { mark.className = `checkbadge fail${stale ? " stale" : ""}`; mark.textContent = `⚠ Check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} · ${lc.by} · ${nice(lc.time)} · ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"}`; mark.title = "Click to see the report."; }
   const c = $<HTMLButtonElement>("#commit"); c.disabled = !dirty; c.textContent = branch === gh.MAIN ? "Save version (new update)" : "Save version";
   const cl = $<HTMLAnchorElement>("#commitlink"); cl.href = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
   const a = $("#actions"); a.replaceChildren();

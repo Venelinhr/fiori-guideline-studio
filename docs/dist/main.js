@@ -1121,7 +1121,7 @@ function renderSide() {
     p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
-    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lc.errors} errors, ${lc.hints} recommendations, ${lc.fixes} fixes made \xB7 Copilot: ${lc.copilot}${checkIsStale() ? " \xB7 the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
+    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lc.errors} errors, ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made \xB7 Copilot: ${lc.copilot}${checkIsStale() ? " \xB7 the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
     const cop = h("div", "fc");
     cop.append(h("p", "", "Copilot chat: ask your GitHub Copilot to review this article."), btn("Copy the prompt and open Copilot", () => {
       askCopilotChat();
@@ -1431,11 +1431,11 @@ function renderBar() {
     mark.title = "A person checked the article by hand.";
   } else if (lc.errors === 0) {
     mark.className = `checkbadge pass${stale ? " stale" : ""}`;
-    mark.textContent = `\u2713 Check passed \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.errors} errors \xB7 ${lc.fixes} fixes \xB7 ${lc.hints} recommendations${stale ? " \xB7 text changed since" : ""}`;
+    mark.textContent = `\u2713 Check passed \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.errors} errors \xB7 ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} \xB7 ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}${stale ? " \xB7 text changed since" : ""}`;
     mark.title = "Click to see the report.";
   } else {
     mark.className = `checkbadge fail${stale ? " stale" : ""}`;
-    mark.textContent = `\u26A0 Check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.fixes} fixes`;
+    mark.textContent = `\u26A0 Check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"}`;
     mark.title = "Click to see the report.";
   }
   const c = $("#commit");
