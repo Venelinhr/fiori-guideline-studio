@@ -346,9 +346,6 @@ async function openPR(branch2, title2, body) {
   const pr = open[0] ?? await api(`/pulls`, { method: "POST", json: { title: title2, head: branch2, base: MAIN, body } }, true);
   return { number: pr.number, url: pr.html_url };
 }
-async function review(number, event, body) {
-  await api(`/pulls/${number}/reviews`, { method: "POST", json: { event, body } }, true);
-}
 async function merge(number) {
   await api(`/pulls/${number}/merge`, { method: "PUT", json: { merge_method: "squash" } }, true);
 }
@@ -406,7 +403,7 @@ var slug2 = "";
 var model;
 var baseline = null;
 var rules2;
-var review2 = { suggestions: [], history: [], state: {} };
+var review = { suggestions: [], history: [], state: {} };
 var F = /* @__PURE__ */ new Map();
 var findings = [];
 var tab = store.get("tab") || "checks";
@@ -559,8 +556,8 @@ function diffNode(a, b) {
   }
   return f;
 }
-var locked = () => review2.state.status === "shipped";
-var openSug = (key) => review2.suggestions.find((s) => s.key === key && s.status === "open");
+var locked = () => review.state.status === "uploaded" || review.state.status === "approved";
+var openSug = (key) => review.suggestions.find((s) => s.key === key && s.status === "open");
 function fieldEl(key, tag, ph = "") {
   const f = F.get(key);
   const sug = openSug(key);
@@ -809,14 +806,14 @@ var keysAt = (f) => {
 var me = () => $("#name").value.trim() || "Someone";
 var suggesting = () => $("#suggest").checked;
 function log(f, old, val, kind, author = me(), acceptedBy) {
-  review2.history.push({ key: f.key, label: f.label, section: f.section, old, new: val, author, time: now(), kind, ...acceptedBy ? { acceptedBy } : {} });
+  review.history.push({ key: f.key, label: f.label, section: f.section, old, new: val, author, time: now(), kind, ...acceptedBy ? { acceptedBy } : {} });
 }
 function commit(key, val, kind = "edit") {
   const f = F.get(key);
   if (!f || locked()) return;
   const old = f.get();
   if (old === val) return refreshField(key);
-  if (suggesting() && kind !== "restore") review2.suggestions.push({ id: uid(), key, label: f.label, section: f.section, old, new: val, author: me(), time: now(), status: "open" });
+  if (suggesting() && kind !== "restore") review.suggestions.push({ id: uid(), key, label: f.label, section: f.section, old, new: val, author: me(), time: now(), status: "open" });
   else {
     f.set(val);
     log(f, old, val, kind);
@@ -833,7 +830,7 @@ function changed(key) {
   save();
 }
 function editSuggestion(id) {
-  const s = review2.suggestions.find((x) => x.id === id);
+  const s = review.suggestions.find((x) => x.id === id);
   if (!s || s.status !== "open") return;
   const f = F.get(s.key);
   const cur = toText(s.new, f?.kind ?? "plain");
@@ -846,13 +843,13 @@ function editSuggestion(id) {
   changed(s.key);
 }
 function cancelSuggestion(id) {
-  const s = review2.suggestions.find((x) => x.id === id);
+  const s = review.suggestions.find((x) => x.id === id);
   if (!s || s.status !== "open") return;
-  review2.suggestions = review2.suggestions.filter((x) => x.id !== id);
+  review.suggestions = review.suggestions.filter((x) => x.id !== id);
   changed(s.key);
 }
 function decide(id, accept) {
-  const s = review2.suggestions.find((x) => x.id === id);
+  const s = review.suggestions.find((x) => x.id === id);
   if (!s || s.status !== "open") return;
   const f = F.get(s.key);
   if (accept && f) {
@@ -867,7 +864,7 @@ function decide(id, accept) {
 }
 function save() {
   dirty = true;
-  store.set(`draft:${slug2}`, JSON.stringify({ model, review: review2 }));
+  store.set(`draft:${slug2}`, JSON.stringify({ model, review }));
   $("#saved").textContent = "Changes not saved to GitHub yet";
   renderBar();
 }
@@ -908,9 +905,9 @@ async function doCommit(message) {
   const files = [
     { path: `${dir}/guideline.json`, content: JSON.stringify(docRef, null, 2) + "\n" },
     { path: `${dir}/guideline.md`, content: renderGuidelineMd(model, docRef.meta ?? {}) },
-    { path: `${dir}/review/suggestions.json`, content: JSON.stringify(review2.suggestions, null, 2) + "\n" },
-    { path: `${dir}/review/history.json`, content: JSON.stringify(review2.history, null, 2) + "\n" },
-    { path: `${dir}/review/state.json`, content: JSON.stringify(review2.state, null, 2) + "\n" }
+    { path: `${dir}/review/suggestions.json`, content: JSON.stringify(review.suggestions, null, 2) + "\n" },
+    { path: `${dir}/review/history.json`, content: JSON.stringify(review.history, null, 2) + "\n" },
+    { path: `${dir}/review/state.json`, content: JSON.stringify(review.state, null, 2) + "\n" }
   ];
   for (const [path, p] of pending) files.push({ path, base64: p.b64 });
   const r = await commitFiles(targetBranch(), files, message);
@@ -965,7 +962,7 @@ function applyFix(f) {
   }
 }
 var errors = () => findings.filter((f) => f.severity === "error").length;
-var opens = () => review2.suggestions.filter((s) => s.status === "open");
+var opens = () => review.suggestions.filter((s) => s.status === "open");
 function changesVsBaseline() {
   if (!baseline) return [];
   const B = collect(baseline);
@@ -993,7 +990,7 @@ var btn = (text, fn, cls = "small") => {
 };
 function renderSide() {
   const ch = changesVsBaseline();
-  const counts = { checks: [findings.filter((f) => f.severity !== "info").length, errors() > 0], changes: [ch.length + opens().length, false], history: [review2.history.length, false], jira: [0, false] };
+  const counts = { checks: [findings.filter((f) => f.severity !== "info").length, errors() > 0], changes: [ch.length + opens().length, false], history: [review.history.length, false], jira: [0, false], aem: [0, false] };
   document.querySelectorAll("#tabs button").forEach((b) => {
     const id = b.dataset.tab;
     b.classList.toggle("on", id === tab);
@@ -1040,7 +1037,7 @@ function renderSide() {
     if (opens().length > 1 && $("#role").value === "designer") p.append(btn("Accept all suggestions", () => opens().forEach((x) => decide(x.id, true)), "small ok"));
     if (ch.length) p.append(h("h5", "", "Changed in the article"));
     for (const { f, old } of ch) p.append(card([h("strong", "", f.label), f.section], diffNode(toText(old, f.kind), toText(f.get(), f.kind)), f.key));
-    if (review2.history.length) {
+    if (review.history.length) {
       p.append(h("h5", "", "Copy change report"));
       p.append(btn("Copy report as a table", () => navigator.clipboard?.writeText(report()).then(() => {
         $("#saved").textContent = "Report copied";
@@ -1048,7 +1045,7 @@ function renderSide() {
     }
   }
   if (tab === "history") {
-    const list = review2.history.filter((x) => !selKey || x.key === selKey).slice().reverse();
+    const list = review.history.filter((x) => !selKey || x.key === selKey).slice().reverse();
     const s = h("div", "sum");
     s.append(h("strong", "", selKey ? `${F.get(selKey)?.label ?? "Block"} \xB7 ${F.get(selKey)?.section ?? ""}` : "All changes"));
     if (selKey) s.append(btn("Show all", () => {
@@ -1081,24 +1078,25 @@ function renderSide() {
       p.append(c);
     }
   }
+  if (tab === "aem") renderAem(p);
   if (tab === "jira") {
     const inp = h("input", "jirakey");
     inp.placeholder = "Jira key, for example FIORIDESIGN-17845";
-    inp.value = review2.state.jira ?? "";
+    inp.value = review.state.jira ?? "";
     inp.addEventListener("change", () => {
       const raw = inp.value.trim();
       const m = raw.match(/[A-Za-z][A-Za-z0-9]+-\d+/);
       if (!raw) {
-        review2.state.jira = void 0;
+        review.state.jira = void 0;
       } else if (m) {
-        review2.state.jira = m[0].toUpperCase();
+        review.state.jira = m[0].toUpperCase();
       } else {
-        review2.state.jira = raw;
+        review.state.jira = raw;
       }
       save();
       renderSide();
     });
-    const key = review2.state.jira?.match(JIRA_KEY)?.[0];
+    const key = review.state.jira?.match(JIRA_KEY)?.[0];
     const jiraWrap = h("div", "jira-task");
     jiraWrap.append(inp);
     if (key) {
@@ -1110,81 +1108,149 @@ function renderSide() {
     }
     p.append(h("h5", "", "Jira task"), jiraWrap, h("h5", "", "Status card (one comment, always current)"), h("pre", "jira", statusCard()));
     p.append(h("h5", "", "Sign-off lines (one comment per click)"));
-    const lines = (review2.state.signoffs ?? []).map(signLine);
+    const lines = (review.state.signoffs ?? []).map(signLine);
     p.append(h("pre", "jira", lines.length ? lines.join("\n") : "No sign-offs yet."));
     p.append(h("p", "muted", "Preview only. Jira is not connected yet. The GitHub pull request is the record for now."));
   }
 }
+function renderAem(p) {
+  const stage = review.state.status ?? "draft";
+  const ready = stage === "approved" || stage === "uploaded";
+  const base = store.get("aem:base"), section = store.get("aem:section") || "ui-elements";
+  const link = (text, href) => {
+    const a = h("a", "", text);
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener";
+    return a;
+  };
+  const line = (...n) => {
+    const d = h("div", "aem-line");
+    d.append(...n);
+    return d;
+  };
+  p.append(h("h5", "", "Status"), h("p", "", ready ? "\u2705 Approved in GitHub. Ready for AEM." : `Not ready yet. The article is "${STATUS[stage]}". The editor approves first.`));
+  p.append(h("h5", "", "Where it goes in AEM"));
+  const baseIn = h("input", "jirakey");
+  baseIn.placeholder = "AEM folder link of the guidelines (paste once)";
+  baseIn.value = base;
+  baseIn.addEventListener("change", () => {
+    store.set("aem:base", baseIn.value.trim());
+    renderSide();
+  });
+  const secIn = h("input", "jirakey");
+  secIn.placeholder = "Section folder, for example ui-elements";
+  secIn.value = section;
+  secIn.addEventListener("change", () => {
+    store.set("aem:section", secIn.value.trim() || "ui-elements");
+    renderSide();
+  });
+  p.append(baseIn, secIn);
+  if (!version) p.append(h("p", "muted", "Set the version in the bar first, for example v1-157."));
+  else {
+    const path = `${version}/${section}/${slug2}`;
+    p.append(h("p", "", `AEM page: ${path}`));
+    if (/^https:\/\//.test(base)) p.append(link("Open this place in AEM \u2197", `${base.replace(/\/+$/, "")}/${path}`));
+    else p.append(h("p", "muted", "Paste the AEM folder link above to get a link to this place."));
+  }
+  p.append(h("h5", "", "Approved content in GitHub (main)"));
+  const rawBase2 = `https://raw.githubusercontent.com/${REPO}/${MAIN}/content/${slug2}`;
+  p.append(
+    line(link("Content (guideline.json) \u2197", `${rawBase2}/guideline.json`)),
+    line(link("Text (guideline.md) \u2197", `${rawBase2}/guideline.md`)),
+    line(link("Images folder \u2197", `https://github.com/${REPO}/tree/${MAIN}/content/${slug2}/images`))
+  );
+  p.append(h("h5", "", "Upload to AEM"));
+  p.append(h("p", "muted", "Not automatic yet. The editor takes the approved content from the links above and fills the AEM template page. When it is in AEM, click Mark uploaded to AEM in the bar."));
+}
 var cell2 = (s) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
 function report() {
-  const rows = review2.history.filter((x) => x.kind !== "image").map((x) => {
+  const rows = review.history.filter((x) => x.kind !== "image").map((x) => {
     const k = F.get(x.key)?.kind ?? "plain";
     return `| ${cell2(x.section)} \xB7 ${x.label} | ${cell2(toText(x.old, k))} | ${cell2(toText(x.new, k))} | ${x.author} | ${x.acceptedBy ?? "-"} | ${when(x.time)} |`;
   });
-  const rej = review2.suggestions.filter((s) => s.status === "rejected").map((s) => {
+  const rej = review.suggestions.filter((s) => s.status === "rejected").map((s) => {
     const k = F.get(s.key)?.kind ?? "plain";
     return `| ${cell2(s.section)} \xB7 ${s.label} | ${cell2(toText(s.old, k))} | ~~${cell2(toText(s.new, k))}~~ (rejected) | ${s.author} | rejected by ${s.by} | ${when(s.byTime ?? s.time)} |`;
   });
   return ["| Where | Old text | New text | Who | Accepted by | When |", "| --- | --- | --- | --- | --- | --- |", ...rows, ...rej].join("\n");
 }
 var title = () => model.pageTitle ?? model.component;
-var lastSign = (role) => (review2.state.signoffs ?? []).filter((s) => s.role === role).pop();
+var lastSign = (role) => (review.state.signoffs ?? []).filter((s) => s.role === role).pop();
 function statusCard() {
-  const st = review2.state.status ?? "draft", d = lastSign("designer"), w = lastSign("writer"), e = lastSign("editor");
+  const st = review.state.status ?? "draft", ed = lastSign("editor");
   const ch = changesVsBaseline();
   const acc = ch.some((c) => /^Accessibility/i.test(c.f.section));
-  const img = review2.history.some((x) => x.kind === "image") || ch.some((c) => c.f.label.startsWith("Image"));
+  const img = review.history.some((x) => x.kind === "image") || ch.some((c) => c.f.label.startsWith("Image"));
   const warn = findings.filter((f) => f.severity === "warning").length;
+  const after = (...s) => s.includes(st);
   return [
-    `[GitHub] ${title()} \xB7 ${review2.state.jira || "no Jira key yet"}`,
-    `Designer       ${d && st !== "draft" ? `\u2705 ${d.name} \xB7 sent for review ${when(d.time)}` : "\u270F\uFE0F working"}`,
+    `[GitHub] ${title()} \xB7 ${review.state.jira || "no Jira key yet"}`,
+    `Designer       ${st === "draft" ? "\u270F\uFE0F writing" : st === "designer" ? "\u23F3 deciding on suggestions" : "\u2705 done"}`,
     `Checks         ${errors() ? `\u274C ${errors()} to fix` : `\u2705 0 errors \xB7 ${warn} hints`}`,
-    `UX writer      ${w?.action === "approved" && (st === "ready" || st === "shipped") ? `\u2705 ${w.name} \xB7 ${when(w.time)}` : st === "changes" ? `\u21A9 changes wanted by ${w?.name}` : st === "review" ? "\u23F3 asked" : "\u2014 not asked yet"}`,
+    `UX writer      ${st === "writer" ? "\u23F3 checking the text" : st === "draft" ? "\u2014 not asked yet" : "\u2705 done"}`,
     `Accessibility  ${acc ? "\u23F3 needed (section changed)" : "\u2014 not needed (section not changed)"}`,
     `Images         ${img ? "\u23F3 needed (images changed)" : "\u2014 not needed (images not changed)"}`,
-    `Editor         ${st === "shipped" ? `\u{1F680} ${e?.name} \xB7 ${when(e.time)}` : st === "ready" ? "\u23F3 can approve and ship" : "\u23F3 waits for reviews"}`
+    `Editor         ${after("approved", "uploaded") ? `\u2705 ${ed?.name ?? ""} approved` : st === "editor" ? "\u23F3 reviewing the page" : "\u2014 waits for the designer"}`,
+    `AEM            ${st === "uploaded" ? "\u{1F680} uploaded" : st === "approved" ? "\u23F3 ready to upload" : "\u2014 not yet"}`
   ].join("\n");
 }
 function signLine(s) {
-  const acc = review2.suggestions.filter((x) => x.status === "accepted").length, rej = review2.suggestions.filter((x) => x.status === "rejected").length;
-  if (s.action === "sent") return `[GitHub] \u{1F4E8} Sent for review by ${s.name} \xB7 ${when(s.time)}`;
-  if (s.action === "approved") return `[GitHub] \u2705 UX copy approved by ${s.name} \xB7 ${acc + rej} text suggestions (${acc} accepted, ${rej} rejected) \xB7 ${when(s.time)}`;
-  if (s.action === "changes") return `[GitHub] \u21A9 Changes wanted by ${s.name} \xB7 ${opens().length} open suggestions \xB7 ${when(s.time)}`;
-  return `[GitHub] \u{1F680} Approved and shipped by ${s.name} \xB7 ${when(s.time)}`;
+  const acc = review.suggestions.filter((x) => x.status === "accepted").length, rej = review.suggestions.filter((x) => x.status === "rejected").length;
+  const at = when(s.time);
+  switch (s.action) {
+    case "sent":
+    case "to-writer":
+      return `[GitHub] \u{1F4E8} Sent to UX writer by ${s.name} \xB7 ${at}`;
+    case "returned":
+      return `[GitHub] \u21A9 Returned to designer by ${s.name} \xB7 ${opens().length} open suggestions \xB7 ${at}`;
+    case "to-editor":
+      return `[GitHub] \u{1F4E8} Sent to editor by ${s.name} \xB7 ${acc + rej} suggestions decided (${acc} accepted, ${rej} rejected) \xB7 ${at}`;
+    case "back":
+      return `[GitHub] \u21A9 Sent back to designer by ${s.name} \xB7 ${at}`;
+    case "approved":
+      return `[GitHub] \u2705 Approved by ${s.name}. The article is done in GitHub \xB7 ${at}`;
+    case "uploaded":
+      return `[GitHub] \u{1F680} Uploaded to AEM by ${s.name} \xB7 ${at}`;
+    default:
+      return `[GitHub] ${s.action} by ${s.name} \xB7 ${at}`;
+  }
 }
-var STATUS = { draft: "Draft", review: "In review", changes: "Changes wanted", ready: "Ready for AEM", shipped: "Shipped" };
+var STATUS = { draft: "Draft", writer: "With UX writer", designer: "With designer", editor: "In editor review", approved: "Approved \xB7 ready for AEM", uploaded: "In AEM" };
+var LEGACY = { review: "writer", changes: "designer", ready: "editor", shipped: "approved" };
 async function sign(action, status) {
   if (!$("#name").value.trim()) {
     $("#name").focus();
     $("#saved").textContent = "Type your name first";
     return;
   }
-  const who = me(), prevStatus = review2.state.status, n0 = review2.state.signoffs?.length ?? 0;
+  const who = me(), prevStatus = review.state.status, n0 = review.state.signoffs?.length ?? 0;
   try {
-    (review2.state.signoffs ??= []).push({ role: $("#role").value, name: who, action, time: now() });
-    review2.state.status = status;
+    (review.state.signoffs ??= []).push({ role: $("#role").value, name: who, action, time: now() });
+    review.state.status = status;
     if (action === "sent") {
       await commitVersion(`${title()}: sent for review by ${who}`);
       const pr = await openPR(
         targetBranch(),
-        `${title()} update${review2.state.jira ? ` (${review2.state.jira})` : ""}`,
+        `${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
         `Sent for review by ${who}.
 
 Checks: ${errors()} errors, ${findings.filter((f) => f.severity === "warning").length} warnings.
 Open text suggestions: ${opens().length}.`
       );
-      review2.state.pr = pr;
+      review.state.pr = pr;
       await commitVersion(`${title()}: pull request #${pr.number}`);
     } else {
       await commitVersion(`${title()}: ${action} by ${who}`);
-      const n = review2.state.pr?.number ?? (await findPR(targetBranch()))?.number;
-      if (n && action === "approved" && $("#role").value === "writer") await review(n, "APPROVE", `UX copy approved by ${who}`);
-      if (n && action === "changes") await review(n, "REQUEST_CHANGES", `Changes wanted by ${who}`);
-      if (n && action === "shipped") await merge(n);
+      if (action === "approved") {
+        const n = review.state.pr?.number ?? (await findPR(targetBranch()))?.number;
+        if (!n) throw new Error("No open pull request for this version. Send it to the UX writer first.");
+        await merge(n);
+      }
     }
   } catch (e) {
-    review2.state.signoffs = (review2.state.signoffs ?? []).slice(0, n0);
-    review2.state.status = prevStatus;
+    review.state.signoffs = (review.state.signoffs ?? []).slice(0, n0);
+    review.state.status = prevStatus;
     saveFailed(e);
     return;
   }
@@ -1195,7 +1261,7 @@ Open text suggestions: ${opens().length}.`
   renderBar();
 }
 function renderBar() {
-  const st = review2.state.status ?? "draft", role = $("#role").value;
+  const raw = review.state.status ?? "draft", st = LEGACY[raw] ?? raw, role = $("#role").value;
   const pill = $("#status");
   pill.textContent = STATUS[st];
   pill.className = `pill ${st}`;
@@ -1214,12 +1280,20 @@ function renderBar() {
     }
     a.append(b);
   };
-  if (role === "designer" && (st === "draft" || st === "changes")) add("Send for review", () => sign("sent", "review"), "primary", errors() ? "Fix the errors in Checks first" : "");
-  if (role === "designer" && st === "review") add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Accept or reject the open suggestions first" : "");
-  if (role === "editor" && st === "review") add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Waiting for the designer to accept or reject the suggestions" : "");
-  if (role === "editor" && st === "ready") add("Approve and ship", () => sign("shipped", "shipped"), "primary", errors() ? "Fix the errors first" : "");
-  if (st === "shipped") add("Start a new update", () => {
-    review2.state.status = "draft";
+  const stage = st in LEGACY ? LEGACY[st] : st;
+  if (role === "designer" && stage === "draft") add("Send to UX writer", () => sign("sent", "writer"), "primary", errors() ? "Fix the errors in Checks first" : "");
+  if (role === "designer" && stage === "designer") {
+    add("Back to UX writer", () => sign("to-writer", "writer"), "");
+    add("Send to editor", () => sign("to-editor", "editor"), "ok", opens().length ? "Accept or reject the open suggestions first" : errors() ? "Fix the errors in Checks first" : "");
+  }
+  if (role === "writer" && stage === "writer") add("Return to designer", () => sign("returned", "designer"), "primary");
+  if (role === "editor" && stage === "editor") {
+    add("Send back to designer", () => sign("back", "designer"), "");
+    add("Approve", () => sign("approved", "approved"), "ok", opens().length ? "Open suggestions are still waiting for the designer" : "");
+  }
+  if (role === "editor" && stage === "approved") add("Mark uploaded to AEM", () => sign("uploaded", "uploaded"), "primary");
+  if (stage === "uploaded") add("Start a new update", () => {
+    review.state.status = "draft";
     renderPage();
     renderBar();
     renderSide();
@@ -1298,7 +1372,7 @@ async function upload(id, file) {
   const oldUrl = pending.get(path) ? "" : `${rawBase(branch)}/${path}`;
   pending.set(path, { b64: toBase64(await file.arrayBuffer()), url: URL.createObjectURL(file) });
   const f = F.get(`${id}:caption`);
-  review2.history.push({ key: `${id}:caption`, label: "Image", section: f.section, old: oldUrl, new: name, author: me(), time: now(), kind: "image" });
+  review.history.push({ key: `${id}:caption`, label: "Image", section: f.section, old: oldUrl, new: name, author: me(), time: now(), kind: "image" });
   changed();
 }
 $("#file").addEventListener("change", (e) => {
@@ -1432,14 +1506,18 @@ async function load(s, v = "", allowStart = false) {
   docRef = doc;
   model = doc.model;
   baseline = (await readJson(`content/${s}/guideline.json`, MAIN, { model: null })).model ?? null;
-  review2 = {
+  review = {
     suggestions: await readJson(`content/${s}/review/suggestions.json`, branch, []),
     history: await readJson(`content/${s}/review/history.json`, branch, []),
     state: await readJson(`content/${s}/review/state.json`, branch, {})
   };
+  {
+    const old = review.state.status;
+    if (old && LEGACY[old]) review.state.status = LEGACY[old];
+  }
   const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
-  if (fromLink && review2.state.jira !== fromLink.toUpperCase()) {
-    review2.state.jira = fromLink.toUpperCase();
+  if (fromLink && review.state.jira !== fromLink.toUpperCase()) {
+    review.state.jira = fromLink.toUpperCase();
     save();
   }
   const draft = store.get(`draft:${s}`);
@@ -1448,7 +1526,7 @@ async function load(s, v = "", allowStart = false) {
     try {
       const d = JSON.parse(draft);
       model = d.model;
-      review2 = d.review;
+      review = d.review;
       dirty = true;
       note = "Unsaved draft from this browser restored";
     } catch {

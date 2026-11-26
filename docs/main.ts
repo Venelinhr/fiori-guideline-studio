@@ -10,7 +10,8 @@ interface Field { key: string; kind: Kind; label: string; section: string; where
 interface Sug { id: string; key: string; label: string; section: string; old: string; new: string; author: string; time: string; status: "open" | "accepted" | "rejected"; by?: string; byTime?: string }
 interface Hist { key: string; label: string; section: string; old: string; new: string; author: string; time: string; kind: "edit" | "suggestion" | "fix" | "restore" | "image"; acceptedBy?: string }
 interface Sign { role: string; name: string; action: string; time: string }
-interface State { status?: "draft" | "review" | "changes" | "ready" | "shipped"; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
+type Stage = "draft" | "writer" | "designer" | "editor" | "approved" | "uploaded";
+interface State { status?: Stage; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T;
 const h = (tag: string, cls = "", text = ""): HTMLElement => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
@@ -126,7 +127,7 @@ function diffNode(a: string, b: string): DocumentFragment {
 }
 
 // ---------- the article ----------
-const locked = () => review.state.status === "shipped";
+const locked = () => review.state.status === "uploaded" || review.state.status === "approved";
 const openSug = (key: string) => review.suggestions.find((s) => s.key === key && s.status === "open");
 function fieldEl(key: string, tag: string, ph = ""): HTMLElement {
   const f = F.get(key)!; const sug = openSug(key);
@@ -369,7 +370,7 @@ function card(top: (string | HTMLElement)[], body?: Node, key?: string): HTMLEle
 const btn = (text: string, fn: () => void, cls = "small") => { const b = h("button", cls, text) as HTMLButtonElement; b.addEventListener("click", fn); return b; };
 function renderSide() {
   const ch = changesVsBaseline();
-  const counts: Record<string, [number, boolean]> = { checks: [findings.filter((f) => f.severity !== "info").length, errors() > 0], changes: [ch.length + opens().length, false], history: [review.history.length, false], jira: [0, false] };
+  const counts: Record<string, [number, boolean]> = { checks: [findings.filter((f) => f.severity !== "info").length, errors() > 0], changes: [ch.length + opens().length, false], history: [review.history.length, false], jira: [0, false], aem: [0, false] };
   document.querySelectorAll<HTMLElement>("#tabs button").forEach((b) => {
     const id = b.dataset.tab!; b.classList.toggle("on", id === tab); b.querySelector(".n")?.remove();
     if (counts[id][0]) b.append(h("span", counts[id][1] ? "n bad" : "n", String(counts[id][0])));
@@ -409,6 +410,7 @@ function renderSide() {
       p.append(c);
     }
   }
+  if (tab === "aem") renderAem(p);
   if (tab === "jira") {
     const inp = h("input", "jirakey") as HTMLInputElement; inp.placeholder = "Jira key, for example FIORIDESIGN-17845"; inp.value = review.state.jira ?? "";
     // Accepts the key (FIORIDESIGN-17845) or a full Jira link. Keeps only the key, in capitals.
@@ -428,6 +430,34 @@ function renderSide() {
     p.append(h("p", "muted", "Preview only. Jira is not connected yet. The GitHub pull request is the record for now."));
   }
 }
+// The AEM tab: where the approved article goes, and the approved files to take there.
+function renderAem(p: HTMLElement) {
+  const stage = ((review.state.status as Stage | undefined) ?? "draft");
+  const ready = stage === "approved" || stage === "uploaded";
+  const base = store.get("aem:base"), section = store.get("aem:section") || "ui-elements";
+  const link = (text: string, href: string) => { const a = h("a", "", text) as HTMLAnchorElement; a.href = href; a.target = "_blank"; a.rel = "noopener"; return a; };
+  const line = (...n: Node[]) => { const d = h("div", "aem-line"); d.append(...n); return d; };
+  p.append(h("h5", "", "Status"), h("p", "", ready ? "✅ Approved in GitHub. Ready for AEM." : `Not ready yet. The article is "${STATUS[stage]}". The editor approves first.`));
+  p.append(h("h5", "", "Where it goes in AEM"));
+  const baseIn = h("input", "jirakey") as HTMLInputElement; baseIn.placeholder = "AEM folder link of the guidelines (paste once)"; baseIn.value = base;
+  baseIn.addEventListener("change", () => { store.set("aem:base", baseIn.value.trim()); renderSide(); });
+  const secIn = h("input", "jirakey") as HTMLInputElement; secIn.placeholder = "Section folder, for example ui-elements"; secIn.value = section;
+  secIn.addEventListener("change", () => { store.set("aem:section", secIn.value.trim() || "ui-elements"); renderSide(); });
+  p.append(baseIn, secIn);
+  if (!version) p.append(h("p", "muted", "Set the version in the bar first, for example v1-157."));
+  else {
+    const path = `${version}/${section}/${slug}`;
+    p.append(h("p", "", `AEM page: ${path}`));
+    if (/^https:\/\//.test(base)) p.append(link("Open this place in AEM ↗", `${base.replace(/\/+$/, "")}/${path}`));
+    else p.append(h("p", "muted", "Paste the AEM folder link above to get a link to this place."));
+  }
+  p.append(h("h5", "", "Approved content in GitHub (main)"));
+  const rawBase = `https://raw.githubusercontent.com/${gh.REPO}/${gh.MAIN}/content/${slug}`;
+  p.append(line(link("Content (guideline.json) ↗", `${rawBase}/guideline.json`)), line(link("Text (guideline.md) ↗", `${rawBase}/guideline.md`)),
+    line(link("Images folder ↗", `https://github.com/${gh.REPO}/tree/${gh.MAIN}/content/${slug}/images`)));
+  p.append(h("h5", "", "Upload to AEM"));
+  p.append(h("p", "muted", "Not automatic yet. The editor takes the approved content from the links above and fills the AEM template page. When it is in AEM, click Mark uploaded to AEM in the bar."));
+}
 const cell = (s: string) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
 function report(): string {
   const rows = review.history.filter((x) => x.kind !== "image").map((x) => { const k = F.get(x.key)?.kind ?? "plain"; return `| ${cell(x.section)} · ${x.label} | ${cell(toText(x.old, k))} | ${cell(toText(x.new, k))} | ${x.author} | ${x.acceptedBy ?? "-"} | ${when(x.time)} |`; });
@@ -437,31 +467,41 @@ function report(): string {
 const title = () => model.pageTitle ?? model.component;
 const lastSign = (role: string) => (review.state.signoffs ?? []).filter((s) => s.role === role).pop();
 function statusCard(): string {
-  const st = review.state.status ?? "draft", d = lastSign("designer"), w = lastSign("writer"), e = lastSign("editor");
+  const st = (review.state.status ?? "draft") as Stage, ed = lastSign("editor");
   const ch = changesVsBaseline(); const acc = ch.some((c) => /^Accessibility/i.test(c.f.section)); const img = review.history.some((x) => x.kind === "image") || ch.some((c) => c.f.label.startsWith("Image"));
   const warn = findings.filter((f) => f.severity === "warning").length;
+  const after = (...s: Stage[]) => s.includes(st);
   return [
     `[GitHub] ${title()} · ${review.state.jira || "no Jira key yet"}`,
-    `Designer       ${d && st !== "draft" ? `✅ ${d.name} · sent for review ${when(d.time)}` : "✏️ working"}`,
+    `Designer       ${st === "draft" ? "✏️ writing" : st === "designer" ? "⏳ deciding on suggestions" : "✅ done"}`,
     `Checks         ${errors() ? `❌ ${errors()} to fix` : `✅ 0 errors · ${warn} hints`}`,
-    `UX writer      ${w?.action === "approved" && (st === "ready" || st === "shipped") ? `✅ ${w.name} · ${when(w.time)}` : st === "changes" ? `↩ changes wanted by ${w?.name}` : st === "review" ? "⏳ asked" : "— not asked yet"}`,
+    `UX writer      ${st === "writer" ? "⏳ checking the text" : st === "draft" ? "— not asked yet" : "✅ done"}`,
     `Accessibility  ${acc ? "⏳ needed (section changed)" : "— not needed (section not changed)"}`,
     `Images         ${img ? "⏳ needed (images changed)" : "— not needed (images not changed)"}`,
-    `Editor         ${st === "shipped" ? `🚀 ${e?.name} · ${when(e!.time)}` : st === "ready" ? "⏳ can approve and ship" : "⏳ waits for reviews"}`,
+    `Editor         ${after("approved", "uploaded") ? `✅ ${ed?.name ?? ""} approved` : st === "editor" ? "⏳ reviewing the page" : "— waits for the designer"}`,
+    `AEM            ${st === "uploaded" ? "🚀 uploaded" : st === "approved" ? "⏳ ready to upload" : "— not yet"}`,
   ].join("\n");
 }
 function signLine(s: Sign): string {
   const acc = review.suggestions.filter((x) => x.status === "accepted").length, rej = review.suggestions.filter((x) => x.status === "rejected").length;
-  if (s.action === "sent") return `[GitHub] 📨 Sent for review by ${s.name} · ${when(s.time)}`;
-  if (s.action === "approved") return `[GitHub] ✅ UX copy approved by ${s.name} · ${acc + rej} text suggestions (${acc} accepted, ${rej} rejected) · ${when(s.time)}`;
-  if (s.action === "changes") return `[GitHub] ↩ Changes wanted by ${s.name} · ${opens().length} open suggestions · ${when(s.time)}`;
-  return `[GitHub] 🚀 Approved and shipped by ${s.name} · ${when(s.time)}`;
+  const at = when(s.time);
+  switch (s.action) {
+    case "sent": case "to-writer": return `[GitHub] 📨 Sent to UX writer by ${s.name} · ${at}`;
+    case "returned": return `[GitHub] ↩ Returned to designer by ${s.name} · ${opens().length} open suggestions · ${at}`;
+    case "to-editor": return `[GitHub] 📨 Sent to editor by ${s.name} · ${acc + rej} suggestions decided (${acc} accepted, ${rej} rejected) · ${at}`;
+    case "back": return `[GitHub] ↩ Sent back to designer by ${s.name} · ${at}`;
+    case "approved": return `[GitHub] ✅ Approved by ${s.name}. The article is done in GitHub · ${at}`;
+    case "uploaded": return `[GitHub] 🚀 Uploaded to AEM by ${s.name} · ${at}`;
+    default: return `[GitHub] ${s.action} by ${s.name} · ${at}`;
+  }
 }
 
 // ---------- top bar ----------
-const STATUS: Record<string, string> = { draft: "Draft", review: "In review", changes: "Changes wanted", ready: "Ready for AEM", shipped: "Shipped" };
+const STATUS: Record<string, string> = { draft: "Draft", writer: "With UX writer", designer: "With designer", editor: "In editor review", approved: "Approved · ready for AEM", uploaded: "In AEM" };
+// Older saved states used other names.
+const LEGACY: Record<string, Stage> = { review: "writer", changes: "designer", ready: "editor", shipped: "approved" };
 // Each click is a real step on GitHub: a commit, and for the review steps a pull request action.
-async function sign(action: string, status: State["status"]) {
+async function sign(action: string, status: Stage) {
   if (!$<HTMLInputElement>("#name").value.trim()) { $("#name").focus(); $("#saved").textContent = "Type your name first"; return; }
   const who = me(), prevStatus = review.state.status, n0 = review.state.signoffs?.length ?? 0;
   try {
@@ -475,12 +515,12 @@ async function sign(action: string, status: State["status"]) {
       await commitVersion(`${title()}: pull request #${pr.number}`);
     } else {
       await commitVersion(`${title()}: ${action} by ${who}`);
-      // The pull request number is saved on the first send. If it is missing, find the open pull request for this branch.
-      const n = review.state.pr?.number ?? (await gh.findPR(targetBranch()))?.number;
-      // GitHub only allows approval by an account other than the one that opened the pull request.
-      if (n && action === "approved" && $<HTMLSelectElement>("#role").value === "writer") await gh.review(n, "APPROVE", `UX copy approved by ${who}`);
-      if (n && action === "changes") await gh.review(n, "REQUEST_CHANGES", `Changes wanted by ${who}`);
-      if (n && action === "shipped") await gh.merge(n);
+      // The editor's approval merges the pull request: the article is then done in GitHub.
+      if (action === "approved") {
+        const n = review.state.pr?.number ?? (await gh.findPR(targetBranch()))?.number;
+        if (!n) throw new Error("No open pull request for this version. Send it to the UX writer first.");
+        await gh.merge(n);
+      }
     }
   } catch (e) {
     review.state.signoffs = (review.state.signoffs ?? []).slice(0, n0); review.state.status = prevStatus;
@@ -489,18 +529,26 @@ async function sign(action: string, status: State["status"]) {
   tab = "jira"; document.body.classList.add("drawer-open"); renderPage(); renderSide(); renderBar();
 }
 function renderBar() {
-  const st = review.state.status ?? "draft", role = $<HTMLSelectElement>("#role").value;
+  const raw = (review.state.status ?? "draft") as string, st = (LEGACY[raw] ?? raw) as Stage, role = $<HTMLSelectElement>("#role").value;
   const pill = $("#status"); pill.textContent = STATUS[st]; pill.className = `pill ${st}`;
   const c = $<HTMLButtonElement>("#commit"); c.disabled = !dirty; c.textContent = branch === gh.MAIN ? "Save version (new update)" : "Save version";
   const cl = $<HTMLAnchorElement>("#commitlink"); cl.href = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
   const a = $("#actions"); a.replaceChildren();
   const add = (text: string, fn: () => void, cls: string, off = "") => { const b = btn(text, fn, cls); if (off) { b.disabled = true; b.title = off; } a.append(b); };
-  if (role === "designer" && (st === "draft" || st === "changes")) add("Send for review", () => sign("sent", "review"), "primary", errors() ? "Fix the errors in Checks first" : "");
-  // The designer decides the suggestions and approves. The writer only suggests. The editor approves and ships.
-  if (role === "designer" && st === "review") add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Accept or reject the open suggestions first" : "");
-  if (role === "editor" && st === "review") add("Approve", () => sign("approved", "ready"), "ok", opens().length ? "Waiting for the designer to accept or reject the suggestions" : "");
-  if (role === "editor" && st === "ready") add("Approve and ship", () => sign("shipped", "shipped"), "primary", errors() ? "Fix the errors first" : "");
-  if (st === "shipped") add("Start a new update", () => { review.state.status = "draft"; renderPage(); renderBar(); renderSide(); save(); }, "");
+  // Flow: designer -> UX writer -> designer decides -> editor reviews and approves -> upload to AEM.
+  const stage = (st as string) in LEGACY ? LEGACY[st as string] : st;
+  if (role === "designer" && stage === "draft") add("Send to UX writer", () => sign("sent", "writer"), "primary", errors() ? "Fix the errors in Checks first" : "");
+  if (role === "designer" && stage === "designer") {
+    add("Back to UX writer", () => sign("to-writer", "writer"), "");
+    add("Send to editor", () => sign("to-editor", "editor"), "ok", opens().length ? "Accept or reject the open suggestions first" : errors() ? "Fix the errors in Checks first" : "");
+  }
+  if (role === "writer" && stage === "writer") add("Return to designer", () => sign("returned", "designer"), "primary");
+  if (role === "editor" && stage === "editor") {
+    add("Send back to designer", () => sign("back", "designer"), "");
+    add("Approve", () => sign("approved", "approved"), "ok", opens().length ? "Open suggestions are still waiting for the designer" : "");
+  }
+  if (role === "editor" && stage === "approved") add("Mark uploaded to AEM", () => sign("uploaded", "uploaded"), "primary");
+  if (stage === "uploaded") add("Start a new update", () => { review.state.status = "draft"; renderPage(); renderBar(); renderSide(); save(); }, "");
 }
 
 // ---------- events ----------
@@ -600,6 +648,7 @@ async function load(s: string, v = "", allowStart = false) {
     history: await gh.readJson(`content/${s}/review/history.json`, branch, []),
     state: await gh.readJson(`content/${s}/review/state.json`, branch, {}),
   };
+  { const old = review.state.status as string | undefined; if (old && LEGACY[old]) review.state.status = LEGACY[old]; }
   // Opened from a Jira link (…/fiori-guideline-studio/?jira=FIORIDESIGN-17845): the ticket is filled in, nobody pastes it.
   const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
   if (fromLink && review.state.jira !== fromLink.toUpperCase()) { review.state.jira = fromLink.toUpperCase(); save(); }

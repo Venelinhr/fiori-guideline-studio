@@ -204,3 +204,10 @@ h5 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spac
 
 .commit-link { color: var(--link); font-weight: 600; text-decoration: none; white-space: nowrap; padding: 0 4px; }
 .commit-link:hover { text-decoration: underline; }
+
+.pill.writer, .pill.editor { background: #fff3d6; color: var(--amber); }
+.pill.designer { background: #d1efff; color: #0057d2; }
+.pill.approved { background: var(--ins); color: var(--do); }
+.pill.uploaded { background: var(--do); color: #fff; }
+.aem-line { margin-bottom: 4px; }
+.drawer a { color: var(--link); }
