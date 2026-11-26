@@ -12,7 +12,22 @@
       "name": "Alex",
       "action": "returned",
       "time": "2026-11-26T20:23:10.375Z"
+    },
+    {
+      "role": "designer",
+      "name": "Veni",
+      "action": "to-writer",
+      "time": "2026-11-26T20:24:26.049Z"
     }
   ],
-  "status": "designer"
+  "status": "writer",
+  "lastCheck": {
+    "by": "Veni",
+    "role": "designer",
+    "time": "2026-11-26T20:23:58.629Z",
+    "errors": 0,
+    "hints": 2,
+    "fixes": 1,
+    "copilot": "not available for this GitHub account"
+  }
 }
