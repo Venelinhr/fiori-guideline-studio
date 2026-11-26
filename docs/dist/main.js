@@ -394,6 +394,7 @@ var branch = MAIN;
 var version = "";
 var docRef = {};
 var dirty = false;
+var lastCommitUrl = "";
 function targetBranch() {
   if (!version) throw new Error("Set the version first in the bar, for example v1-158.");
   return branchName(version, slug2);
@@ -890,6 +891,8 @@ async function doCommit(message) {
   imgBust = Date.now();
   $("#saved").textContent = `Saved to GitHub ${stamp()} \xB7 ${branch}`;
   const short = r.sha.slice(0, 7);
+  lastCommitUrl = `https://github.com/${REPO}/commit/${r.sha}`;
+  store.set(`commit:${branch}`, lastCommitUrl);
   toast(
     `Saved to GitHub at ${stamp()}. Version ${short} is on branch ${branch}.`,
     "ok",
@@ -1299,6 +1302,15 @@ $("#tools").addEventListener("mousedown", (e) => {
     else if (/^https?:\/\//i.test(url.trim())) document.execCommand("createLink", false, url.trim());
   } else document.execCommand(b.dataset.cmd);
 });
+$("#copylink").addEventListener("click", async () => {
+  const url = lastCommitUrl || `https://github.com/${REPO}/commits/${branch}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    toast(`Copied: ${url}`, "ok");
+  } catch {
+    toast(`Could not copy. Select and copy this link: ${url}`, "err");
+  }
+});
 $("#drawerBtn").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
 $("#drawerClose").addEventListener("click", () => document.body.classList.remove("drawer-open"));
 $("#hints").addEventListener("change", (e) => document.body.classList.toggle("no-hints", !e.target.checked));
@@ -1369,6 +1381,7 @@ async function load(s, v = "", allowStart = false) {
   version = v;
   const exists = v ? await branchExists(branchName(v, s)) : false;
   branch = exists ? branchName(v, s) : MAIN;
+  lastCommitUrl = store.get(`commit:${branch}`);
   const doc = await readJson(`content/${s}/guideline.json`, branch, void 0);
   if (!doc) throw new Error(`No guideline.json for ${s}`);
   const pub = "v" + versionOf(doc.model ?? { component: s, sections: [] }).replace(".", "-");

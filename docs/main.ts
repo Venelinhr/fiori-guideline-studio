@@ -21,6 +21,8 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 
 // Where this update lives on GitHub. "main" until the first save creates update/<slug>.
 let branch = gh.MAIN, version = "", docRef: any = {}, dirty = false;
+// Link to the last saved change on this branch. It is kept after a reload.
+let lastCommitUrl = "";
 // Saves go to <version>/<component>. Without a version nothing can be saved.
 function targetBranch(): string {
   if (!version) throw new Error("Set the version first in the bar, for example v1-158.");
@@ -303,6 +305,7 @@ async function doCommit(message: string): Promise<void> {
   imgBust = Date.now();
   $("#saved").textContent = `Saved to GitHub ${stamp()} · ${branch}`;
   const short = r.sha.slice(0, 7);
+  lastCommitUrl = `https://github.com/${gh.REPO}/commit/${r.sha}`; store.set(`commit:${branch}`, lastCommitUrl);
   toast(`Saved to GitHub at ${stamp()}. Version ${short} is on branch ${branch}.`, "ok",
     { href: `https://github.com/${gh.REPO}/commit/${r.sha}`, text: "See the change on GitHub" });
   renderBar();
@@ -508,6 +511,12 @@ $("#tools").addEventListener("mousedown", (e) => {
   if (b.dataset.cmd === "link") { const url = window.prompt("Link address (https://…). Leave empty to remove the link."); if (url === null) return; if (!url.trim()) document.execCommand("unlink"); else if (/^https?:\/\//i.test(url.trim())) document.execCommand("createLink", false, url.trim()); }
   else document.execCommand(b.dataset.cmd!);
 });
+// Copies the link to the last saved change. Without one yet, it copies the link to the branch history.
+$("#copylink").addEventListener("click", async () => {
+  const url = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
+  try { await navigator.clipboard.writeText(url); toast(`Copied: ${url}`, "ok"); }
+  catch { toast(`Could not copy. Select and copy this link: ${url}`, "err"); }
+});
 $("#drawerBtn").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
 $("#drawerClose").addEventListener("click", () => document.body.classList.remove("drawer-open"));
 $("#hints").addEventListener("change", (e) => document.body.classList.toggle("no-hints", !(e.target as HTMLInputElement).checked));
@@ -552,6 +561,7 @@ async function load(s: string, v = "", allowStart = false) {
   // "main" = the latest published version. A version has its own branch: <version>/<component>.
   const exists = v ? await gh.branchExists(gh.branchName(v, s)) : false;
   branch = exists ? gh.branchName(v, s) : gh.MAIN;
+  lastCommitUrl = store.get(`commit:${branch}`);
   const doc = await gh.readJson<any>(`content/${s}/guideline.json`, branch, undefined as any);
   if (!doc) throw new Error(`No guideline.json for ${s}`);
   const pub = "v" + versionOf(doc.model ?? { component: s, sections: [] }).replace(".", "-");
