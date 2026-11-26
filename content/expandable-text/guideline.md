@@ -11,9 +11,9 @@ This guideline now covers both SAPUI5 and SAP Web Components. Learn More.
 
 ## Intro
 
-Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.
+Expandableee text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 123
 
-![An expandable text in the collapsed state, showing 'The request includes read access to the financial reporting module and write access to...' followed by a 'Show More' link.](images/01-expandable-text-intro-v1-151.png "01_Expandable text_Intro_v1.151")
+![An expandable text in the collapsed, showing 'The request includes read access to the financial reporting module and write access to...' followed by a 'Show More' link.](images/01-expandable-text-intro-v1-151.png "01_Expandable text_Intro_v1.151")
 Caption: Expandable text
 
 ### Component availability
