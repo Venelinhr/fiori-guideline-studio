@@ -59,5 +59,16 @@
     "status": "accepted",
     "by": "Venelin Hristov",
     "byTime": "2026-11-26T17:35:26.900Z"
+  },
+  {
+    "id": "fnq5xp5z",
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. </p>",
+    "new": "<p>44444444444 a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. </p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T18:49:39.296Z",
+    "status": "open"
   }
 ]
