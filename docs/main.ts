@@ -109,8 +109,9 @@ function diffNode(a: string, b: string): DocumentFragment {
   const put = (tag: string, t: string) => { const last = f.lastChild as HTMLElement | null; if (tag && last?.nodeName.toLowerCase() === tag) last.textContent += t; else if (!tag && last?.nodeType === 3) last.nodeValue += t; else f.append(tag ? h(tag, "", t) : document.createTextNode(t)); };
   while (i < n || j < m) {
     if (i < n && j < m && A[i] === B[j]) { put("", A[i]); i++; j++; }
-    else if (j < m && (i === n || L[i][j + 1] >= L[i + 1][j])) put("ins", B[j++]);
-    else put("del", A[i++]);
+    // Old words first (struck through), then the new words, the way tracked changes read.
+    else if (i < n && (j === m || L[i + 1][j] >= L[i][j + 1])) put("del", A[i++]);
+    else put("ins", B[j++]);
   }
   return f;
 }

@@ -529,8 +529,8 @@ function diffNode(a, b) {
       put("", A[i]);
       i++;
       j++;
-    } else if (j < m && (i === n || L[i][j + 1] >= L[i + 1][j])) put("ins", B[j++]);
-    else put("del", A[i++]);
+    } else if (i < n && (j === m || L[i + 1][j] >= L[i][j + 1])) put("del", A[i++]);
+    else put("ins", B[j++]);
   }
   return f;
 }
