@@ -448,7 +448,8 @@ async function sign(action: string, status: State["status"]) {
       await commitVersion(`${title()}: pull request #${pr.number}`);
     } else {
       await commitVersion(`${title()}: ${action} by ${who}`);
-      const n = review.state.pr?.number;
+      // The pull request number is saved on the first send. If it is missing, find the open pull request for this branch.
+      const n = review.state.pr?.number ?? (await gh.findPR(targetBranch()))?.number;
       if (n && action === "approved") await gh.review(n, "APPROVE", `UX copy approved by ${who}`);
       if (n && action === "changes") await gh.review(n, "REQUEST_CHANGES", `Changes wanted by ${who}`);
       if (n && action === "shipped") await gh.merge(n);

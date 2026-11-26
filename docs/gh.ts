@@ -52,7 +52,18 @@ export async function branchExists(branch: string): Promise<boolean> {
 }
 
 // One commit on the given branch with several files. Creates the branch from main the first time.
+// GitHub can show an old branch head for a moment after a save. Then it refuses the commit, so we read again and retry.
 export async function commitFiles(branch: string, files: { path: string; content?: string; base64?: string }[], message: string): Promise<{ branch: string; sha: string }> {
+  for (let attempt = 1; ; attempt++) {
+    try { return await commitOnce(branch, files, message); }
+    catch (e) {
+      const stale = e instanceof GhError && /fast.forward/i.test(e.message);
+      if (!stale || attempt >= 4) throw e;
+      await new Promise((ok) => setTimeout(ok, 1500 * attempt));
+    }
+  }
+}
+async function commitOnce(branch: string, files: { path: string; content?: string; base64?: string }[], message: string): Promise<{ branch: string; sha: string }> {
   let head: string;
   try { head = (await api<{ object: { sha: string } }>(`/git/ref/heads/${branch}`, {}, true)).object.sha; }
   catch (e) {
@@ -71,6 +82,12 @@ export async function commitFiles(branch: string, files: { path: string; content
   const c = await api<{ sha: string }>(`/git/commits`, { method: "POST", json: { message, tree: t.sha, parents: [head] } }, true);
   await api(`/git/refs/heads/${branch}`, { method: "PATCH", json: { sha: c.sha } }, true);
   return { branch, sha: c.sha };
+}
+
+// The open pull request for a branch, if there is one.
+export async function findPR(branch: string): Promise<{ number: number; url: string } | undefined> {
+  const open = await api<any[]>(`/pulls?state=open&head=${encodeURIComponent(`${REPO.split("/")[0]}:${branch}`)}`);
+  return open[0] ? { number: open[0].number, url: open[0].html_url } : undefined;
 }
 
 export async function openPR(branch: string, title: string, body: string): Promise<{ number: number; url: string }> {

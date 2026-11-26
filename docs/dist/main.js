@@ -306,6 +306,17 @@ async function branchExists(branch2) {
   }
 }
 async function commitFiles(branch2, files, message) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await commitOnce(branch2, files, message);
+    } catch (e) {
+      const stale = e instanceof GhError && /fast.forward/i.test(e.message);
+      if (!stale || attempt >= 4) throw e;
+      await new Promise((ok) => setTimeout(ok, 1500 * attempt));
+    }
+  }
+}
+async function commitOnce(branch2, files, message) {
   let head;
   try {
     head = (await api(`/git/ref/heads/${branch2}`, {}, true)).object.sha;
@@ -325,6 +336,10 @@ async function commitFiles(branch2, files, message) {
   const c = await api(`/git/commits`, { method: "POST", json: { message, tree: t.sha, parents: [head] } }, true);
   await api(`/git/refs/heads/${branch2}`, { method: "PATCH", json: { sha: c.sha } }, true);
   return { branch: branch2, sha: c.sha };
+}
+async function findPR(branch2) {
+  const open = await api(`/pulls?state=open&head=${encodeURIComponent(`${REPO.split("/")[0]}:${branch2}`)}`);
+  return open[0] ? { number: open[0].number, url: open[0].html_url } : void 0;
 }
 async function openPR(branch2, title2, body) {
   const open = await api(`/pulls?state=open&head=${encodeURIComponent(`${REPO.split("/")[0]}:${branch2}`)}`);
@@ -1129,7 +1144,7 @@ Open text suggestions: ${opens().length}.`
       await commitVersion(`${title()}: pull request #${pr.number}`);
     } else {
       await commitVersion(`${title()}: ${action} by ${who}`);
-      const n = review2.state.pr?.number;
+      const n = review2.state.pr?.number ?? (await findPR(targetBranch()))?.number;
       if (n && action === "approved") await review(n, "APPROVE", `UX copy approved by ${who}`);
       if (n && action === "changes") await review(n, "REQUEST_CHANGES", `Changes wanted by ${who}`);
       if (n && action === "shipped") await merge(n);
