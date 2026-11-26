@@ -403,7 +403,7 @@ function collect(m) {
   const out = /* @__PURE__ */ new Map();
   let parent = "";
   const add = (key, kind, label, section, where, get, set) => out.set(key, { key, kind, label, section, where, get, set });
-  add("page:title", "plain", "Page title", "Page", "page", () => m.pageTitle ?? m.component, (v) => {
+  add("page:title", "plain", "Page title", "Page", "page title", () => m.pageTitle ?? m.component, (v) => {
     m.pageTitle = v;
   });
   for (const s of m.sections) {

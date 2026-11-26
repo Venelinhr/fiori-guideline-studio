@@ -37,7 +37,8 @@ const LABEL: Record<string, string> = { text: "Text", info: "Info box", "message
 function collect(m: GuidelineModel): Map<string, Field> {
   const out = new Map<string, Field>(); let parent = "";
   const add = (key: string, kind: Kind, label: string, section: string, where: string, get: () => string, set: (v: string) => void) => out.set(key, { key, kind, label, section, where, get, set });
-  add("page:title", "plain", "Page title", "Page", "page", () => m.pageTitle ?? m.component, (v) => { m.pageTitle = v; });
+  // "page title", not "page": page-wide findings (section order, link versions) must not mark the title.
+  add("page:title", "plain", "Page title", "Page", "page title",() => m.pageTitle ?? m.component, (v) => { m.pageTitle = v; });
   for (const s of m.sections as any[]) {
     if (!s.noTitle && s.titleLevel !== "h3" && s.titleLevel !== "h4") parent = s.title;
     const path = s.noTitle || parent === s.title ? s.title : `${parent} > ${s.title}`;
