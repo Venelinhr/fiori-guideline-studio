@@ -295,22 +295,17 @@ async function listGuidelines() {
 async function rules() {
   return (await fetch(`${rawBase(MAIN)}/standards/rules.json`)).json();
 }
-async function branchOf(slug3) {
-  const name = `update/${slug3}`;
+var branchName = (version2, slug3) => `${version2}/${slug3}`;
+async function branchExists(branch2) {
   try {
-    await api(`/git/ref/heads/${name}`);
-    return name;
+    await api(`/git/ref/heads/${branch2}`);
+    return true;
   } catch (e) {
-    if (e instanceof GhError && e.status === 404) return void 0;
+    if (e instanceof GhError && e.status === 404) return false;
     throw e;
   }
 }
-async function openUpdate(slug3) {
-  const branch2 = await branchOf(slug3) ?? MAIN;
-  return { branch: branch2, editable: branch2 !== MAIN };
-}
-async function commitFiles(slug3, files, message) {
-  const branch2 = `update/${slug3}`;
+async function commitFiles(branch2, files, message) {
   let head;
   try {
     head = (await api(`/git/ref/heads/${branch2}`, {}, true)).object.sha;
@@ -331,8 +326,7 @@ async function commitFiles(slug3, files, message) {
   await api(`/git/refs/heads/${branch2}`, { method: "PATCH", json: { sha: c.sha } }, true);
   return { branch: branch2, sha: c.sha };
 }
-async function openPR(slug3, title2, body) {
-  const branch2 = `update/${slug3}`;
+async function openPR(branch2, title2, body) {
   const open = await api(`/pulls?state=open&head=${encodeURIComponent(`${REPO.split("/")[0]}:${branch2}`)}`);
   const pr = open[0] ?? await api(`/pulls`, { method: "POST", json: { title: title2, head: branch2, base: MAIN, body } }, true);
   return { number: pr.number, url: pr.html_url };
@@ -382,8 +376,13 @@ var now = () => (/* @__PURE__ */ new Date()).toISOString();
 var when = (t) => new Date(t).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 var uid = () => Math.random().toString(36).slice(2, 10);
 var branch = MAIN;
+var version = "";
 var docRef = {};
 var dirty = false;
+function targetBranch() {
+  if (!version) throw new Error("Set the version first in the bar, for example v1-158.");
+  return branchName(version, slug2);
+}
 var pending = /* @__PURE__ */ new Map();
 var JIRA_BASE = "https://jira.tools.sap/browse";
 var JIRA_KEY = /[A-Za-z][A-Za-z0-9]+-\d+/;
@@ -862,7 +861,7 @@ async function commitVersion(message) {
     { path: `${dir}/review/state.json`, content: JSON.stringify(review2.state, null, 2) + "\n" }
   ];
   for (const [path, p] of pending) files.push({ path, base64: p.b64 });
-  const r = await commitFiles(slug2, files, message);
+  const r = await commitFiles(targetBranch(), files, message);
   branch = r.branch;
   pending.clear();
   dirty = false;
@@ -1113,7 +1112,7 @@ async function sign(action, status) {
     if (action === "sent") {
       await commitVersion(`${title()}: sent for review by ${who}`);
       const pr = await openPR(
-        slug2,
+        targetBranch(),
         `${title()} update${review2.state.jira ? ` (${review2.state.jira})` : ""}`,
         `Sent for review by ${who}.
 
@@ -1298,15 +1297,63 @@ $("#role").addEventListener("change", () => {
   renderSide();
 });
 $("#suggest").addEventListener("change", renderSide);
-$("#guideline").addEventListener("change", () => load($("#guideline").value));
-async function load(s) {
+$("#guideline").addEventListener("change", () => {
+  location.hash = `#/${$("#guideline").value}`;
+});
+window.addEventListener("hashchange", route);
+$("#version").addEventListener("change", () => {
+  const v = $("#version").value.trim().toLowerCase();
+  if (!v) {
+    version = "";
+    return;
+  }
+  if (!/^[a-z0-9][a-z0-9.-]*$/.test(v)) {
+    toast("Use a version like v1-158", "err");
+    return;
+  }
+  location.hash = `#/${v}/${slug2}`;
+});
+function route() {
+  const parts = decodeURIComponent(location.hash.replace(/^#\/?/, "")).split("/").filter(Boolean);
+  const s = parts[parts.length - 1] ?? "";
+  const v = parts.length > 1 ? parts[0] : "";
+  if (!s) return;
+  load(s, v).catch((e) => toast(`Could not open ${s}: ${e.message}`, "err"));
+}
+function showMissing(s, v, pub) {
+  $("#hero").replaceChildren();
+  $("#onpage-list").replaceChildren();
+  $("#saved").textContent = "";
+  const box = $("#content");
+  box.replaceChildren();
+  const card2 = h("div", "missing");
+  card2.append(
+    h("h2", "", `${v} is not started yet`),
+    h("p", "", `This guideline has no update for ${v}. The latest published version is ${pub}. Starting ${v} copies that version. Nothing changes on GitHub until you click Save version.`)
+  );
+  const start = btn(`Start ${v} from ${pub}`, () => load(s, v, true), "primary");
+  const latest = h("a", "", `Show the latest published version (${pub})`);
+  latest.href = `#/${s}`;
+  card2.append(start, latest);
+  box.append(card2);
+}
+async function load(s, v = "", allowStart = false) {
   slug2 = s;
   store.set("slug", s);
   selKey = "";
   pending.clear();
-  branch = (await openUpdate(s)).branch;
+  $("#guideline").value = s;
+  $("#version").value = v;
+  version = v;
+  const exists = v ? await branchExists(branchName(v, s)) : false;
+  branch = exists ? branchName(v, s) : MAIN;
   const doc = await readJson(`content/${s}/guideline.json`, branch, void 0);
   if (!doc) throw new Error(`No guideline.json for ${s}`);
+  const pub = "v" + versionOf(doc.model ?? { component: s, sections: [] }).replace(".", "-");
+  if (v && !exists && v !== pub && !allowStart) {
+    showMissing(s, v, pub);
+    return;
+  }
   docRef = doc;
   model = doc.model;
   baseline = (await readJson(`content/${s}/guideline.json`, MAIN, { model: null })).model ?? null;
@@ -1315,6 +1362,11 @@ async function load(s) {
     history: await readJson(`content/${s}/review/history.json`, branch, []),
     state: await readJson(`content/${s}/review/state.json`, branch, {})
   };
+  const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
+  if (fromLink && review2.state.jira !== fromLink.toUpperCase()) {
+    review2.state.jira = fromLink.toUpperCase();
+    save();
+  }
   const draft = store.get(`draft:${s}`);
   let note = branch === MAIN ? "No open update yet. Your first save creates one." : `Open update: ${branch}`;
   if (draft) {
@@ -1386,8 +1438,8 @@ async function load(s) {
   $("#role").value = role;
   $("#suggest").checked = role === "writer";
   const first = list.find((g) => g.slug === store.get("slug"))?.slug ?? list[0]?.slug;
-  if (first) {
-    sel.value = first;
-    await load(first);
+  if (location.hash.length > 2) route();
+  else if (first) {
+    location.hash = `#/${first}`;
   }
 })();

@@ -196,3 +196,8 @@ h5 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spac
 #commit:disabled { opacity: .6; }
 .jira-task { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
 .jira-task a { color: var(--link); font-weight: 600; }
+.missing { max-width: 640px; border: 1px solid var(--line); border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 14px; background: #fff; }
+.missing h2 { font: 500 24px/30px var(--brand); margin: 0; }
+.missing p { margin: 0; }
+.missing button { align-self: flex-start; border: 1px solid #0070f2; background: #0070f2; color: #fff; border-radius: 8px; padding: 8px 14px; font: 600 14px var(--font); cursor: pointer; }
+.workbar #version { width: 90px; border: 1px solid #5b738b; border-radius: 8px; padding: 4px 8px; min-height: 30px; }

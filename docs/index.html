@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guideline Studio</title>
-<link rel="stylesheet" href="./studio.css?v=20261126194903">
+<link rel="stylesheet" href="./studio.css?v=20261126195356">
 </head>
 <body>
 <!-- Figma "Masthead - XL" -->
@@ -68,6 +68,7 @@
 <!-- Work bar: the only part that is not the template -->
 <div id="bar" class="workbar">
   <select id="guideline" title="Guideline"></select>
+  <input id="version" placeholder="Version" size="7" title="Version of this update, for example v1-158. Saves go to a branch named <version>/<guideline>.">
   <span id="status" class="pill"></span>
   <span id="tools" class="tools">
     <button data-cmd="bold" title="Bold"><b>B</b></button>
@@ -105,6 +106,6 @@
 </aside>
 
 <input type="file" id="file" accept="image/png" hidden>
-<script type="module" src="./dist/main.js?v=20261126194903"></script>
+<script type="module" src="./dist/main.js?v=20261126195356"></script>
 </body>
 </html>

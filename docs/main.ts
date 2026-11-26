@@ -20,7 +20,12 @@ const when = (t: string) => new Date(t).toLocaleString([], { day: "numeric", mon
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 // Where this update lives on GitHub. "main" until the first save creates update/<slug>.
-let branch = gh.MAIN, docRef: any = {}, dirty = false;
+let branch = gh.MAIN, version = "", docRef: any = {}, dirty = false;
+// Saves go to <version>/<component>. Without a version nothing can be saved.
+function targetBranch(): string {
+  if (!version) throw new Error("Set the version first in the bar, for example v1-158.");
+  return gh.branchName(version, slug);
+}
 // New or changed pictures, not yet committed. Path -> base64 for the commit, plus a local preview URL.
 const pending = new Map<string, { b64: string; url: string }>();
 const JIRA_BASE = "https://jira.tools.sap/browse";
@@ -286,7 +291,7 @@ async function commitVersion(message: string): Promise<void> {
     { path: `${dir}/review/state.json`, content: JSON.stringify(review.state, null, 2) + "\n" },
   ];
   for (const [path, p] of pending) files.push({ path, base64: p.b64 });
-  const r = await gh.commitFiles(slug, files, message);
+  const r = await gh.commitFiles(targetBranch(), files, message);
   branch = r.branch; pending.clear(); dirty = false; store.set(`draft:${slug}`, "");
   imgBust = Date.now();
   $("#saved").textContent = `Saved to GitHub ${stamp()} · ${branch}`;
@@ -430,7 +435,7 @@ async function sign(action: string, status: State["status"]) {
     review.state.status = status;
     if (action === "sent") {
       await commitVersion(`${title()}: sent for review by ${who}`);
-      const pr = await gh.openPR(slug, `${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
+      const pr = await gh.openPR(targetBranch(),`${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
         `Sent for review by ${who}.\n\nChecks: ${errors()} errors, ${findings.filter((f) => f.severity === "warning").length} warnings.\nOpen text suggestions: ${opens().length}.`);
       review.state.pr = pr;
       await commitVersion(`${title()}: pull request #${pr.number}`);
@@ -502,14 +507,45 @@ $("#tabs").addEventListener("click", (e) => { const b = (e.target as HTMLElement
 $("#name").addEventListener("change", () => store.set("name", $<HTMLInputElement>("#name").value));
 $("#role").addEventListener("change", () => { const r = $<HTMLSelectElement>("#role").value; store.set("role", r); $<HTMLInputElement>("#suggest").checked = r === "writer"; renderBar(); renderSide(); });
 $("#suggest").addEventListener("change", renderSide);
-$("#guideline").addEventListener("change", () => load($<HTMLSelectElement>("#guideline").value));
+$("#guideline").addEventListener("change", () => { location.hash = `#/${$<HTMLSelectElement>("#guideline").value}`; });
+window.addEventListener("hashchange", route);
+$("#version").addEventListener("change", () => {
+  const v = $<HTMLInputElement>("#version").value.trim().toLowerCase();
+  if (!v) { version = ""; return; }
+  if (!/^[a-z0-9][a-z0-9.-]*$/.test(v)) { toast("Use a version like v1-158", "err"); return; }
+  location.hash = `#/${v}/${slug}`;
+});
 
-async function load(s: string) {
+// The address decides what is shown: #/<version>/<component> or #/<component> (latest published).
+// Example: #/v1-158/expandable-text. The Jira key never goes into the address.
+function route() {
+  const parts = decodeURIComponent(location.hash.replace(/^#\/?/, "")).split("/").filter(Boolean);
+  const s = parts[parts.length - 1] ?? ""; const v = parts.length > 1 ? parts[0] : "";
+  if (!s) return;
+  load(s, v).catch((e) => toast(`Could not open ${s}: ${(e as Error).message}`, "err"));
+}
+// Shown instead of a 404 when a version is not started yet. Starting it copies the latest published version.
+function showMissing(s: string, v: string, pub: string) {
+  $("#hero").replaceChildren(); $("#onpage-list").replaceChildren(); $("#saved").textContent = "";
+  const box = $("#content"); box.replaceChildren();
+  const card = h("div", "missing");
+  card.append(h("h2", "", `${v} is not started yet`),
+    h("p", "", `This guideline has no update for ${v}. The latest published version is ${pub}. Starting ${v} copies that version. Nothing changes on GitHub until you click Save version.`));
+  const start = btn(`Start ${v} from ${pub}`, () => load(s, v, true), "primary");
+  const latest = h("a", "", `Show the latest published version (${pub})`) as HTMLAnchorElement; latest.href = `#/${s}`;
+  card.append(start, latest); box.append(card);
+}
+async function load(s: string, v = "", allowStart = false) {
   slug = s; store.set("slug", s); selKey = ""; pending.clear();
-  // "main" holds the last published version. An open update lives on update/<slug>.
-  branch = (await gh.openUpdate(s)).branch;
+  $<HTMLSelectElement>("#guideline").value = s; $<HTMLInputElement>("#version").value = v;
+  version = v;
+  // "main" = the latest published version. A version has its own branch: <version>/<component>.
+  const exists = v ? await gh.branchExists(gh.branchName(v, s)) : false;
+  branch = exists ? gh.branchName(v, s) : gh.MAIN;
   const doc = await gh.readJson<any>(`content/${s}/guideline.json`, branch, undefined as any);
   if (!doc) throw new Error(`No guideline.json for ${s}`);
+  const pub = "v" + versionOf(doc.model ?? { component: s, sections: [] }).replace(".", "-");
+  if (v && !exists && v !== pub && !allowStart) { showMissing(s, v, pub); return; }
   docRef = doc; model = doc.model;
   baseline = (await gh.readJson<any>(`content/${s}/guideline.json`, gh.MAIN, { model: null })).model ?? null;
   review = {
@@ -517,7 +553,9 @@ async function load(s: string) {
     history: await gh.readJson(`content/${s}/review/history.json`, branch, []),
     state: await gh.readJson(`content/${s}/review/state.json`, branch, {}),
   };
-  // The Jira key is never put in the page link. It is saved only in this update's state file (review/state.json).
+  // Opened from a Jira link (…/fiori-guideline-studio/?jira=FIORIDESIGN-17845): the ticket is filled in, nobody pastes it.
+  const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
+  if (fromLink && review.state.jira !== fromLink.toUpperCase()) { review.state.jira = fromLink.toUpperCase(); save(); }
   // A draft from an unsaved session in this browser comes back, so nothing is lost on reload.
   const draft = store.get(`draft:${s}`);
   let note = branch === gh.MAIN ? "No open update yet. Your first save creates one." : `Open update: ${branch}`;
@@ -548,5 +586,7 @@ async function load(s: string) {
   const sel = $<HTMLSelectElement>("#guideline"); list.forEach((g) => sel.add(new Option(g.title, g.slug)));
   $<HTMLInputElement>("#name").value = store.get("name");
   const role = store.get("role") || "designer"; $<HTMLSelectElement>("#role").value = role; $<HTMLInputElement>("#suggest").checked = role === "writer";
-  const first = list.find((g) => g.slug === store.get("slug"))?.slug ?? list[0]?.slug; if (first) { sel.value = first; await load(first); }
+  const first = list.find((g) => g.slug === store.get("slug"))?.slug ?? list[0]?.slug;
+  if (location.hash.length > 2) route();
+  else if (first) { location.hash = `#/${first}`; }
 })();

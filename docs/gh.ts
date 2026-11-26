@@ -44,20 +44,15 @@ export async function rules(): Promise<unknown> {
   return (await fetch(`${rawBase(MAIN)}/standards/rules.json`)).json();
 }
 
-// Does an update branch already exist for this guideline?
-export async function branchOf(slug: string): Promise<string | undefined> {
-  const name = `update/${slug}`;
-  try { await api(`/git/ref/heads/${name}`); return name; } catch (e) { if (e instanceof GhError && e.status === 404) return undefined; throw e; }
+// Branch name = version/component, for example v1-158/expandable-text.
+// The Jira key is NOT part of the name. It is stored in the review state.
+export const branchName = (version: string, slug: string) => `${version}/${slug}`;
+export async function branchExists(branch: string): Promise<boolean> {
+  try { await api(`/git/ref/heads/${branch}`); return true; } catch (e) { if (e instanceof GhError && e.status === 404) return false; throw e; }
 }
 
-export async function openUpdate(slug: string) {
-  const branch = (await branchOf(slug)) ?? MAIN;
-  return { branch, editable: branch !== MAIN };
-}
-
-// One commit on the update branch with several files. Creates the branch from main the first time.
-export async function commitFiles(slug: string, files: { path: string; content?: string; base64?: string }[], message: string): Promise<{ branch: string; sha: string }> {
-  const branch = `update/${slug}`;
+// One commit on the given branch with several files. Creates the branch from main the first time.
+export async function commitFiles(branch: string, files: { path: string; content?: string; base64?: string }[], message: string): Promise<{ branch: string; sha: string }> {
   let head: string;
   try { head = (await api<{ object: { sha: string } }>(`/git/ref/heads/${branch}`, {}, true)).object.sha; }
   catch (e) {
@@ -78,8 +73,7 @@ export async function commitFiles(slug: string, files: { path: string; content?:
   return { branch, sha: c.sha };
 }
 
-export async function openPR(slug: string, title: string, body: string): Promise<{ number: number; url: string }> {
-  const branch = `update/${slug}`;
+export async function openPR(branch: string, title: string, body: string): Promise<{ number: number; url: string }> {
   const open = await api<any[]>(`/pulls?state=open&head=${encodeURIComponent(`${REPO.split("/")[0]}:${branch}`)}`);
   const pr = open[0] ?? (await api(`/pulls`, { method: "POST", json: { title, head: branch, base: MAIN, body } }, true));
   return { number: pr.number, url: pr.html_url };
