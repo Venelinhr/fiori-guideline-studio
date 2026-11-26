@@ -1,3 +1,12 @@
 {
-  "jira": "FIORIDESIGN-17845"
+  "jira": "FIORIDESIGN-17845",
+  "signoffs": [
+    {
+      "role": "designer",
+      "name": "Venelin Hristov",
+      "action": "sent",
+      "time": "2026-11-26T18:39:12.606Z"
+    }
+  ],
+  "status": "review"
 }
