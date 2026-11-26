@@ -572,54 +572,83 @@ var imgSrc = (b) => {
   const p = `content/${slug2}/${imageFile(b)}`;
   return pending.get(p)?.url ?? `${rawBase(branch)}/${p}?t=${imgBust}`;
 };
+var icon = (name, w, hgt, cls = "") => {
+  const i = h("img", cls);
+  i.src = `./assets/${name}.svg`;
+  i.width = w;
+  i.height = hgt;
+  i.alt = "";
+  return i;
+};
+var INFO_TITLE = { toptip: "Top Tips", information: "Information", warning: "Warning", guideline: "Guideline", hint: "Hint", changes: "Changes" };
+function badgeEl(raw) {
+  const m = raw.replace(/<[^>]+>/g, "").trim().match(/^:badge,([^:]*):$/);
+  if (!m) return null;
+  const parts = m[1].split(",").map((x) => x.trim());
+  const label = parts[parts.length - 1];
+  const kind = /sapui5/i.test(label) ? "blue" : /figma/i.test(label) ? "white" : "grey";
+  const t = h("span", `tag ${kind}`, label);
+  t.title = "Library tag (fixed by the template)";
+  return t;
+}
 function blockEl(b) {
   switch (b.type) {
     case "text": {
-      const w = h("div", "blk");
+      const w = h("div", "txt");
       w.append(fieldEl(`${b.id}:html`, "div", "Write text"));
       return w;
     }
     case "message-strip": {
-      const w = h("div", `blk strip ${b.style}`);
-      w.append(fieldEl(`${b.id}:html`, "div"));
+      const w = h("div", `ms ${b.style}`);
+      w.append(icon("info", 16, 16, "ms-icon"), fieldEl(`${b.id}:html`, "div"), icon("close", 16, 16, "ms-close"));
       return w;
     }
     case "info": {
-      const w = h("div", "blk info");
-      w.dataset.label = b.infoClass === "toptip" ? "Top tips" : b.infoClass;
-      w.append(fieldEl(`${b.id}:html`, "div"));
+      const w = h("div", `guidance ${b.infoClass}`);
+      const ib = h("div", "gd-icon");
+      ib.append(icon("lightbulb", 48, 48));
+      w.append(ib, h("div", "gd-title", INFO_TITLE[b.infoClass] ?? b.infoClass), fieldEl(`${b.id}:html`, "div"));
       return w;
     }
     case "when-to-use": {
-      const w = h("div", "blk wtu");
+      const w = h("div", "dodont");
       b.items.forEach((it, i) => {
-        const c = h("div", it.doOrDont);
-        c.append(fieldEl(`${b.id}:items.${i}`, "div"));
+        const c = h("div", `dd ${it.doOrDont}`);
+        c.append(h("div", "dd-title", it.doOrDont === "do" ? "Do" : "Don\u2019t"), fieldEl(`${b.id}:items.${i}`, "div"));
         w.append(c);
       });
       return w;
     }
     case "table": {
-      const t = h("table", "gt");
+      const wrap = h("div", "tbl");
+      const t = h("table");
       b.rows.forEach((r, ri) => {
-        const tr = h("tr");
-        r.forEach((_c, ci) => tr.append(fieldEl(`${b.id}:rows.${ri}.${ci}`, "td")));
+        const tr = h("tr", ri === 0 ? "head" : "");
+        r.forEach((c, ci) => {
+          const badge = ri > 0 ? badgeEl(c) : null;
+          if (badge) {
+            const td = h("td");
+            td.append(badge);
+            tr.append(td);
+          } else tr.append(fieldEl(`${b.id}:rows.${ri}.${ci}`, ri === 0 ? "th" : "td"));
+        });
         t.append(tr);
       });
-      return t;
+      wrap.append(t);
+      return wrap;
     }
     case "columns": {
-      const w = h("div", "blk cols");
+      const w = h("div", "cols");
       w.style.gridTemplateColumns = `repeat(${b.columnCount}, minmax(0, 1fr))`;
       b.columns.forEach((col) => {
-        const c = h("div");
+        const c = h("div", "col");
         col.forEach((x) => c.append(blockEl(x)));
         w.append(c);
       });
       return w;
     }
     case "image": {
-      const fig = h("figure", b.variant);
+      const fig = h("figure", `img ${b.variant}`);
       const box = h("div", "imgbox");
       box.dataset.img = b.id;
       const img = h("img");
@@ -627,7 +656,7 @@ function blockEl(b) {
       img.alt = b.alt ?? "";
       img.loading = "lazy";
       box.append(img);
-      const alt = h("div", "alt");
+      const alt = h("div", "alt editonly");
       alt.append(h("b", "", "ALT"), fieldEl(`${b.id}:alt`, "span", "Add the alt text"));
       fig.append(box, fieldEl(`${b.id}:caption`, "figcaption", "Add a caption"), alt);
       return fig;
@@ -638,20 +667,77 @@ function blockEl(b) {
       return h("div");
   }
 }
+var versionOf = (m) => {
+  let v = "";
+  const walk = (bs) => bs.forEach((b) => {
+    if (!v && b.type === "image") v = b.figmaName?.match(/_v(\d+\.\d+)$/)?.[1] ?? "";
+    if (b.type === "columns") b.columns.forEach(walk);
+  });
+  m.sections.forEach((s) => walk(s.blocks));
+  return v;
+};
 function renderPage() {
-  const page2 = $("#page"), top = page2.scrollTop;
-  page2.replaceChildren();
-  page2.append(fieldEl("page:title", "h1"));
+  const y = window.scrollY;
+  const hero = $("#hero");
+  hero.replaceChildren();
+  const bc = h("div", "breadcrumb");
+  bc.append(h("span", "", "Home"), h("span", "", "/"), h("span", "", "Components"), h("span", "", "/"), h("span", "", model.pageTitle ?? model.component));
+  const ver = h("div", "version");
+  ver.append(h("span", "", `Version ${versionOf(model) || "\u2014"}`), icon("arrow-down", 16, 16));
+  hero.append(icon("anvil-grid", 555, 172, "anvil"), bc, fieldEl("page:title", "h1"), ver);
+  const content = $("#content");
+  content.replaceChildren();
+  const nav = $("#onpage-list");
+  nav.replaceChildren();
+  let body = null, first = true;
   for (const s of model.sections) {
-    const sec = h("section");
+    if (s.noTitle) {
+      s.blocks.forEach((b) => content.append(blockEl(b)));
+      continue;
+    }
+    if (s.titleLevel === "h3" || s.titleLevel === "h4") {
+      if (!body) {
+        const sec2 = h("section", "sec");
+        body = h("div", "sec-body");
+        sec2.append(body);
+        content.append(sec2);
+      }
+      const sub = h("div", `sub ${s.titleLevel}`);
+      sub.append(fieldEl(`${s.id}:title`, s.titleLevel, "Heading"));
+      s.blocks.forEach((b) => sub.append(blockEl(b)));
+      body.append(sub);
+      continue;
+    }
+    if (!first) content.append(h("hr", "sep"));
+    first = false;
+    const sec = h("section", "sec");
+    sec.id = `sec-${s.id}`;
     sec.dataset.sid = s.id;
-    if (!s.noTitle) sec.append(fieldEl(`${s.id}:title`, s.titleLevel ?? "h2", "Heading"));
-    s.blocks.forEach((b) => sec.append(blockEl(b)));
-    page2.append(sec);
+    sec.append(fieldEl(`${s.id}:title`, "h2", "Heading"));
+    body = h("div", "sec-body");
+    sec.append(body);
+    s.blocks.forEach((b) => body.append(blockEl(b)));
+    content.append(sec);
+    const a = h("a", "op-item", s.title);
+    a.href = `#sec-${s.id}`;
+    a.dataset.sid = s.id;
+    nav.append(a);
   }
-  page2.scrollTop = top;
+  window.scrollTo(0, y);
   flag();
+  spy();
 }
+function spy() {
+  const items = [...document.querySelectorAll("#onpage-list .op-item")];
+  if (!items.length) return;
+  let cur = items[0].dataset.sid;
+  for (const it of items) {
+    const s = document.getElementById(`sec-${it.dataset.sid}`);
+    if (s && s.getBoundingClientRect().top < 140) cur = it.dataset.sid;
+  }
+  items.forEach((it) => it.classList.toggle("on", it.dataset.sid === cur));
+}
+window.addEventListener("scroll", spy, { passive: true });
 function refreshField(key) {
   const old = document.querySelector(`[data-key="${CSS.escape(key)}"]`);
   if (!old) return renderPage();
@@ -815,6 +901,10 @@ function renderSide() {
     b.querySelector(".n")?.remove();
     if (counts[id][0]) b.append(h("span", counts[id][1] ? "n bad" : "n", String(counts[id][0])));
   });
+  const db = $("#drawerBtn");
+  db.replaceChildren(document.createTextNode("Review panel"));
+  if (errors()) db.append(h("span", "n bad", String(errors())));
+  else if (opens().length) db.append(h("span", "n", String(opens().length)));
   const p = $("#panel");
   p.replaceChildren();
   if (tab === "checks") {
@@ -983,6 +1073,7 @@ Open text suggestions: ${opens().length}.`
     return;
   }
   tab = "jira";
+  document.body.classList.add("drawer-open");
   renderPage();
   renderSide();
   renderBar();
@@ -1125,6 +1216,9 @@ $("#tools").addEventListener("mousedown", (e) => {
     else if (/^https?:\/\//i.test(url.trim())) document.execCommand("createLink", false, url.trim());
   } else document.execCommand(b.dataset.cmd);
 });
+$("#drawerBtn").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
+$("#drawerClose").addEventListener("click", () => document.body.classList.remove("drawer-open"));
+$("#hints").addEventListener("change", (e) => document.body.classList.toggle("no-hints", !e.target.checked));
 $("#tabs").addEventListener("click", (e) => {
   const b = e.target.closest("[data-tab]");
   if (!b) return;

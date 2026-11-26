@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Navigation Icon" clip-path="url(#clip0_0_3441)">
+<path id="Icon" d="M2.40003 1.6C1.9582 1.6 1.60003 1.95817 1.60003 2.4V8.8H7.20003V6.4V1.6H2.40003ZM7.20003 10.4H1.60003V13.6C1.60003 14.0418 1.9582 14.4 2.40003 14.4H7.20003V10.4ZM3.05176e-05 9.6V2.4C3.05176e-05 1.07452 1.07455 0 2.40003 0H8.00003H13.6C14.9255 0 16 1.07452 16 2.4V6.4V13.6C16 14.9255 14.9255 16 13.6 16H8.00003H2.40003C1.07455 16 3.05176e-05 14.9255 3.05176e-05 13.6V9.6ZM8.80003 9.6V7.2H14.4V13.6C14.4 14.0418 14.0419 14.4 13.6 14.4H8.80003V9.6ZM8.80003 5.6H14.4V2.4C14.4 1.95817 14.0419 1.6 13.6 1.6H8.80003V5.6Z" fill-rule="evenodd" clip-rule="evenodd" fill="#223548"/>
+</g>
+<defs>
+<clipPath id="clip0_0_3441">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>

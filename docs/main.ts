@@ -134,35 +134,80 @@ function fieldEl(key: string, tag: string, ph = ""): HTMLElement {
   return el;
 }
 const imgSrc = (b: ImageBlock) => { const p = `content/${slug}/${imageFile(b)}`; return pending.get(p)?.url ?? `${gh.rawBase(branch)}/${p}?t=${imgBust}`; };
+// Template parts follow the approved AEM template (design-system-portal_* blocks) and the Figma "Guideline Template" frame.
+const icon = (name: string, w: number, hgt: number, cls = "") => { const i = h("img", cls) as HTMLImageElement; i.src = `./assets/${name}.svg`; i.width = w; i.height = hgt; i.alt = ""; return i; };
+const INFO_TITLE: Record<string, string> = { toptip: "Top Tips", information: "Information", warning: "Warning", guideline: "Guideline", hint: "Hint", changes: "Changes" };
+// AEM table badge token, for example ":badge, info, large, _, SAPUI5:". Shown as the template's Tag, not as text.
+function badgeEl(raw: string): HTMLElement | null {
+  const m = raw.replace(/<[^>]+>/g, "").trim().match(/^:badge,([^:]*):$/); if (!m) return null;
+  const parts = m[1].split(",").map((x) => x.trim()); const label = parts[parts.length - 1];
+  const kind = /sapui5/i.test(label) ? "blue" : /figma/i.test(label) ? "white" : "grey";
+  const t = h("span", `tag ${kind}`, label); t.title = "Library tag (fixed by the template)"; return t;
+}
 function blockEl(b: any): HTMLElement {
   switch (b.type) {
-    case "text": { const w = h("div", "blk"); w.append(fieldEl(`${b.id}:html`, "div", "Write text")); return w; }
-    case "message-strip": { const w = h("div", `blk strip ${b.style}`); w.append(fieldEl(`${b.id}:html`, "div")); return w; }
-    case "info": { const w = h("div", "blk info"); w.dataset.label = b.infoClass === "toptip" ? "Top tips" : b.infoClass; w.append(fieldEl(`${b.id}:html`, "div")); return w; }
-    case "when-to-use": { const w = h("div", "blk wtu"); b.items.forEach((it: any, i: number) => { const c = h("div", it.doOrDont); c.append(fieldEl(`${b.id}:items.${i}`, "div")); w.append(c); }); return w; }
-    case "table": { const t = h("table", "gt"); b.rows.forEach((r: string[], ri: number) => { const tr = h("tr"); r.forEach((_c, ci) => tr.append(fieldEl(`${b.id}:rows.${ri}.${ci}`, "td"))); t.append(tr); }); return t; }
-    case "columns": { const w = h("div", "blk cols"); w.style.gridTemplateColumns = `repeat(${b.columnCount}, minmax(0, 1fr))`; b.columns.forEach((col: Block[]) => { const c = h("div"); col.forEach((x) => c.append(blockEl(x))); w.append(c); }); return w; }
+    case "text": { const w = h("div", "txt"); w.append(fieldEl(`${b.id}:html`, "div", "Write text")); return w; }
+    case "message-strip": {
+      const w = h("div", `ms ${b.style}`); w.append(icon("info", 16, 16, "ms-icon"), fieldEl(`${b.id}:html`, "div"), icon("close", 16, 16, "ms-close")); return w;
+    }
+    case "info": {
+      const w = h("div", `guidance ${b.infoClass}`); const ib = h("div", "gd-icon"); ib.append(icon("lightbulb", 48, 48)); w.append(ib, h("div", "gd-title", INFO_TITLE[b.infoClass] ?? b.infoClass), fieldEl(`${b.id}:html`, "div")); return w;
+    }
+    case "when-to-use": {
+      const w = h("div", "dodont"); b.items.forEach((it: any, i: number) => { const c = h("div", `dd ${it.doOrDont}`); c.append(h("div", "dd-title", it.doOrDont === "do" ? "Do" : "Don’t"), fieldEl(`${b.id}:items.${i}`, "div")); w.append(c); }); return w;
+    }
+    case "table": {
+      const wrap = h("div", "tbl"); const t = h("table");
+      b.rows.forEach((r: string[], ri: number) => { const tr = h("tr", ri === 0 ? "head" : ""); r.forEach((c, ci) => { const badge = ri > 0 ? badgeEl(c) : null; if (badge) { const td = h("td"); td.append(badge); tr.append(td); } else tr.append(fieldEl(`${b.id}:rows.${ri}.${ci}`, ri === 0 ? "th" : "td")); }); t.append(tr); });
+      wrap.append(t); return wrap;
+    }
+    case "columns": { const w = h("div", "cols"); w.style.gridTemplateColumns = `repeat(${b.columnCount}, minmax(0, 1fr))`; b.columns.forEach((col: Block[]) => { const c = h("div", "col"); col.forEach((x) => c.append(blockEl(x))); w.append(c); }); return w; }
     case "image": {
-      const fig = h("figure", b.variant); const box = h("div", "imgbox"); box.dataset.img = b.id;
+      const fig = h("figure", `img ${b.variant}`); const box = h("div", "imgbox"); box.dataset.img = b.id;
       const img = h("img") as HTMLImageElement; img.src = imgSrc(b); img.alt = b.alt ?? ""; img.loading = "lazy"; box.append(img);
-      const alt = h("div", "alt"); alt.append(h("b", "", "ALT"), fieldEl(`${b.id}:alt`, "span", "Add the alt text"));
+      const alt = h("div", "alt editonly"); alt.append(h("b", "", "ALT"), fieldEl(`${b.id}:alt`, "span", "Add the alt text"));
       fig.append(box, fieldEl(`${b.id}:caption`, "figcaption", "Add a caption"), alt); return fig;
     }
     case "title": return h(`h${Math.min(4, Math.max(2, b.level))}`, "", b.text);
     default: return h("div");
   }
 }
+const versionOf = (m: GuidelineModel): string => { let v = ""; const walk = (bs: any[]) => bs.forEach((b) => { if (!v && b.type === "image") v = b.figmaName?.match(/_v(\d+\.\d+)$/)?.[1] ?? ""; if (b.type === "columns") b.columns.forEach(walk); }); m.sections.forEach((s) => walk(s.blocks)); return v; };
 function renderPage() {
-  const page = $("#page"), top = page.scrollTop; page.replaceChildren();
-  page.append(fieldEl("page:title", "h1"));
+  const y = window.scrollY;
+  // Hero (Figma "Hero"): breadcrumb, article name, version button, anvil pattern.
+  const hero = $("#hero"); hero.replaceChildren();
+  const bc = h("div", "breadcrumb"); bc.append(h("span", "", "Home"), h("span", "", "/"), h("span", "", "Components"), h("span", "", "/"), h("span", "", model.pageTitle ?? model.component));
+  const ver = h("div", "version"); ver.append(h("span", "", `Version ${versionOf(model) || "—"}`), icon("arrow-down", 16, 16));
+  hero.append(icon("anvil-grid", 555, 172, "anvil"), bc, fieldEl("page:title", "h1"), ver);
+  // Content sections: one AEM section per H2, H3 sub-sections inside, a divider line between sections.
+  const content = $("#content"); content.replaceChildren();
+  const nav = $("#onpage-list"); nav.replaceChildren();
+  let body: HTMLElement | null = null, first = true;
   for (const s of model.sections as any[]) {
-    const sec = h("section"); sec.dataset.sid = s.id;
-    if (!s.noTitle) sec.append(fieldEl(`${s.id}:title`, s.titleLevel ?? "h2", "Heading"));
-    s.blocks.forEach((b: Block) => sec.append(blockEl(b)));
-    page.append(sec);
+    if (s.noTitle) { s.blocks.forEach((b: Block) => content.append(blockEl(b))); continue; }
+    if (s.titleLevel === "h3" || s.titleLevel === "h4") {
+      if (!body) { const sec = h("section", "sec"); body = h("div", "sec-body"); sec.append(body); content.append(sec); }
+      const sub = h("div", `sub ${s.titleLevel}`); sub.append(fieldEl(`${s.id}:title`, s.titleLevel, "Heading")); s.blocks.forEach((b: Block) => sub.append(blockEl(b))); body.append(sub);
+      continue;
+    }
+    if (!first) content.append(h("hr", "sep")); first = false;
+    const sec = h("section", "sec"); sec.id = `sec-${s.id}`; sec.dataset.sid = s.id;
+    sec.append(fieldEl(`${s.id}:title`, "h2", "Heading")); body = h("div", "sec-body"); sec.append(body);
+    s.blocks.forEach((b: Block) => body!.append(blockEl(b)));
+    content.append(sec);
+    const a = h("a", "op-item", s.title) as HTMLAnchorElement; a.href = `#sec-${s.id}`; a.dataset.sid = s.id; nav.append(a);
   }
-  page.scrollTop = top; flag();
+  window.scrollTo(0, y); flag(); spy();
 }
+// "On this page": the item of the section in view is blue with the indicator line.
+function spy() {
+  const items = [...document.querySelectorAll<HTMLElement>("#onpage-list .op-item")]; if (!items.length) return;
+  let cur = items[0].dataset.sid;
+  for (const it of items) { const s = document.getElementById(`sec-${it.dataset.sid}`); if (s && s.getBoundingClientRect().top < 140) cur = it.dataset.sid; }
+  items.forEach((it) => it.classList.toggle("on", it.dataset.sid === cur));
+}
+window.addEventListener("scroll", spy, { passive: true });
 function refreshField(key: string) {
   const old = document.querySelector<HTMLElement>(`[data-key="${CSS.escape(key)}"]`); if (!old) return renderPage();
   old.replaceWith(fieldEl(key, old.dataset.tag!, old.dataset.ph)); flag();
@@ -268,6 +313,8 @@ function renderSide() {
     const id = b.dataset.tab!; b.classList.toggle("on", id === tab); b.querySelector(".n")?.remove();
     if (counts[id][0]) b.append(h("span", counts[id][1] ? "n bad" : "n", String(counts[id][0])));
   });
+  const db = $("#drawerBtn"); db.replaceChildren(document.createTextNode("Review panel"));
+  if (errors()) db.append(h("span", "n bad", String(errors()))); else if (opens().length) db.append(h("span", "n", String(opens().length)));
   const p = $("#panel"); p.replaceChildren();
   if (tab === "checks") {
     const s = h("div", "sum"); s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at · ${findings.filter((f) => f.severity === "info").length} notes`)); p.append(s);
@@ -366,7 +413,7 @@ async function sign(action: string, status: State["status"]) {
     review.state.signoffs = (review.state.signoffs ?? []).slice(0, n0); review.state.status = prevStatus;
     renderBar(); $("#saved").textContent = `Not done: ${(e as Error).message}`; return;
   }
-  tab = "jira"; renderPage(); renderSide(); renderBar();
+  tab = "jira"; document.body.classList.add("drawer-open"); renderPage(); renderSide(); renderBar();
 }
 function renderBar() {
   const st = review.state.status ?? "draft", role = $<HTMLSelectElement>("#role").value;
@@ -416,6 +463,9 @@ $("#tools").addEventListener("mousedown", (e) => {
   if (b.dataset.cmd === "link") { const url = window.prompt("Link address (https://…). Leave empty to remove the link."); if (url === null) return; if (!url.trim()) document.execCommand("unlink"); else if (/^https?:\/\//i.test(url.trim())) document.execCommand("createLink", false, url.trim()); }
   else document.execCommand(b.dataset.cmd!);
 });
+$("#drawerBtn").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
+$("#drawerClose").addEventListener("click", () => document.body.classList.remove("drawer-open"));
+$("#hints").addEventListener("change", (e) => document.body.classList.toggle("no-hints", !(e.target as HTMLInputElement).checked));
 $("#tabs").addEventListener("click", (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>("[data-tab]"); if (!b) return; tab = b.dataset.tab!; store.set("tab", tab); renderSide(); });
 $("#name").addEventListener("change", () => store.set("name", $<HTMLInputElement>("#name").value));
 $("#role").addEventListener("change", () => { const r = $<HTMLSelectElement>("#role").value; store.set("role", r); $<HTMLInputElement>("#suggest").checked = r === "writer"; renderBar(); renderSide(); });
