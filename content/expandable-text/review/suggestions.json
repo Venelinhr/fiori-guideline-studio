@@ -70,5 +70,16 @@
     "author": "Venelin Hristov",
     "time": "2026-11-26T18:49:39.296Z",
     "status": "open"
+  },
+  {
+    "id": "mil5q1hw",
+    "key": "s2b2:html",
+    "label": "Info box",
+    "section": "Intro > Component availability",
+    "old": "<ul><li>Choose inline expansion when space allows and the surrounding context helps users understand the full text.</li><li>Choose expanded in <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/popover\">popover</a> mode when inline expansion would disrupt the layout.</li><li>Set the character limit based on the use case. For example, a form and a list row may need very different thresholds.</li><li>Rewrite the text instead of relying on truncation whenever it can be shortened without losing meaning.</li><li>Use expandable text only for optional details. If users need the full content to complete a task, show it by default.</li></ul>",
+    "new": "<ul><li>Choose inline expansion when space allows and the surrounding content helps users understand the full text.</li><li>Choose expanded in <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/popover\">popover</a> mode when inline expansion would disrupt the layout.</li><li>Set the character limit based on the use case. For example, a form and a list row may need very different thresholds.</li><li>Rewrite the text instead of relying on truncation whenever it can be shortened without losing meaning.</li><li>Use expandable text only for optional details. If users need the full content to complete a task, show it by default.</li></ul>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T18:53:55.047Z",
+    "status": "open"
   }
 ]
