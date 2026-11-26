@@ -25,7 +25,7 @@
         "blocks": [
           {
             "type": "text",
-            "html": "<p>Expandableee text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 123</p>",
+            "html": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
             "id": "s1b0"
           },
           {
@@ -340,7 +340,7 @@
         "id": "s15"
       },
       {
-        "title": "Gestures & Mapping",
+        "title": "Gestures and Mapping",
         "blocks": [
           {
             "type": "text",
@@ -565,7 +565,7 @@
         "blocks": [
           {
             "type": "text",
-            "html": "<p>There are no differences between SAPUI5 and SAP Web Components regarding thе component's behaviors and framework-specific patterns.</p>",
+            "html": "<p>There are no differences between SAPUI5 and SAP Web Components regarding the component's behaviors and framework-specific patterns.</p>",
             "id": "s28b0"
           }
         ],
