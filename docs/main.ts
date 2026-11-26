@@ -23,6 +23,8 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 let branch = gh.MAIN, docRef: any = {}, dirty = false;
 // New or changed pictures, not yet committed. Path -> base64 for the commit, plus a local preview URL.
 const pending = new Map<string, { b64: string; url: string }>();
+const JIRA_BASE = "https://jira.tools.sap/browse";
+const JIRA_KEY = /[A-Za-z][A-Za-z0-9]+-\d+/;
 let slug = "", model: GuidelineModel, baseline: GuidelineModel | null = null, rules: Rules;
 let review: { suggestions: Sug[]; history: Hist[]; state: State } = { suggestions: [], history: [], state: {} };
 let F = new Map<string, Field>(), findings: Finding[] = [], tab = store.get("tab") || "checks", selKey = "", before = "", imgBust = Date.now();
@@ -378,7 +380,10 @@ function renderSide() {
       else { review.state.jira = raw; }
       save(); renderSide();
     });
-    p.append(h("h5", "", "Jira task"), inp, h("h5", "", "Status card (one comment, always current)"), h("pre", "jira", statusCard()));
+    const key = review.state.jira?.match(JIRA_KEY)?.[0];
+    const jiraWrap = h("div", "jira-task"); jiraWrap.append(inp);
+    if (key) { const a = h("a", "", `Open ${key} in Jira ↗`) as HTMLAnchorElement; a.href = `${JIRA_BASE}/${key}`; a.target = "_blank"; a.rel = "noopener"; jiraWrap.append(a); }
+    p.append(h("h5", "", "Jira task"), jiraWrap, h("h5", "", "Status card (one comment, always current)"), h("pre", "jira", statusCard()));
     p.append(h("h5", "", "Sign-off lines (one comment per click)"));
     const lines = (review.state.signoffs ?? []).map(signLine); p.append(h("pre", "jira", lines.length ? lines.join("\n") : "No sign-offs yet."));
     p.append(h("p", "muted", "Preview only. Jira is not connected yet. The GitHub pull request is the record for now."));
@@ -512,6 +517,9 @@ async function load(s: string) {
     history: await gh.readJson(`content/${s}/review/history.json`, branch, []),
     state: await gh.readJson(`content/${s}/review/state.json`, branch, {}),
   };
+  // Opened from a Jira link (…/fiori-guideline-studio/?jira=FIORIDESIGN-17845): the ticket is filled in, nobody pastes it.
+  const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
+  if (fromLink && review.state.jira !== fromLink.toUpperCase()) { review.state.jira = fromLink.toUpperCase(); save(); }
   // A draft from an unsaved session in this browser comes back, so nothing is lost on reload.
   const draft = store.get(`draft:${s}`);
   let note = branch === gh.MAIN ? "No open update yet. Your first save creates one." : `Open update: ${branch}`;

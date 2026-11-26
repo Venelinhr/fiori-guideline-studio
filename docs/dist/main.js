@@ -385,6 +385,8 @@ var branch = MAIN;
 var docRef = {};
 var dirty = false;
 var pending = /* @__PURE__ */ new Map();
+var JIRA_BASE = "https://jira.tools.sap/browse";
+var JIRA_KEY = /[A-Za-z][A-Za-z0-9]+-\d+/;
 var slug2 = "";
 var model;
 var baseline = null;
@@ -1043,7 +1045,17 @@ function renderSide() {
       save();
       renderSide();
     });
-    p.append(h("h5", "", "Jira task"), inp, h("h5", "", "Status card (one comment, always current)"), h("pre", "jira", statusCard()));
+    const key = review2.state.jira?.match(JIRA_KEY)?.[0];
+    const jiraWrap = h("div", "jira-task");
+    jiraWrap.append(inp);
+    if (key) {
+      const a = h("a", "", `Open ${key} in Jira \u2197`);
+      a.href = `${JIRA_BASE}/${key}`;
+      a.target = "_blank";
+      a.rel = "noopener";
+      jiraWrap.append(a);
+    }
+    p.append(h("h5", "", "Jira task"), jiraWrap, h("h5", "", "Status card (one comment, always current)"), h("pre", "jira", statusCard()));
     p.append(h("h5", "", "Sign-off lines (one comment per click)"));
     const lines = (review2.state.signoffs ?? []).map(signLine);
     p.append(h("pre", "jira", lines.length ? lines.join("\n") : "No sign-offs yet."));
@@ -1303,6 +1315,11 @@ async function load(s) {
     history: await readJson(`content/${s}/review/history.json`, branch, []),
     state: await readJson(`content/${s}/review/state.json`, branch, {})
   };
+  const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
+  if (fromLink && review2.state.jira !== fromLink.toUpperCase()) {
+    review2.state.jira = fromLink.toUpperCase();
+    save();
+  }
   const draft = store.get(`draft:${s}`);
   let note = branch === MAIN ? "No open update yet. Your first save creates one." : `Open update: ${branch}`;
   if (draft) {

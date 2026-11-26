@@ -194,3 +194,5 @@ h5 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spac
 .toast.busy .toast-icon { animation: spin 1.2s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 #commit:disabled { opacity: .6; }
+.jira-task { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.jira-task a { color: var(--link); font-weight: 600; }
