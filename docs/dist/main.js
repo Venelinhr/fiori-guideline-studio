@@ -1520,7 +1520,7 @@ function renderBar() {
     mark.title = "Claude is checking the article. About a minute.";
   } else if (!lc && review.state.dismissed) {
     mark.className = "checkbadge none";
-    mark.textContent = `Check dismissed by ${review.state.dismissed.by}`;
+    mark.textContent = "Check dismissed";
     mark.title = `Dismissed ${when(review.state.dismissed.time)}. Click Run check to check again.`;
   } else if (!lc) {
     mark.className = "checkbadge none";

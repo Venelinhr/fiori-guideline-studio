@@ -638,7 +638,7 @@ function renderBar() {
   const lc = review.state.lastCheck, mark = $("#checkbadge"), stale = checkIsStale();
   const nice = (x: string) => new Date(x).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   if (aiState.phase === "running") { mark.className = "checkbadge none"; mark.textContent = "⏳ AI check in progress"; mark.title = "Claude is checking the article. About a minute."; }
-  else if (!lc && review.state.dismissed) { mark.className = "checkbadge none"; mark.textContent = `Check dismissed by ${review.state.dismissed.by}`; mark.title = `Dismissed ${when(review.state.dismissed.time)}. Click Run check to check again.`; }
+  else if (!lc && review.state.dismissed) { mark.className = "checkbadge none"; mark.textContent = "Check dismissed"; mark.title = `Dismissed ${when(review.state.dismissed.time)}. Click Run check to check again.`; }
   else if (!lc) { mark.className = "checkbadge none"; mark.textContent = "No check run yet"; mark.title = "Click Run check. A person can also skip it and check by hand."; }
   else if (stale && !lc.skipped) { mark.className = "checkbadge none"; mark.textContent = "⟳ Text changed · run Check again"; mark.title = "The text changed after the last check, so its count is out of date. Click Run check."; }
   else if (lc.skipped) { mark.className = `checkbadge skipped${stale ? " stale" : ""}`; mark.textContent = "⏭ Check skipped"; mark.title = "A person checked the article by hand."; }
