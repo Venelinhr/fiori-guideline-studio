@@ -1877,7 +1877,7 @@ function renderAi(p) {
   const open = aiReport ? aiReport.findings.filter((f) => !done.has(aiKey(f))) : [];
   if (aiReport) {
     box.append(h("p", "", `AI check (${aiReport.model}) \xB7 ${when(aiReport.time)}`));
-    box.append(h("p", "", `${aiReport.errors} errors, ${aiReport.hints} hints, ${open.length} still open`));
+    box.append(h("p", "", `${open.length} still open`));
   } else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
   p.append(box);
   if (open.length) {
