@@ -644,12 +644,14 @@ function renderBar() {
   // Flow: designer <-> UX writer as often as needed -> either sends to the editor -> the editor reviews, fixes it or sends it back -> Approve -> upload to AEM.
   const stage = (st as string) in LEGACY ? LEGACY[st as string] : st;
   const toEditorBlock = opens().length ? "Open suggestions are waiting for the designer to accept or reject" : errors() ? "Run the check and fix the errors first" : "";
-  if (role === "designer" && (stage === "draft" || stage === "designer")) {
-    add("Send to UX writer", () => sign(stage === "draft" ? "sent" : "to-writer", "writer"), stage === "draft" ? "primary" : "", stage === "draft" && errors() ? "Fix the errors in Checks first" : "");
+  // The designer and the UX writer can pass the article back and forth, and either can send it to the editor, at any time before the editor has it.
+  const open3 = stage === "draft" || stage === "writer" || stage === "designer";
+  if (role === "designer" && open3) {
+    if (stage !== "writer") add("Send to UX writer", () => sign(stage === "draft" ? "sent" : "to-writer", "writer"), stage === "draft" ? "primary" : "", stage === "draft" && errors() ? "Fix the errors in Checks first" : "");
     add("Send to editor", () => sign("to-editor", "editor"), "ok", toEditorBlock);
   }
-  if (role === "writer" && stage === "writer") {
-    add("Return to designer", () => sign("returned", "designer"), "primary");
+  if (role === "writer" && open3 && stage !== "draft") {
+    if (stage === "writer") add("Return to designer", () => sign("returned", "designer"), "primary");
     add("Send to editor", () => sign("to-editor", "editor"), "ok", toEditorBlock);
   }
   if (role === "editor" && stage === "editor") {
