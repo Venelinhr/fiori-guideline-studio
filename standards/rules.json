@@ -50,18 +50,6 @@
       "right": "whitespace",
       "severity": "info",
       "why": "Both forms are in this guideline. Pick one."
-    },
-    {
-      "wrong": "seamless",
-      "right": "(state what the user gets)",
-      "why": "Marketing word. Say what happens instead.",
-      "severity": "warning"
-    },
-    {
-      "wrong": "powerful",
-      "right": "(state what it does)",
-      "why": "Marketing word. Say what happens instead.",
-      "severity": "warning"
     }
   ],
   "bannedPhrases": [
@@ -92,6 +80,14 @@
     {
       "phrase": "click here",
       "why": "Link text must say where it goes."
+    },
+    {
+      "phrase": "seamless",
+      "why": "Marketing word. Say what happens instead."
+    },
+    {
+      "phrase": "powerful",
+      "why": "Marketing word. Say what happens instead."
     }
   ],
   "placeholders": [
