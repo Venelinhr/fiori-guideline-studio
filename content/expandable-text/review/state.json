@@ -12,10 +12,11 @@
   "lastCheck": {
     "by": "Veni",
     "role": "designer",
-    "time": "2026-11-27T07:54:03.772Z",
+    "time": "2026-11-27T08:13:55.377Z",
     "errors": 0,
     "hints": 2,
     "fixes": 1,
     "copilot": "not available for this GitHub account"
-  }
+  },
+  "aiDone": []
 }
