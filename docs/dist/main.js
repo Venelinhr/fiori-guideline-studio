@@ -1849,7 +1849,7 @@ function pollAi(since, round = 0) {
       const run = await latestAiRun();
       if (run && Date.parse(run.created) >= since && run.status === "completed") {
         if (run.conclusion === "success") {
-          aiReport = await readJson(`content/${slug2}/review/ai-report.json`, targetBranch(), null);
+          aiReport = await readJson(`content/${slug2}/review/ai-report.json`, `reports/${targetBranch()}`, null);
           aiState = { phase: "done" };
           review.state.aiDone = [];
           const lc = review.state.lastCheck;
@@ -1915,7 +1915,7 @@ async function load(s, v = "", allowStart = false) {
     history: await readJson(`content/${s}/review/history.json`, branch, []),
     state: await readJson(`content/${s}/review/state.json`, branch, {})
   };
-  aiReport = branch === MAIN ? null : await readJson(`content/${s}/review/ai-report.json`, branch, null);
+  aiReport = branch === MAIN ? null : await readJson(`content/${s}/review/ai-report.json`, `reports/${branch}`, null);
   aiState = { phase: "none" };
   {
     const old = review.state.status;

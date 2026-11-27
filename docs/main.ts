@@ -820,7 +820,7 @@ function pollAi(since: number, round = 0) {
       const run = await gh.latestAiRun();
       if (run && Date.parse(run.created) >= since && run.status === "completed") {
         if (run.conclusion === "success") {
-          aiReport = await gh.readJson<AiReport | null>(`content/${slug}/review/ai-report.json`, targetBranch(), null);
+          aiReport = await gh.readJson<AiReport | null>(`content/${slug}/review/ai-report.json`, `reports/${targetBranch()}`, null);
           aiState = { phase: "done" }; review.state.aiDone = [];
           const lc = review.state.lastCheck;
           if (lc && aiReport) lc.ai = { errors: aiReport.errors, hints: aiReport.hints, model: aiReport.model, time: aiReport.time };
@@ -866,7 +866,7 @@ async function load(s: string, v = "", allowStart = false) {
     history: await gh.readJson(`content/${s}/review/history.json`, branch, []),
     state: await gh.readJson(`content/${s}/review/state.json`, branch, {}),
   };
-  aiReport = branch === gh.MAIN ? null : await gh.readJson<AiReport | null>(`content/${s}/review/ai-report.json`, branch, null); aiState = { phase: "none" };
+  aiReport = branch === gh.MAIN ? null : await gh.readJson<AiReport | null>(`content/${s}/review/ai-report.json`, `reports/${branch}`, null); aiState = { phase: "none" };
   { const old = review.state.status as string | undefined; if (old && LEGACY[old]) review.state.status = LEGACY[old]; }
   // Opened from a Jira link (…/fiori-guideline-studio/?jira=FIORIDESIGN-17845): the ticket is filled in, nobody pastes it.
   const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
