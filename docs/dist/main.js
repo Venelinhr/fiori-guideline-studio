@@ -1477,6 +1477,7 @@ async function sign(action, status) {
     if (action === "approved") {
       const lc = review.state.lastCheck;
       let pr = review.state.pr ?? await findPR(targetBranch());
+      const created = !pr;
       if (!pr) pr = await openPR(
         targetBranch(),
         `${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
@@ -1485,8 +1486,12 @@ async function sign(action, status) {
 ${lc ? `${lc.skipped ? "Check skipped" : "Check run"} by ${lc.by} on ${lc.time}: ${lcErr(lc)} errors, ${lcHints(lc)} recommendations, ${lc.fixes} fixes made.` : "No check was run."}`
       );
       review.state.pr = pr;
-      await commitVersion(`${title()}: pull request #${pr.number}`);
-      await merge(pr.number);
+      if (created) await commitVersion(`${title()}: pull request #${pr.number}`);
+      try {
+        await merge(pr.number);
+      } catch (e) {
+        throw new Error(`The merge into main failed: ${e.message}. Pull request: https://github.com/${REPO}/pull/${pr.number}`);
+      }
     }
   } catch (e) {
     review.state.signoffs = (review.state.signoffs ?? []).slice(0, n0);

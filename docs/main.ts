@@ -612,12 +612,14 @@ async function sign(action: string, status: Stage) {
     // The editor's Approve is the decision. It opens the pull request (if there is none) and merges it to main.
     if (action === "approved") {
       const lc = review.state.lastCheck;
-      let pr = review.state.pr ?? (await gh.findPR(targetBranch()));
+      let pr = review.state.pr ?? (await gh.findPR(targetBranch())); const created = !pr;
       if (!pr) pr = await gh.openPR(targetBranch(), `${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
         `Approved by ${who} (editor).\n\n${lc ? `${lc.skipped ? "Check skipped" : "Check run"} by ${lc.by} on ${lc.time}: ${lcErr(lc)} errors, ${lcHints(lc)} recommendations, ${lc.fixes} fixes made.` : "No check was run."}`);
       review.state.pr = pr;
-      await commitVersion(`${title()}: pull request #${pr.number}`);
-      await gh.merge(pr.number);
+      // Only a new pull request gets its own commit (to record its number). The merge itself is the approval.
+      if (created) await commitVersion(`${title()}: pull request #${pr.number}`);
+      try { await gh.merge(pr.number); }
+      catch (e) { throw new Error(`The merge into main failed: ${(e as Error).message}. Pull request: https://github.com/${gh.REPO}/pull/${pr.number}`); }
     }
   } catch (e) {
     review.state.signoffs = (review.state.signoffs ?? []).slice(0, n0); review.state.status = prevStatus;
