@@ -1171,7 +1171,10 @@ function renderSide() {
   const p = $("#panel");
   p.replaceChildren();
   if (tab === "checks") {
-    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)}` : "Nobody has run the check yet. Click Run check in the bar."));
+    {
+      const top = review.state.lastCheck;
+      p.append(h("p", "muted", top ? `${top.skipped ? "Check skipped" : "Last check"}: ${top.by} (${top.role}) \xB7 ${when(top.time)}` : "Nobody has run the check yet. Click Run check in the bar."));
+    }
     const s = h("div", "sum");
     s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at \xB7 ${findings.filter((f) => f.severity === "info").length} notes`));
     p.append(s);
