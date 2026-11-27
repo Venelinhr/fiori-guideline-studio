@@ -828,7 +828,7 @@ function renderAi(p: HTMLElement) {
   else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
   p.append(box);
   if (open.length) {
-    const all = h("div", "row"); all.append(
+    const all = h("div", "row ai-all"); all.append(
       btn(`Apply all ${open.length} fixes`, () => applyAllAi(), "small primary"),
       btn("Dismiss all and clear the check", () => dismissAllAi(), "small"));
     p.append(all);
