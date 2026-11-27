@@ -237,4 +237,4 @@ dialog.gate button.primary { background: #0070f2; border-color: #0070f2; color: 
 #tabs button:not(:has(.n))::after { content: ""; min-height: 18px; }
 
 /* Row with Apply all and Dismiss all: space above and below. Button size stays small. */
-.row.ai-all { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px 0; }
+.row.ai-all { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 0; }
