@@ -1787,6 +1787,27 @@ function applyAiFix(f) {
   commit(pick.key, nv, "fix");
   jump(pick.key);
 }
+function applyAllAi() {
+  const done = new Set(review.state.aiDone ?? []);
+  const todo = (aiReport?.findings ?? []).filter((f) => !done.has(aiKey(f)));
+  let applied = 0, skipped = 0;
+  for (const f of todo) {
+    const before2 = review.state.aiDone?.length ?? 0;
+    applyAiFix(f);
+    if ((review.state.aiDone?.length ?? 0) > before2) applied++;
+    else skipped++;
+  }
+  toast(`Applied ${applied} fix${applied === 1 ? "" : "es"}${skipped ? `. ${skipped} could not be applied by itself: change those by hand.` : "."}`, skipped ? "err" : "ok");
+  renderSide();
+}
+function dismissAllAi() {
+  if (aiReport) review.state.aiDone = aiReport.findings.map(aiKey);
+  review.state.lastCheck = void 0;
+  renderBar();
+  renderSide();
+  save();
+  toast("All AI findings dismissed. The check is cleared.", "ok");
+}
 function dismissAi(f) {
   (review.state.aiDone ??= []).push(aiKey(f));
   save();
@@ -1810,6 +1831,14 @@ function renderAi(p) {
   if (aiReport) box.append(h("p", "", `AI check (${aiReport.model}) \xB7 ${when(aiReport.time)} \xB7 ${aiReport.errors} errors, ${aiReport.hints} hints \xB7 ${open.length} still open`));
   else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
   p.append(box);
+  if (open.length) {
+    const all = h("div", "row");
+    all.append(
+      btn(`Apply all ${open.length} fixes`, () => applyAllAi(), "small primary"),
+      btn("Dismiss all and clear the check", () => dismissAllAi(), "small")
+    );
+    p.append(all);
+  }
   for (const f of open) {
     const c = card([h("span", `sev ${f.severity === "error" ? "error" : "warning"}`, f.severity === "error" ? "AI error" : "AI hint"), f.where], document.createTextNode(`${f.problem}
 Now: ${f.original}

@@ -784,6 +784,26 @@ function applyAiFix(f: AiFinding) {
   (review.state.aiDone ??= []).push(aiKey(f));
   commit(pick.key, nv, "fix"); jump(pick.key);
 }
+// Applies every open AI fix, one after another. Each one is re-read so the next one works on the current text.
+function applyAllAi() {
+  const done = new Set(review.state.aiDone ?? []);
+  const todo = (aiReport?.findings ?? []).filter((f) => !done.has(aiKey(f)));
+  let applied = 0, skipped = 0;
+  for (const f of todo) {
+    const before = review.state.aiDone?.length ?? 0;
+    applyAiFix(f);
+    if ((review.state.aiDone?.length ?? 0) > before) applied++; else skipped++;
+  }
+  toast(`Applied ${applied} fix${applied === 1 ? "" : "es"}${skipped ? `. ${skipped} could not be applied by itself: change those by hand.` : "."}`, skipped ? "err" : "ok");
+  renderSide();
+}
+// Dismisses every open AI finding and resets the check, so the badge says "No check run yet".
+function dismissAllAi() {
+  if (aiReport) review.state.aiDone = aiReport.findings.map(aiKey);
+  review.state.lastCheck = undefined;
+  renderBar(); renderSide(); save();
+  toast("All AI findings dismissed. The check is cleared.", "ok");
+}
 function dismissAi(f: AiFinding) { (review.state.aiDone ??= []).push(aiKey(f)); save(); renderSide(); }
 function renderAi(p: HTMLElement) {
   const box = h("div", "fc"); const done = new Set(review.state.aiDone ?? []);
@@ -793,6 +813,12 @@ function renderAi(p: HTMLElement) {
   if (aiReport) box.append(h("p", "", `AI check (${aiReport.model}) · ${when(aiReport.time)} · ${aiReport.errors} errors, ${aiReport.hints} hints · ${open.length} still open`));
   else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
   p.append(box);
+  if (open.length) {
+    const all = h("div", "row"); all.append(
+      btn(`Apply all ${open.length} fixes`, () => applyAllAi(), "small primary"),
+      btn("Dismiss all and clear the check", () => dismissAllAi(), "small"));
+    p.append(all);
+  }
   for (const f of open) {
     const c = card([h("span", `sev ${f.severity === "error" ? "error" : "warning"}`, f.severity === "error" ? "AI error" : "AI hint"), f.where], document.createTextNode(`${f.problem}\nNow: ${f.original}\nFix: ${f.fix}`));
     const r = h("div", "row"); r.append(btn("Apply fix", () => applyAiFix(f), "small primary"), btn("Dismiss", () => dismissAi(f), "small")); c.append(r); p.append(c);
