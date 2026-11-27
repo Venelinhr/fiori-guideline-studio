@@ -1662,10 +1662,36 @@ $("#version").addEventListener("change", () => {
 var slugOf = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 function route() {
   const parts = decodeURIComponent(location.hash.replace(/^#\/?/, "")).split("/").filter(Boolean);
-  const s = slugOf(parts[parts.length - 1] ?? "");
+  let s = slugOf(parts[parts.length - 1] ?? "");
   const v = parts.length > 1 ? parts[0].toLowerCase() : "";
   if (!s) return;
+  if (guidelines.length && !guidelines.some((g) => g.slug === s)) {
+    const near = guidelines.filter((g) => g.slug.startsWith(s) || slugOf(g.title).startsWith(s));
+    if (near.length !== 1) {
+      showUnknown(s, v);
+      return;
+    }
+    s = near[0].slug;
+  }
+  const canon = `#/${v ? `${v}/` : ""}${s}`;
+  if (location.hash !== canon) history.replaceState(null, "", canon);
   load(s, v).catch((e) => toast(`Could not open ${s}: ${e.message}`, "err"));
+}
+var guidelines = [];
+function showUnknown(name, v) {
+  $("#hero").replaceChildren();
+  $("#onpage-list").replaceChildren();
+  $("#saved").textContent = "";
+  const box = $("#content");
+  box.replaceChildren();
+  const card2 = h("div", "missing");
+  card2.append(h("h2", "", `No guideline named "${name}"`), h("p", "", "Pick one of these:"));
+  for (const g of guidelines) {
+    const a = h("a", "", g.title);
+    a.href = `#/${v ? `${v}/` : ""}${g.slug}`;
+    card2.append(a);
+  }
+  box.append(card2);
 }
 function showMissing(s, v, pub) {
   $("#hero").replaceChildren();
@@ -1926,6 +1952,7 @@ async function load(s, v = "", allowStart = false) {
 (async () => {
   rules2 = await rules();
   const list = await listGuidelines();
+  guidelines = list;
   const tokenBox = $("#token");
   tokenBox.placeholder = getToken() ? "Token saved in this browser" : "Paste GitHub token";
   const showToken = (msg, ok) => {

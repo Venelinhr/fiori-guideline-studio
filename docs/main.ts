@@ -694,9 +694,26 @@ const slugOf = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replac
 function route() {
   const parts = decodeURIComponent(location.hash.replace(/^#\/?/, "")).split("/").filter(Boolean);
   // Accepts the AEM style: v1-157/Expandable text (or v1-157/ui-elements/Expandable text). The name becomes expandable-text.
-  const s = slugOf(parts[parts.length - 1] ?? ""); const v = parts.length > 1 ? parts[0].toLowerCase() : "";
+  let s = slugOf(parts[parts.length - 1] ?? ""); const v = parts.length > 1 ? parts[0].toLowerCase() : "";
   if (!s) return;
+  // A link that was cut at a space ("…/Expandable") still finds "expandable-text" when only one guideline starts that way.
+  if (guidelines.length && !guidelines.some((g) => g.slug === s)) {
+    const near = guidelines.filter((g) => g.slug.startsWith(s) || slugOf(g.title).startsWith(s));
+    if (near.length !== 1) { showUnknown(s, v); return; }
+    s = near[0].slug;
+  }
+  const canon = `#/${v ? `${v}/` : ""}${s}`;
+  if (location.hash !== canon) history.replaceState(null, "", canon); // the clean address, without spaces. No reload.
   load(s, v).catch((e) => toast(`Could not open ${s}: ${(e as Error).message}`, "err"));
+}
+let guidelines: { slug: string; title: string }[] = [];
+// Shown when the address names no guideline. Lists the ones that exist.
+function showUnknown(name: string, v: string) {
+  $("#hero").replaceChildren(); $("#onpage-list").replaceChildren(); $("#saved").textContent = "";
+  const box = $("#content"); box.replaceChildren(); const card = h("div", "missing");
+  card.append(h("h2", "", `No guideline named "${name}"`), h("p", "", "Pick one of these:"));
+  for (const g of guidelines) { const a = h("a", "", g.title) as HTMLAnchorElement; a.href = `#/${v ? `${v}/` : ""}${g.slug}`; card.append(a); }
+  box.append(card);
 }
 // Shown instead of a 404 when a version is not started yet. Starting it copies the latest published version.
 function showMissing(s: string, v: string, pub: string) {
@@ -866,7 +883,7 @@ async function load(s: string, v = "", allowStart = false) {
 }
 (async () => {
   rules = (await gh.rules()) as Rules;
-  const list: { slug: string; title: string }[] = await gh.listGuidelines();
+  const list: { slug: string; title: string }[] = await gh.listGuidelines(); guidelines = list;
   const tokenBox = $<HTMLInputElement>("#token"); tokenBox.placeholder = gh.getToken() ? "Token saved in this browser" : "Paste GitHub token";
   // Paste, then Enter or click away: the token is saved and checked with GitHub. The message says what happened.
   const showToken = (msg: string, ok: boolean) => { $("#saved").textContent = msg; $("#saved").style.color = ok ? "#256f3a" : "#aa0808"; };
