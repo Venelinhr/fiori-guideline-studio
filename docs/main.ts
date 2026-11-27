@@ -624,7 +624,12 @@ async function sign(action: string, status: Stage) {
     saveFailed(e); return;
   }
   if (status === "approved") { finalCheck = null; pollFinalCheck(); }
-  tab = status === "approved" ? "aem" : "jira"; document.body.classList.add("drawer-open"); renderPage(); renderSide(); renderBar();
+  // Back and forth between the designer and the UX writer needs no Jira comment: only a short confirmation.
+  // The Jira text and the AEM block open only at the real hand-offs: to the editor, approved, uploaded.
+  const handoff = status === "editor" || status === "approved" || status === "uploaded";
+  if (handoff) { tab = status === "approved" ? "aem" : "jira"; document.body.classList.add("drawer-open"); }
+  else toast(`${status === "writer" ? "Sent to the UX writer" : "Sent to the designer"}. Saved to GitHub. No Jira comment needed yet.`, "ok");
+  renderPage(); renderSide(); renderBar();
 }
 function renderBar() {
   const raw = (review.state.status ?? "draft") as string, st = (LEGACY[raw] ?? raw) as Stage, role = $<HTMLSelectElement>("#role").value;

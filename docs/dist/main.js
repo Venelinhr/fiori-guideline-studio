@@ -1498,8 +1498,11 @@ ${lc ? `${lc.skipped ? "Check skipped" : "Check run"} by ${lc.by} on ${lc.time}:
     finalCheck2 = null;
     pollFinalCheck();
   }
-  tab = status === "approved" ? "aem" : "jira";
-  document.body.classList.add("drawer-open");
+  const handoff = status === "editor" || status === "approved" || status === "uploaded";
+  if (handoff) {
+    tab = status === "approved" ? "aem" : "jira";
+    document.body.classList.add("drawer-open");
+  } else toast(`${status === "writer" ? "Sent to the UX writer" : "Sent to the designer"}. Saved to GitHub. No Jira comment needed yet.`, "ok");
   renderPage();
   renderSide();
   renderBar();
