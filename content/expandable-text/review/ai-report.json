@@ -1,94 +1,101 @@
 {
-  "time": "2026-11-27T06:13:17.399Z",
+  "time": "2026-11-27T06:15:15.691Z",
   "model": "claude-sonnet-5-5",
   "slug": "expandable-text",
   "errors": 5,
-  "hints": 7,
+  "hints": 8,
   "dropped": 0,
   "findings": [
     {
-      "where": "Intro",
-      "severity": "error",
-      "problem": "Wrong wording: 'self popover'.",
-      "original": "open in a self popover",
-      "fix": "open in a popover"
-    },
-    {
       "where": "Intro > Image alt text",
       "severity": "error",
-      "problem": "Incomplete phrase: 'state' is missing.",
+      "problem": "Missing word 'state'.",
       "original": "An expandable text in the collapsed, showing",
       "fix": "An expandable text in the collapsed state, showing"
     },
     {
       "where": "When to Use > Don't",
       "severity": "error",
-      "problem": "The statement says the opposite of what is meant. Hiding only non-critical content is correct usage. The item should warn against hiding critical content.",
-      "original": "Hide only non-critical content. Use short descriptions that fit into the available space instead.",
-      "fix": "Hide critical content. Show it by default instead."
+      "problem": "The Don't item says the opposite of what is meant. It contradicts the sentence after it.",
+      "original": "Hide only non-critical content.",
+      "fix": "Hide critical content."
     },
     {
       "where": "Types > Expanded in place",
       "severity": "hint",
       "problem": "Missing article.",
-      "original": "Show Less link is added at the end",
-      "fix": "A Show Less link is added at the end"
-    },
-    {
-      "where": "States > Component states > Image alt text",
-      "severity": "error",
-      "problem": "The alt text describes an expanded text with a 'Show Less' link, but the enabled state is the collapsed default with a 'Show More' link.",
-      "original": "An expandable text in the enabled component state, showing the full paragraph text ending with '...revealed only when the user needs more context.' followed by a 'Show Less' link.",
-      "fix": "An expandable text in the enabled component state, showing truncated text followed by a 'Show More' link."
-    },
-    {
-      "where": "Behavior and Interaction > Gestures and Mapping",
-      "severity": "hint",
-      "problem": "Sub-heading is not in sentence case.",
-      "original": "### Gestures and Mapping",
-      "fix": "### Gestures and mapping"
+      "original": "Show Less link is added at the end to let the user collapse it back.",
+      "fix": "A Show Less link is added at the end to let the user collapse it back."
     },
     {
       "where": "Responsiveness",
       "severity": "hint",
-      "problem": "Comma splice. Split the sentence and avoid the contraction.",
-      "original": "popovers don't float, they open as a full-screen overlay, making it easier to read and interact with the content.",
-      "fix": "popovers do not float. They open as a full-screen overlay, which makes the content easier to read and interact with."
+      "problem": "Comma splice and contraction.",
+      "original": "On mobile, popovers don't float, they open as a full-screen overlay, making it easier to read and interact with the content.",
+      "fix": "On mobile, popovers do not float. They open as a full-screen overlay, which makes the content easier to read and interact with."
+    },
+    {
+      "where": "Content > Wrapping and Truncation",
+      "severity": "error",
+      "problem": "Exactly 100 characters is not covered. 'Fewer' is correct for countable items. The sentence has no verb.",
+      "original": "B. Less than 100 characters: Text is displayed in full and no Show More link.",
+      "fix": "B. 100 characters or fewer: Text is displayed in full without a Show More link."
+    },
+    {
+      "where": "Features > Preserve white space",
+      "severity": "error",
+      "problem": "Use 'whitespace', not 'white space'.",
+      "original": "Expandable text with preserved white spaces",
+      "fix": "Expandable text with preserved whitespace"
+    },
+    {
+      "where": "Features > Preserve white space",
+      "severity": "error",
+      "problem": "Use 'whitespace' in the heading.",
+      "original": "Preserve white space",
+      "fix": "Preserve whitespace"
+    },
+    {
+      "where": "Behavior and Interaction > Expanding/Collapsing",
+      "severity": "hint",
+      "problem": "Image captions are empty.",
+      "original": "Image caption: \nImage alt text: Two interaction steps labeled A and B",
+      "fix": "Image caption: Collapsed (A) and expanded in place (B)\nImage alt text: Two interaction steps labeled A and B"
     },
     {
       "where": "Accessibility > Keyboard Navigation",
       "severity": "hint",
-      "problem": "Sub-heading is not in sentence case.",
-      "original": "### Keyboard Navigation",
-      "fix": "### Keyboard navigation"
+      "problem": "Inconsistent spelling of the link label. The sub-heading should use sentence case.",
+      "original": "Show More / Show Less link, which follows",
+      "fix": "Show More/Show Less link, which follows"
+    },
+    {
+      "where": "Accessibility > Keyboard Navigation",
+      "severity": "hint",
+      "problem": "Sub-heading should use sentence case.",
+      "original": "Keyboard Navigation",
+      "fix": "Keyboard navigation"
     },
     {
       "where": "Accessibility > Screen Reader Support",
       "severity": "hint",
-      "problem": "Sub-heading is not in sentence case.",
-      "original": "### Screen Reader Support",
-      "fix": "### Screen reader support"
+      "problem": "Sub-heading should use sentence case.",
+      "original": "Screen Reader Support",
+      "fix": "Screen reader support"
+    },
+    {
+      "where": "Behavior and Interaction > Gestures and Mapping",
+      "severity": "hint",
+      "problem": "Sub-heading should use sentence case.",
+      "original": "Gestures and Mapping",
+      "fix": "Gestures and mapping"
     },
     {
       "where": "Content > Wrapping and Truncation",
       "severity": "hint",
-      "problem": "Sub-heading is not in sentence case.",
-      "original": "### Wrapping and Truncation",
-      "fix": "### Wrapping and truncation"
-    },
-    {
-      "where": "Content > Wrapping and Truncation",
-      "severity": "hint",
-      "problem": "Text of exactly 100 characters is not covered by A or B. The B item is also not a full sentence.",
-      "original": "B. Less than 100 characters: Text is displayed in full and no Show More link.",
-      "fix": "B. 100 characters or fewer: Text is displayed in full and no Show More link is displayed."
-    },
-    {
-      "where": "Features > Preserve whitespace",
-      "severity": "error",
-      "problem": "Inconsistent spelling: 'white spaces' instead of 'whitespace'.",
-      "original": "Expandable text with preserved white spaces",
-      "fix": "Expandable text with preserved whitespace"
+      "problem": "Sub-heading should use sentence case.",
+      "original": "Wrapping and Truncation",
+      "fix": "Wrapping and truncation"
     }
   ]
 }
