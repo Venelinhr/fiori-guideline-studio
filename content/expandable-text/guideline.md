@@ -13,7 +13,7 @@ This guideline now covers both SAPUI5 and SAP Web Components. Learn More.
 
 Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.
 
-![An expandable text in the collapsed state, showing 'The request includes read access to the financial reporting module and write access to...' followed by a 'Show More' link.](images/01-expandable-text-intro-v1-151.png "01_Expandable text_Intro_v1.151")
+![An expandable text in the collapsed, showing 'The request includes read access to the financial reporting module and write access to...' followed by a 'Show More' link.](images/01-expandable-text-intro-v1-151.png "01_Expandable text_Intro_v1.151")
 Caption: Expandable text
 
 ### Component availability
@@ -148,7 +148,7 @@ Clicking Show Less or outside the popover collapses the text.
 
 Collapsed (C) and expanded in popover (D)
 
-### Gestures & Mapping
+### Gestures and Mapping
 
 The behavior is similar to mouse interaction.
 
@@ -225,11 +225,11 @@ Caption: Expandable text in right-to-left mode
 
 
 
-### Preserve white space
+### Preserve whitespace
 
 ![Two expandable text items labeled A and B: (A) shows text with consecutive whitespaces collapsed to normal spacing by the browser, and (B) shows the same text with whitespaces preserved, resulting in visibly expanded spacing between words.](images/16-expandable-text-features-v1-151.png "16_Expandable Text_Features_v1.151")
 
-Expandable text with preserved white spaces
+Expandable text with preserved whitespace
 
 ### Text align
 
@@ -239,7 +239,7 @@ Text alignment - left, right, and center
 
 ## Framework Comparison
 
-There are no differences between SAPUI5 and SAP Web Components regarding thе component's behaviors and framework-specific patterns.
+There are no differences between SAPUI5 and SAP Web Components regarding the component's behaviors and framework-specific patterns.
 
 ## Related Links
 

@@ -1,0 +1,59 @@
+{
+  "time": "2026-11-27T07:54:33.594Z",
+  "model": "claude-haiku-5-5",
+  "slug": "expandable-text",
+  "errors": 3,
+  "hints": 4,
+  "dropped": 0,
+  "findings": [
+    {
+      "where": "Features > Preserve white space",
+      "severity": "error",
+      "problem": "Heading uses 'white space'. The guideline must use one form, 'whitespace'.",
+      "original": "Preserve white space",
+      "fix": "Preserve whitespace"
+    },
+    {
+      "where": "Features > caption (Preserve white space)",
+      "severity": "error",
+      "problem": "Caption uses 'white spaces'. Use 'whitespace' as in the rest of the guideline.",
+      "original": "Expandable text with preserved white spaces",
+      "fix": "Expandable text with preserved whitespace"
+    },
+    {
+      "where": "Accessibility > Keyboard Navigation",
+      "severity": "error",
+      "problem": "Accessibility must name keyboard, screen reader and contrast information. Contrast is missing.",
+      "original": "Keyboard interaction is supported through the Show More / Show Less link, which follows the keyboard behavior of the Link component.",
+      "fix": "Keyboard interaction is supported through the Show More / Show Less link, which follows the keyboard behavior of the Link component. The link meets the contrast requirements of WCAG 2.1 for text and interactive elements."
+    },
+    {
+      "where": "Behavior and Interaction > Expanding/Collapsing",
+      "severity": "hint",
+      "problem": "Uses 'the user' in general text. Address the reader as 'you'.",
+      "original": "the user can copy it",
+      "fix": "you can copy it"
+    },
+    {
+      "where": "Responsiveness",
+      "severity": "hint",
+      "problem": "'making it easier to read and interact' judges usability instead of describing behavior.",
+      "original": "making it easier to read and interact with the content",
+      "fix": "so that the content is displayed in full"
+    },
+    {
+      "where": "Types > Expanded in popover",
+      "severity": "hint",
+      "problem": "Term 'expand text link' is inconsistent with the defined 'Show More' link.",
+      "original": "positioned relative to the expand text link",
+      "fix": "positioned relative to the Show More link"
+    },
+    {
+      "where": "Intro",
+      "severity": "hint",
+      "problem": "'Learn More' is not a descriptive link text. It must say where the link goes.",
+      "original": "Learn More.",
+      "fix": "See the SAPUI5 and SAP Web Components guidelines."
+    }
+  ]
+}
