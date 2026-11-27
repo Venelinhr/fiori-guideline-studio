@@ -1366,8 +1366,8 @@ function renderAem(p) {
   p.append(
     h("p", "muted", ready ? "Open the AEM connector in Chrome. Paste these two links. Click Compare with Dry run on. Check the plan. Then turn Dry run off and click Apply." : "Approve first. The link below reads main. Until the editor approves, main still has the old text."),
     copyRow("1. Source: the approved article in GitHub", rawMain, false),
-    targetIn,
-    copyRow("2. Target: the AEM page that will be overwritten", target, !/^https:\/\//.test(target))
+    copyRow("2. Target: the AEM page that will be overwritten", target, !/^https:\/\//.test(target)),
+    targetIn
   );
   p.append(h("p", "muted", "The AEM connector saves a backup of the target page before any real write. The source stays read-only."));
   p.append(h("h5", "", "Where it goes in AEM (new page path)"));
