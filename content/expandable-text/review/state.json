@@ -23,7 +23,7 @@
       "role": "editor",
       "name": "Krisi",
       "action": "approved",
-      "time": "2026-11-27T13:38:05.169Z"
+      "time": "2026-11-27T13:39:00.104Z"
     }
   ],
   "status": "approved",
@@ -44,5 +44,9 @@
     "fixes": 4,
     "copilot": "skipped, checked by a person",
     "skipped": true
+  },
+  "pr": {
+    "number": 1,
+    "url": "https://github.com/Venelinhr/fiori-guideline-studio/pull/1"
   }
 }
