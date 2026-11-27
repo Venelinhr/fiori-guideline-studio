@@ -437,10 +437,10 @@ function renderSide() {
   if (errors()) db.append(h("span", "n bad", String(errors()))); else if (opens().length) db.append(h("span", "n", String(opens().length)));
   const p = $("#panel"); p.replaceChildren();
   if (tab === "checks") {
+    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) · ${when(lc.time)}` : "Nobody has run the check yet. Click Run check in the bar."));
     const s = h("div", "sum"); s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at · ${findings.filter((f) => f.severity === "info").length} notes`)); p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
-    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) · ${when(lc.time)} · ${lcErr(lc)} errors, ${lcHints(lc)} recommendation${lcHints(lc) === 1 ? "" : "s"}${lc.ai ? " (with the AI check)" : ""}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made ${lc.copilot.startsWith("review requested") ? "· Copilot review requested" : ""}${checkIsStale() ? " · the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
     renderAi(p);
     for (const f of [...findings].sort((a, b) => order[a.severity] - order[b.severity])) {
       const keys = keysAt(f); const c = card([h("span", `sev ${f.severity}`, f.severity === "error" ? "Fix" : f.severity === "warning" ? "Look" : "Note"), f.where], document.createTextNode(f.message + (f.suggestion ? `\n→ ${f.suggestion}` : "")), keys[0]);
@@ -820,14 +820,11 @@ function dismissAllAi() {
 }
 function dismissAi(f: AiFinding) { recordNow(() => { (review.state.aiDone ??= []).push(aiKey(f)); }); save(); renderSide(); }
 function renderAi(p: HTMLElement) {
-  const box = h("div", "fc"); const done = new Set(review.state.aiDone ?? []);
+  const box = h("div", "ai-box"); const done = new Set(review.state.aiDone ?? []);
   if (aiState.phase === "running") box.append(h("p", "", "⏳ AI check (Claude) is running. About a minute."));
   if (aiState.phase === "failed") { box.append(h("p", "", `⚠ AI check: ${aiState.msg}`)); if (aiState.url) { const a = h("a", "", "Open the job on GitHub ↗") as HTMLAnchorElement; a.href = aiState.url; a.target = "_blank"; a.rel = "noopener"; box.append(a); } }
   const open = aiReport ? aiReport.findings.filter((f) => !done.has(aiKey(f))) : [];
-  if (aiReport) {
-    box.append(h("p", "", `AI check (${aiReport.model}) · ${when(aiReport.time)}`));
-    box.append(h("p", "", `${open.length} still open`));
-  }
+  if (aiReport) box.append(h("p", "ai-line", `AI check (${aiReport.model}) · ${when(aiReport.time)} · ${aiReport.errors} errors, ${aiReport.hints} hints · ${open.length} still open`));
   else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
   p.append(box);
   if (open.length) {

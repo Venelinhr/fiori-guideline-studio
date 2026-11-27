@@ -1171,12 +1171,12 @@ function renderSide() {
   const p = $("#panel");
   p.replaceChildren();
   if (tab === "checks") {
+    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)}` : "Nobody has run the check yet. Click Run check in the bar."));
     const s = h("div", "sum");
     s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at \xB7 ${findings.filter((f) => f.severity === "info").length} notes`));
     p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
-    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lcErr(lc)} errors, ${lcHints(lc)} recommendation${lcHints(lc) === 1 ? "" : "s"}${lc.ai ? " (with the AI check)" : ""}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made ${lc.copilot.startsWith("review requested") ? "\xB7 Copilot review requested" : ""}${checkIsStale() ? " \xB7 the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
     renderAi(p);
     for (const f of [...findings].sort((a, b) => order[a.severity] - order[b.severity])) {
       const keys = keysAt(f);
@@ -1861,7 +1861,7 @@ function dismissAi(f) {
   renderSide();
 }
 function renderAi(p) {
-  const box = h("div", "fc");
+  const box = h("div", "ai-box");
   const done = new Set(review.state.aiDone ?? []);
   if (aiState.phase === "running") box.append(h("p", "", "\u23F3 AI check (Claude) is running. About a minute."));
   if (aiState.phase === "failed") {
@@ -1875,10 +1875,8 @@ function renderAi(p) {
     }
   }
   const open = aiReport ? aiReport.findings.filter((f) => !done.has(aiKey(f))) : [];
-  if (aiReport) {
-    box.append(h("p", "", `AI check (${aiReport.model}) \xB7 ${when(aiReport.time)}`));
-    box.append(h("p", "", `${open.length} still open`));
-  } else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
+  if (aiReport) box.append(h("p", "ai-line", `AI check (${aiReport.model}) \xB7 ${when(aiReport.time)} \xB7 ${aiReport.errors} errors, ${aiReport.hints} hints \xB7 ${open.length} still open`));
+  else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
   p.append(box);
   if (open.length) {
     const all = h("div", "row ai-all");

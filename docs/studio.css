@@ -238,3 +238,7 @@ dialog.gate button.primary { background: #0070f2; border-color: #0070f2; color: 
 
 /* Row with Apply all and Dismiss all: space above and below. Button size stays small. */
 .row.ai-all { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 0; }
+
+/* AI check summary: one line, bigger text, no border. */
+.ai-box { margin: 0 0 4px; }
+.ai-box p.ai-line { font: 500 16px/24px var(--font); margin: 0; color: var(--text); }
