@@ -1436,15 +1436,15 @@ function renderBar() {
     mark.title = "Click Run check. A person can also skip it and check by hand.";
   } else if (lc.skipped) {
     mark.className = `checkbadge skipped${stale ? " stale" : ""}`;
-    mark.textContent = `\u23ED Check skipped by ${lc.by} \xB7 ${nice(lc.time)} \xB7 human check${stale ? " \xB7 text changed since" : ""}`;
+    mark.textContent = "\u23ED Check skipped";
     mark.title = "A person checked the article by hand.";
   } else if (lcErr(lc) === 0) {
     mark.className = `checkbadge pass${stale ? " stale" : ""}`;
-    mark.textContent = `\u2713 Check passed \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lcErr(lc)} errors \xB7 ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} \xB7 ${lcHints(lc)} recommendation${lcHints(lc) === 1 ? "" : "s"}${stale ? " \xB7 text changed since" : ""}`;
+    mark.textContent = "\u2713 Check passed";
     mark.title = "Click to see the report.";
   } else {
     mark.className = `checkbadge fail${stale ? " stale" : ""}`;
-    mark.textContent = `\u26A0 Check found ${lcErr(lc)} error${lcErr(lc) === 1 ? "" : "s"} \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"}`;
+    mark.textContent = `\u26A0 Check found ${lcErr(lc)} error${lcErr(lc) === 1 ? "" : "s"}`;
     mark.title = "Click to see the report.";
   }
   const c = $("#commit");

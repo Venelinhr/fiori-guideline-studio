@@ -600,9 +600,9 @@ function renderBar() {
   const lc = review.state.lastCheck, mark = $("#checkbadge"), stale = checkIsStale();
   const nice = (x: string) => new Date(x).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   if (!lc) { mark.className = "checkbadge none"; mark.textContent = "No check run yet"; mark.title = "Click Run check. A person can also skip it and check by hand."; }
-  else if (lc.skipped) { mark.className = `checkbadge skipped${stale ? " stale" : ""}`; mark.textContent = `⏭ Check skipped by ${lc.by} · ${nice(lc.time)} · human check${stale ? " · text changed since" : ""}`; mark.title = "A person checked the article by hand."; }
-  else if (lcErr(lc) === 0) { mark.className = `checkbadge pass${stale ? " stale" : ""}`; mark.textContent = `✓ Check passed · ${lc.by} · ${nice(lc.time)} · ${lcErr(lc)} errors · ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} · ${lcHints(lc)} recommendation${lcHints(lc) === 1 ? "" : "s"}${stale ? " · text changed since" : ""}`; mark.title = "Click to see the report."; }
-  else { mark.className = `checkbadge fail${stale ? " stale" : ""}`; mark.textContent = `⚠ Check found ${lcErr(lc)} error${lcErr(lc) === 1 ? "" : "s"} · ${lc.by} · ${nice(lc.time)} · ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"}`; mark.title = "Click to see the report."; }
+  else if (lc.skipped) { mark.className = `checkbadge skipped${stale ? " stale" : ""}`; mark.textContent = "⏭ Check skipped"; mark.title = "A person checked the article by hand."; }
+  else if (lcErr(lc) === 0) { mark.className = `checkbadge pass${stale ? " stale" : ""}`; mark.textContent = "✓ Check passed"; mark.title = "Click to see the report."; }
+  else { mark.className = `checkbadge fail${stale ? " stale" : ""}`; mark.textContent = `⚠ Check found ${lcErr(lc)} error${lcErr(lc) === 1 ? "" : "s"}`; mark.title = "Click to see the report."; }
   const c = $<HTMLButtonElement>("#commit"); c.disabled = !dirty; c.textContent = branch === gh.MAIN ? "Save version (new update)" : "Save version";
   const cl = $<HTMLAnchorElement>("#commitlink"); cl.href = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
   const a = $("#actions"); a.replaceChildren();
