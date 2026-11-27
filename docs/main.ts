@@ -521,7 +521,21 @@ function renderAem(p: HTMLElement) {
   const line = (...n: Node[]) => { const d = h("div", "aem-line"); d.append(...n); return d; };
   p.append(h("h5", "", "Status"), h("p", "", ready ? "✅ Approved in GitHub. Ready for AEM." : `Not ready yet. The article is "${STATUS[stage]}". The editor approves first.`));
   renderFinalCheck(p, ready);
-  p.append(h("h5", "", "Where it goes in AEM"));
+  // The push: two links to copy into the AEM connector (Chrome extension), then Compare and Apply there.
+  p.append(h("h5", "", "Send to AEM (the editor)"));
+  const rawMain = `https://raw.githubusercontent.com/${gh.REPO}/${gh.MAIN}/content/${slug}/guideline.json`;
+  const target = store.get("aem:target");
+  const copyRow = (label: string, value: string, off: boolean) => {
+    const row = h("div", "aem-copy"); row.append(h("span", "", label));
+    const b = btn("Copy", async () => { try { await navigator.clipboard.writeText(value); toast(`Copied: ${label}`, "ok"); } catch { toast(`Could not copy. Select it: ${value}`, "err"); } }, "small");
+    if (off) { (b as HTMLButtonElement).disabled = true; } row.append(b); return row;
+  };
+  const targetIn = h("input", "jirakey") as HTMLInputElement; targetIn.placeholder = "AEM page to overwrite: paste its link once"; targetIn.value = target;
+  targetIn.addEventListener("change", () => { store.set("aem:target", targetIn.value.trim()); renderSide(); });
+  p.append(h("p", "muted", ready ? "Open the AEM connector in Chrome. Paste these two links. Click Compare with Dry run on. Check the plan. Then turn Dry run off and click Apply." : "Approve first. The link below reads main. Until the editor approves, main still has the old text."),
+    copyRow("1. Source: the approved article in GitHub", rawMain, false), targetIn, copyRow("2. Target: the AEM page that will be overwritten", target, !/^https:\/\//.test(target)));
+  p.append(h("p", "muted", "The AEM connector saves a backup of the target page before any real write. The source stays read-only."));
+  p.append(h("h5", "", "Where it goes in AEM (new page path)"));
   const baseIn = h("input", "jirakey") as HTMLInputElement; baseIn.placeholder = "AEM folder link of the guidelines (paste once)"; baseIn.value = base;
   baseIn.addEventListener("change", () => { store.set("aem:base", baseIn.value.trim()); renderSide(); });
   const secIn = h("input", "jirakey") as HTMLInputElement; secIn.placeholder = "Section folder, for example ui-elements"; secIn.value = section;
@@ -539,7 +553,7 @@ function renderAem(p: HTMLElement) {
   p.append(line(link("Content (guideline.json) ↗", `${rawBase}/guideline.json`)), line(link("Text (guideline.md) ↗", `${rawBase}/guideline.md`)),
     line(link("Images folder ↗", `https://github.com/${gh.REPO}/tree/${gh.MAIN}/content/${slug}/images`)));
   p.append(h("h5", "", "Upload to AEM"));
-  p.append(h("p", "muted", "Not automatic yet. The editor takes the approved content from the links above and fills the AEM template page. When it is in AEM, click Mark uploaded to AEM in the bar."));
+  p.append(h("p", "muted", "When the page is in AEM, click Mark uploaded to AEM in the bar."));
 }
 const cell = (s: string) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
 function report(): string {

@@ -1336,7 +1336,41 @@ function renderAem(p) {
   };
   p.append(h("h5", "", "Status"), h("p", "", ready ? "\u2705 Approved in GitHub. Ready for AEM." : `Not ready yet. The article is "${STATUS[stage]}". The editor approves first.`));
   renderFinalCheck(p, ready);
-  p.append(h("h5", "", "Where it goes in AEM"));
+  p.append(h("h5", "", "Send to AEM (the editor)"));
+  const rawMain = `https://raw.githubusercontent.com/${REPO}/${MAIN}/content/${slug2}/guideline.json`;
+  const target = store.get("aem:target");
+  const copyRow = (label, value, off) => {
+    const row = h("div", "aem-copy");
+    row.append(h("span", "", label));
+    const b = btn("Copy", async () => {
+      try {
+        await navigator.clipboard.writeText(value);
+        toast(`Copied: ${label}`, "ok");
+      } catch {
+        toast(`Could not copy. Select it: ${value}`, "err");
+      }
+    }, "small");
+    if (off) {
+      b.disabled = true;
+    }
+    row.append(b);
+    return row;
+  };
+  const targetIn = h("input", "jirakey");
+  targetIn.placeholder = "AEM page to overwrite: paste its link once";
+  targetIn.value = target;
+  targetIn.addEventListener("change", () => {
+    store.set("aem:target", targetIn.value.trim());
+    renderSide();
+  });
+  p.append(
+    h("p", "muted", ready ? "Open the AEM connector in Chrome. Paste these two links. Click Compare with Dry run on. Check the plan. Then turn Dry run off and click Apply." : "Approve first. The link below reads main. Until the editor approves, main still has the old text."),
+    copyRow("1. Source: the approved article in GitHub", rawMain, false),
+    targetIn,
+    copyRow("2. Target: the AEM page that will be overwritten", target, !/^https:\/\//.test(target))
+  );
+  p.append(h("p", "muted", "The AEM connector saves a backup of the target page before any real write. The source stays read-only."));
+  p.append(h("h5", "", "Where it goes in AEM (new page path)"));
   const baseIn = h("input", "jirakey");
   baseIn.placeholder = "AEM folder link of the guidelines (paste once)";
   baseIn.value = base;
@@ -1367,7 +1401,7 @@ function renderAem(p) {
     line(link("Images folder \u2197", `https://github.com/${REPO}/tree/${MAIN}/content/${slug2}/images`))
   );
   p.append(h("h5", "", "Upload to AEM"));
-  p.append(h("p", "muted", "Not automatic yet. The editor takes the approved content from the links above and fills the AEM template page. When it is in AEM, click Mark uploaded to AEM in the bar."));
+  p.append(h("p", "muted", "When the page is in AEM, click Mark uploaded to AEM in the bar."));
 }
 var cell2 = (s) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
 function report() {

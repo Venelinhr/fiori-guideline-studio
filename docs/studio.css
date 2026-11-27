@@ -244,3 +244,5 @@ dialog.gate button.primary { background: #0070f2; border-color: #0070f2; color: 
 /* AI check summary: one line, bigger text, no border. */
 .ai-box { margin: 0 0 4px; }
 .ai-box p.ai-line { font: 500 16px/24px var(--font); margin: 0; color: var(--text); }
+
+.aem-copy { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0; }
