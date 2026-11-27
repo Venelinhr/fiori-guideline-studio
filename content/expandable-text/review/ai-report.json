@@ -1,101 +1,52 @@
 {
-  "time": "2026-11-27T06:15:15.691Z",
-  "model": "claude-sonnet-5-5",
+  "time": "2026-11-27T06:16:55.868Z",
+  "model": "claude-haiku-5-5",
   "slug": "expandable-text",
-  "errors": 5,
-  "hints": 8,
+  "errors": 3,
+  "hints": 3,
   "dropped": 0,
   "findings": [
     {
-      "where": "Intro > Image alt text",
-      "severity": "error",
-      "problem": "Missing word 'state'.",
-      "original": "An expandable text in the collapsed, showing",
-      "fix": "An expandable text in the collapsed state, showing"
-    },
-    {
-      "where": "When to Use > Don't",
-      "severity": "error",
-      "problem": "The Don't item says the opposite of what is meant. It contradicts the sentence after it.",
-      "original": "Hide only non-critical content.",
-      "fix": "Hide critical content."
-    },
-    {
-      "where": "Types > Expanded in place",
-      "severity": "hint",
-      "problem": "Missing article.",
-      "original": "Show Less link is added at the end to let the user collapse it back.",
-      "fix": "A Show Less link is added at the end to let the user collapse it back."
-    },
-    {
-      "where": "Responsiveness",
-      "severity": "hint",
-      "problem": "Comma splice and contraction.",
-      "original": "On mobile, popovers don't float, they open as a full-screen overlay, making it easier to read and interact with the content.",
-      "fix": "On mobile, popovers do not float. They open as a full-screen overlay, which makes the content easier to read and interact with."
-    },
-    {
-      "where": "Content > Wrapping and Truncation",
-      "severity": "error",
-      "problem": "Exactly 100 characters is not covered. 'Fewer' is correct for countable items. The sentence has no verb.",
-      "original": "B. Less than 100 characters: Text is displayed in full and no Show More link.",
-      "fix": "B. 100 characters or fewer: Text is displayed in full without a Show More link."
-    },
-    {
       "where": "Features > Preserve white space",
       "severity": "error",
-      "problem": "Use 'whitespace', not 'white space'.",
-      "original": "Expandable text with preserved white spaces",
-      "fix": "Expandable text with preserved whitespace"
-    },
-    {
-      "where": "Features > Preserve white space",
-      "severity": "error",
-      "problem": "Use 'whitespace' in the heading.",
+      "problem": "Wrong term. This guideline uses \"whitespace\" in the rest of the text and the heading must match.",
       "original": "Preserve white space",
       "fix": "Preserve whitespace"
     },
     {
-      "where": "Behavior and Interaction > Expanding/Collapsing",
-      "severity": "hint",
-      "problem": "Image captions are empty.",
-      "original": "Image caption: \nImage alt text: Two interaction steps labeled A and B",
-      "fix": "Image caption: Collapsed (A) and expanded in place (B)\nImage alt text: Two interaction steps labeled A and B"
+      "where": "Features > Preserve white space (caption)",
+      "severity": "error",
+      "problem": "Wrong term. Use \"whitespace\", as elsewhere in this guideline.",
+      "original": "Expandable text with preserved white spaces",
+      "fix": "Expandable text with preserved whitespace"
     },
     {
-      "where": "Accessibility > Keyboard Navigation",
-      "severity": "hint",
-      "problem": "Inconsistent spelling of the link label. The sub-heading should use sentence case.",
-      "original": "Show More / Show Less link, which follows",
-      "fix": "Show More/Show Less link, which follows"
+      "where": "Types > Collapsed text (alt text)",
+      "severity": "error",
+      "problem": "Missing word. The phrase should say the collapsed state.",
+      "original": "An expandable text in the collapsed, showing",
+      "fix": "An expandable text in the collapsed state, showing"
     },
     {
-      "where": "Accessibility > Keyboard Navigation",
+      "where": "Responsiveness",
       "severity": "hint",
-      "problem": "Sub-heading should use sentence case.",
-      "original": "Keyboard Navigation",
-      "fix": "Keyboard navigation"
-    },
-    {
-      "where": "Accessibility > Screen Reader Support",
-      "severity": "hint",
-      "problem": "Sub-heading should use sentence case.",
-      "original": "Screen Reader Support",
-      "fix": "Screen reader support"
-    },
-    {
-      "where": "Behavior and Interaction > Gestures and Mapping",
-      "severity": "hint",
-      "problem": "Sub-heading should use sentence case.",
-      "original": "Gestures and Mapping",
-      "fix": "Gestures and mapping"
+      "problem": "Comma splice joins two independent clauses.",
+      "original": "On mobile, popovers don't float, they open as a full-screen overlay",
+      "fix": "On mobile, popovers don't float. They open as a full-screen overlay"
     },
     {
       "where": "Content > Wrapping and Truncation",
       "severity": "hint",
-      "problem": "Sub-heading should use sentence case.",
-      "original": "Wrapping and Truncation",
-      "fix": "Wrapping and truncation"
+      "problem": "A fixed 100-character limit conflicts with the Intro, which says the limit is set per use case. State it as the default.",
+      "original": "Text exceeding 100 characters is truncated",
+      "fix": "By default, text exceeding 100 characters is truncated"
+    },
+    {
+      "where": "Types > Expanded in popover",
+      "severity": "hint",
+      "problem": "Term inconsistency. The link is named \"Show More\" elsewhere, not \"expand text link\".",
+      "original": "relative to the expand text link",
+      "fix": "relative to the Show More link"
     }
   ]
 }
