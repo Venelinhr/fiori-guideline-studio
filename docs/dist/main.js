@@ -1518,6 +1518,10 @@ function renderBar() {
     mark.className = "checkbadge none";
     mark.textContent = "No check run yet";
     mark.title = "Click Run check. A person can also skip it and check by hand.";
+  } else if (stale && !lc.skipped) {
+    mark.className = "checkbadge none";
+    mark.textContent = "\u27F3 Text changed \xB7 run Check again";
+    mark.title = "The text changed after the last check, so its count is out of date. Click Run check.";
   } else if (lc.skipped) {
     mark.className = `checkbadge skipped${stale ? " stale" : ""}`;
     mark.textContent = "\u23ED Check skipped";
