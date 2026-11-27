@@ -637,7 +637,8 @@ function renderBar() {
   // The check mark: who ran the check, when, how many errors, fixes and recommendations.
   const lc = review.state.lastCheck, mark = $("#checkbadge"), stale = checkIsStale();
   const nice = (x: string) => new Date(x).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-  if (!lc) { mark.className = "checkbadge none"; mark.textContent = "No check run yet"; mark.title = "Click Run check. A person can also skip it and check by hand."; }
+  if (aiState.phase === "running") { mark.className = "checkbadge none"; mark.textContent = "⏳ AI check in progress"; mark.title = "Claude is checking the article. About a minute."; }
+  else if (!lc) { mark.className = "checkbadge none"; mark.textContent = "No check run yet"; mark.title = "Click Run check. A person can also skip it and check by hand."; }
   else if (stale && !lc.skipped) { mark.className = "checkbadge none"; mark.textContent = "⟳ Text changed · run Check again"; mark.title = "The text changed after the last check, so its count is out of date. Click Run check."; }
   else if (lc.skipped) { mark.className = `checkbadge skipped${stale ? " stale" : ""}`; mark.textContent = "⏭ Check skipped"; mark.title = "A person checked the article by hand."; }
   else if (lcErr(lc) === 0) { mark.className = `checkbadge pass${stale ? " stale" : ""}`; mark.textContent = "✓ Check passed"; mark.title = "Click to see the report."; }

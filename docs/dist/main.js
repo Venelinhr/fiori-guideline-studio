@@ -1514,7 +1514,11 @@ function renderBar() {
   pill.className = `pill ${st}`;
   const lc = review.state.lastCheck, mark = $("#checkbadge"), stale = checkIsStale();
   const nice = (x) => new Date(x).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-  if (!lc) {
+  if (aiState.phase === "running") {
+    mark.className = "checkbadge none";
+    mark.textContent = "\u23F3 AI check in progress";
+    mark.title = "Claude is checking the article. About a minute.";
+  } else if (!lc) {
     mark.className = "checkbadge none";
     mark.textContent = "No check run yet";
     mark.title = "Click Run check. A person can also skip it and check by hand.";
