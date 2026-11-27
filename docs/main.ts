@@ -438,7 +438,12 @@ function renderSide() {
   const p = $("#panel"); p.replaceChildren();
   if (tab === "checks") {
     { const top = review.state.lastCheck; p.append(h("p", "muted", top ? `${top.skipped ? "Check skipped" : "Last check"}: ${top.by} (${top.role}) · ${when(top.time)}` : "Nobody has run the check yet. Click Run check in the bar.")); }
-    const s = h("div", "sum"); s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at · ${findings.filter((f) => f.severity === "info").length} notes`)); p.append(s);
+    // The headline counts the rule check and the AI check that are still open, so it never says "No errors" while the AI finds some.
+    const doneAi = new Set(review.state.aiDone ?? []);
+    const aiOpen = aiReport ? aiReport.findings.filter((f) => !doneAi.has(aiKey(f))) : [];
+    const aiErr = aiOpen.filter((f) => f.severity === "error").length, aiHint = aiOpen.length - aiErr;
+    const allErr = errors() + aiErr, allWarn = findings.filter((f) => f.severity === "warning").length + aiHint;
+    const s = h("div", "sum"); s.append(h("strong", "", allErr ? `${allErr} to fix` : "No errors"), h("span", "muted", `${allWarn} to look at · ${findings.filter((f) => f.severity === "info").length} notes`)); p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
     renderAi(p);
