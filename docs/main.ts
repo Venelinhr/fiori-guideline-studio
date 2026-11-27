@@ -286,7 +286,20 @@ function commit(key: string, val: string, kind: Hist["kind"] = "edit") {
   else { f.set(val); log(f, old, val, kind); }
   changed(key);
 }
+// Undo and redo: the last 50 states of the text, the suggestions and the history. Each change is one step.
+let undoStack: string[] = [], redoStack: string[] = [], lastSnap = "";
+const snap = () => JSON.stringify({ model, suggestions: review.suggestions, history: review.history, aiDone: review.state.aiDone ?? [] });
+function restore(s: string) {
+  const o = JSON.parse(s); model = o.model; review.suggestions = o.suggestions; review.history = o.history; review.state.aiDone = o.aiDone; lastSnap = s;
+  F = collect(model); findings = allFindings(); renderPage(); renderSide(); renderBar(); save();
+}
+function undo() { if (!undoStack.length || locked()) return; redoStack.push(snap()); restore(undoStack.pop()!); }
+function redo() { if (!redoStack.length || locked()) return; undoStack.push(snap()); restore(redoStack.pop()!); }
+// For changes that do not go through changed(): remember the state before, run the change, remember the state after.
+function recordNow(mutate: () => void) { undoStack.push(snap()); if (undoStack.length > 50) undoStack.shift(); redoStack = []; mutate(); lastSnap = snap(); }
 function changed(key?: string) {
+  if (lastSnap) { undoStack.push(lastSnap); if (undoStack.length > 50) undoStack.shift(); }
+  redoStack = []; lastSnap = snap();
   F = collect(model); findings = allFindings();
   if (key) refreshField(key); else renderPage();
   renderSide(); renderBar(); save();
@@ -604,6 +617,7 @@ function renderBar() {
   else if (lcErr(lc) === 0) { mark.className = `checkbadge pass${stale ? " stale" : ""}`; mark.textContent = "✓ Check passed"; mark.title = "Click to see the report."; }
   else { mark.className = `checkbadge fail${stale ? " stale" : ""}`; mark.textContent = `⚠ Check found ${lcErr(lc)} error${lcErr(lc) === 1 ? "" : "s"}`; mark.title = "Click to see the report."; }
   const c = $<HTMLButtonElement>("#commit"); c.disabled = !dirty; c.textContent = branch === gh.MAIN ? "Save version (new update)" : "Save version";
+  $<HTMLButtonElement>("#undo").disabled = !undoStack.length || locked(); $<HTMLButtonElement>("#redo").disabled = !redoStack.length || locked();
   const cl = $<HTMLAnchorElement>("#commitlink"); cl.href = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
   const a = $("#actions"); a.replaceChildren();
   const add = (text: string, fn: () => void, cls: string, off = "") => { const b = btn(text, fn, cls); if (off) { b.disabled = true; b.title = off; } a.append(b); };
@@ -799,12 +813,12 @@ function applyAllAi() {
 }
 // Dismisses every open AI finding and resets the check, so the badge says "No check run yet".
 function dismissAllAi() {
-  if (aiReport) review.state.aiDone = aiReport.findings.map(aiKey);
+  recordNow(() => { if (aiReport) review.state.aiDone = aiReport.findings.map(aiKey); });
   review.state.lastCheck = undefined;
   renderBar(); renderSide(); save();
   toast("All AI findings dismissed. The check is cleared.", "ok");
 }
-function dismissAi(f: AiFinding) { (review.state.aiDone ??= []).push(aiKey(f)); save(); renderSide(); }
+function dismissAi(f: AiFinding) { recordNow(() => { (review.state.aiDone ??= []).push(aiKey(f)); }); save(); renderSide(); }
 function renderAi(p: HTMLElement) {
   const box = h("div", "fc"); const done = new Set(review.state.aiDone ?? []);
   if (aiState.phase === "running") box.append(h("p", "", "⏳ AI check (Claude) is running. About a minute."));
@@ -904,6 +918,7 @@ async function load(s: string, v = "", allowStart = false) {
   else dirty = false;
   assignIds(model); if (baseline) assignIds(baseline);
   F = collect(model); findings = allFindings();
+  undoStack = []; redoStack = []; lastSnap = snap();
   finalCheck = null; renderPage(); renderSide(); renderBar(); $("#saved").textContent = note;
   if (review.state.status === "approved" || review.state.status === "uploaded") refreshFinalCheck();
 }
@@ -921,6 +936,7 @@ async function load(s: string, v = "", allowStart = false) {
   };
   tokenBox.addEventListener("change", () => { const v = tokenBox.value.trim(); if (!v) return; gh.setToken(v); tokenBox.value = ""; checkToken(); });
   checkToken();
+  $("#undo").addEventListener("click", undo); $("#redo").addEventListener("click", redo);
   $("#runcheck").addEventListener("click", () => { runCheck().catch((e) => toast(`Check failed: ${(e as Error).message}`, "err")); });
   $("#commit").addEventListener("click", async () => {
     if (!gh.getToken()) { toast("No GitHub token yet. Paste it in the token box at the bottom right, then press Enter.", "err"); return; }

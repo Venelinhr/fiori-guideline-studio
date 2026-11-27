@@ -228,3 +228,10 @@ dialog.gate .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 dialog.gate button { border: 1px solid #bcc3ca; background: #fff; border-radius: 8px; padding: 6px 12px; min-height: 32px; cursor: pointer; color: var(--link); font: 600 14px var(--font); }
 dialog.gate button:hover { background: #eaecee; }
 dialog.gate button.primary { background: #0070f2; border-color: #0070f2; color: #fff; }
+
+.history-btns { display: inline-flex; gap: 4px; }
+.history-btns button { min-width: 34px; font-size: 18px; line-height: 20px; padding: 2px 8px; color: var(--text); }
+/* Tabs: the name on top, the badge below it, with a gap. Tabs without a badge keep the same height. */
+#tabs button { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; min-height: 66px; line-height: 18px; padding: 10px 4px; }
+#tabs .n { margin-left: 0; }
+#tabs button:not(:has(.n))::after { content: ""; min-height: 18px; }

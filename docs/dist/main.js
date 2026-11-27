@@ -926,7 +926,48 @@ function commit(key, val, kind = "edit") {
   }
   changed(key);
 }
+var undoStack = [];
+var redoStack = [];
+var lastSnap = "";
+var snap = () => JSON.stringify({ model, suggestions: review.suggestions, history: review.history, aiDone: review.state.aiDone ?? [] });
+function restore(s) {
+  const o = JSON.parse(s);
+  model = o.model;
+  review.suggestions = o.suggestions;
+  review.history = o.history;
+  review.state.aiDone = o.aiDone;
+  lastSnap = s;
+  F = collect(model);
+  findings = allFindings();
+  renderPage();
+  renderSide();
+  renderBar();
+  save();
+}
+function undo() {
+  if (!undoStack.length || locked()) return;
+  redoStack.push(snap());
+  restore(undoStack.pop());
+}
+function redo() {
+  if (!redoStack.length || locked()) return;
+  undoStack.push(snap());
+  restore(redoStack.pop());
+}
+function recordNow(mutate) {
+  undoStack.push(snap());
+  if (undoStack.length > 50) undoStack.shift();
+  redoStack = [];
+  mutate();
+  lastSnap = snap();
+}
 function changed(key) {
+  if (lastSnap) {
+    undoStack.push(lastSnap);
+    if (undoStack.length > 50) undoStack.shift();
+  }
+  redoStack = [];
+  lastSnap = snap();
   F = collect(model);
   findings = allFindings();
   if (key) refreshField(key);
@@ -1450,6 +1491,8 @@ function renderBar() {
   const c = $("#commit");
   c.disabled = !dirty;
   c.textContent = branch === MAIN ? "Save version (new update)" : "Save version";
+  $("#undo").disabled = !undoStack.length || locked();
+  $("#redo").disabled = !redoStack.length || locked();
   const cl = $("#commitlink");
   cl.href = lastCommitUrl || `https://github.com/${REPO}/commits/${branch}`;
   const a = $("#actions");
@@ -1801,7 +1844,9 @@ function applyAllAi() {
   renderSide();
 }
 function dismissAllAi() {
-  if (aiReport) review.state.aiDone = aiReport.findings.map(aiKey);
+  recordNow(() => {
+    if (aiReport) review.state.aiDone = aiReport.findings.map(aiKey);
+  });
   review.state.lastCheck = void 0;
   renderBar();
   renderSide();
@@ -1809,7 +1854,9 @@ function dismissAllAi() {
   toast("All AI findings dismissed. The check is cleared.", "ok");
 }
 function dismissAi(f) {
-  (review.state.aiDone ??= []).push(aiKey(f));
+  recordNow(() => {
+    (review.state.aiDone ??= []).push(aiKey(f));
+  });
   save();
   renderSide();
 }
@@ -1971,6 +2018,9 @@ async function load(s, v = "", allowStart = false) {
   if (baseline) assignIds(baseline);
   F = collect(model);
   findings = allFindings();
+  undoStack = [];
+  redoStack = [];
+  lastSnap = snap();
   finalCheck2 = null;
   renderPage();
   renderSide();
@@ -2011,6 +2061,8 @@ async function load(s, v = "", allowStart = false) {
     checkToken();
   });
   checkToken();
+  $("#undo").addEventListener("click", undo);
+  $("#redo").addEventListener("click", redo);
   $("#runcheck").addEventListener("click", () => {
     runCheck().catch((e) => toast(`Check failed: ${e.message}`, "err"));
   });
