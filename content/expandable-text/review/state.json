@@ -18,25 +18,31 @@
       "name": "Veni",
       "action": "to-editor",
       "time": "2026-11-27T13:22:56.600Z"
+    },
+    {
+      "role": "editor",
+      "name": "Krisi",
+      "action": "approved",
+      "time": "2026-11-27T13:38:05.169Z"
     }
   ],
-  "status": "editor",
+  "status": "approved",
   "aiDone": [
-    "open in a self popover→open in a popover",
-    "Preserve white space→Preserve whitespace",
-    "Expandable text with preserved white spaces→Expandable text with preserved whitespace",
-    "Keyboard interaction is supported through the Show More / Show Less link, which follows the keyboard behavior of the Link component.→Keyboard interaction is supported through the Show More / Show Less link, which follows the keyboard behavior of the Link component. The link text meets WCAG color contrast requirements against its background.",
-    "positioned relative to the expand text link→positioned relative to the Show More/Show Less link",
-    "to let the user collapse it back→to let users collapse it back",
-    "On mobile, popovers don't float, they open as a full-screen overlay→On mobile, popovers do not float. They open as a full-screen overlay"
+    "For more information, see Accessibility in SAP Fiori and the Accessibility Design Tools Handbook.→The Show More and Show Less links meet WCAG 2.1 AA contrast requirements in all states. For more information, see Accessibility in SAP Fiori and the Accessibility Design Tools Handbook.",
+    "the user can copy it→you can copy it",
+    "B. Less than 100 characters:→B. 100 characters or less:",
+    "### Guidelines\nComponents\nText\nLink\nPopover\n\n### Implementation\nSAPUI5\nExpandable text (samples)\nExpandable text (API reference)\nUI5 Web Components\nExpandable text\n\n### UI Kit (Figma)→Keep only the external links here and remove the duplicated internal guideline links, or check that the section is needed.",
+    "Learn More.→See the SAP Web Components section.",
+    "positioned relative to the expand text link→positioned relative to the Show More/Show Less link"
   ],
   "lastCheck": {
     "by": "Krisi",
     "role": "editor",
-    "time": "2026-11-27T13:35:38.796Z",
+    "time": "2026-11-27T13:38:05.168Z",
     "errors": 0,
     "hints": 2,
     "fixes": 4,
-    "copilot": "not available for this GitHub account"
+    "copilot": "skipped, checked by a person",
+    "skipped": true
   }
 }
