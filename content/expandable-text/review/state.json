@@ -29,5 +29,14 @@
     "Text exceeding 100 characters is truncated and followed by a Show More link.→Text exceeding the character limit set for the use case is truncated and followed by a Show More link. By default, the limit is 100 characters.",
     "For more information, see Wrapping & Truncation→For more information, see Wrapping and Truncation",
     "Components\nText\nLink\nPopover→Keep only the external links in this section, or remove the duplicate list."
-  ]
+  ],
+  "lastCheck": {
+    "by": "Krisi",
+    "role": "editor",
+    "time": "2026-11-27T13:24:16.001Z",
+    "errors": 0,
+    "hints": 2,
+    "fixes": 1,
+    "copilot": "not available for this GitHub account"
+  }
 }
