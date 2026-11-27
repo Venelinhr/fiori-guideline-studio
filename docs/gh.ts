@@ -113,6 +113,16 @@ export async function whoami(): Promise<string> {
   return (await r.json()).login as string;
 }
 
+// AI check in the background (GitHub Action ai-check.yml). Needs the token permission "Actions: read and write".
+export async function startAiCheck(slug: string, branch: string): Promise<void> {
+  await api(`/actions/workflows/ai-check.yml/dispatches`, { method: "POST", json: { ref: MAIN, inputs: { slug, ref: branch } } }, true);
+}
+export async function latestAiRun(): Promise<{ status: string; conclusion: string | null; url: string; created: string } | undefined> {
+  const j = await api<any>(`/actions/workflows/ai-check.yml/runs?event=workflow_dispatch&per_page=1`, {}, true);
+  const r = j.workflow_runs?.[0];
+  return r ? { status: r.status, conclusion: r.conclusion, url: r.html_url, created: r.created_at } : undefined;
+}
+
 // Asks GitHub Copilot to review the pull request. Returns false when Copilot review is not available for this account.
 export async function requestCopilot(prNumber: number): Promise<boolean> {
   await api(`/pulls/${prNumber}/requested_reviewers`, { method: "POST", json: { reviewers: ["copilot-pull-request-reviewer[bot]"] } }, true);

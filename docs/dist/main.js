@@ -357,6 +357,14 @@ async function whoami() {
   if (!r.ok) throw new GhError(r.status, `GitHub answered ${r.status}. Try again.`);
   return (await r.json()).login;
 }
+async function startAiCheck(slug3, branch2) {
+  await api(`/actions/workflows/ai-check.yml/dispatches`, { method: "POST", json: { ref: MAIN, inputs: { slug: slug3, ref: branch2 } } }, true);
+}
+async function latestAiRun() {
+  const j = await api(`/actions/workflows/ai-check.yml/runs?event=workflow_dispatch&per_page=1`, {}, true);
+  const r = j.workflow_runs?.[0];
+  return r ? { status: r.status, conclusion: r.conclusion, url: r.html_url, created: r.created_at } : void 0;
+}
 async function requestCopilot(prNumber) {
   await api(`/pulls/${prNumber}/requested_reviewers`, { method: "POST", json: { reviewers: ["copilot-pull-request-reviewer[bot]"] } }, true);
   const pr = await api(`/pulls/${prNumber}`);
@@ -465,6 +473,12 @@ var dirty = false;
 var lastCommitUrl = "";
 var finalCheck2 = null;
 var finalTimer = 0;
+var aiReport = null;
+var aiTimer = 0;
+var aiState = { phase: "none" };
+var lcErr = (lc) => lc.errors + (lc.ai?.errors ?? 0);
+var lcHints = (lc) => lc.hints + (lc.ai?.hints ?? 0);
+var aiKey = (f) => `${f.original}\u2192${f.fix}`;
 async function refreshFinalCheck() {
   try {
     finalCheck2 = await finalCheck(slug2);
@@ -1121,12 +1135,8 @@ function renderSide() {
     p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
-    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lc.errors} errors, ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made ${lc.copilot.startsWith("review requested") ? "\xB7 Copilot review requested" : ""}${checkIsStale() ? " \xB7 the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
-    const cop = h("div", "fc");
-    cop.append(h("p", "", "Copilot chat: ask your GitHub Copilot to review this article."), btn("Copy the prompt and open Copilot", () => {
-      askCopilotChat();
-    }, "small"));
-    p.append(cop);
+    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) \xB7 ${when(lc.time)} \xB7 ${lcErr(lc)} errors, ${lcHints(lc)} recommendation${lcHints(lc) === 1 ? "" : "s"}${lc.ai ? " (with the AI check)" : ""}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made ${lc.copilot.startsWith("review requested") ? "\xB7 Copilot review requested" : ""}${checkIsStale() ? " \xB7 the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
+    renderAi(p);
     for (const f of [...findings].sort((a, b) => order[a.severity] - order[b.severity])) {
       const keys = keysAt(f);
       const c = card([h("span", `sev ${f.severity}`, f.severity === "error" ? "Fix" : f.severity === "warning" ? "Look" : "Note"), f.where], document.createTextNode(f.message + (f.suggestion ? `
@@ -1391,7 +1401,7 @@ async function sign(action, status) {
         `${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
         `Approved by ${who} (editor).
 
-${lc ? `${lc.skipped ? "Check skipped" : "Check run"} by ${lc.by} on ${lc.time}: ${lc.errors} errors, ${lc.hints} recommendations, ${lc.fixes} fixes made.` : "No check was run."}`
+${lc ? `${lc.skipped ? "Check skipped" : "Check run"} by ${lc.by} on ${lc.time}: ${lcErr(lc)} errors, ${lcHints(lc)} recommendations, ${lc.fixes} fixes made.` : "No check was run."}`
       );
       review.state.pr = pr;
       await commitVersion(`${title()}: pull request #${pr.number}`);
@@ -1428,13 +1438,13 @@ function renderBar() {
     mark.className = `checkbadge skipped${stale ? " stale" : ""}`;
     mark.textContent = `\u23ED Check skipped by ${lc.by} \xB7 ${nice(lc.time)} \xB7 human check${stale ? " \xB7 text changed since" : ""}`;
     mark.title = "A person checked the article by hand.";
-  } else if (lc.errors === 0) {
+  } else if (lcErr(lc) === 0) {
     mark.className = `checkbadge pass${stale ? " stale" : ""}`;
-    mark.textContent = `\u2713 Check passed \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.errors} errors \xB7 ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} \xB7 ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}${stale ? " \xB7 text changed since" : ""}`;
+    mark.textContent = `\u2713 Check passed \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lcErr(lc)} errors \xB7 ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} \xB7 ${lcHints(lc)} recommendation${lcHints(lc) === 1 ? "" : "s"}${stale ? " \xB7 text changed since" : ""}`;
     mark.title = "Click to see the report.";
   } else {
     mark.className = `checkbadge fail${stale ? " stale" : ""}`;
-    mark.textContent = `\u26A0 Check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"}`;
+    mark.textContent = `\u26A0 Check found ${lcErr(lc)} error${lcErr(lc) === 1 ? "" : "s"} \xB7 ${lc.by} \xB7 ${nice(lc.time)} \xB7 ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"}`;
     mark.title = "Click to see the report.";
   }
   const c = $("#commit");
@@ -1685,11 +1695,11 @@ function skipCheck() {
 }
 function gateReason() {
   const lc = review.state.lastCheck, fc = finalCheck2;
-  if (fc?.state === "success" || lc && !checkIsStale() && (lc.skipped || lc.errors === 0)) return "";
+  if (fc?.state === "success" || lc && !checkIsStale() && (lc.skipped || lcErr(lc) === 0)) return "";
   if (!lc && fc?.state === "failure") return `The automatic final check found errors: ${fc.description}`;
   if (!lc) return "Nobody has run the check on this version.";
   if (checkIsStale()) return `The text changed after the last check (${lc.by}, ${when(lc.time)}).`;
-  return `The last check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} (${lc.by}, ${when(lc.time)}).`;
+  return `The last check found ${lcErr(lc)} error${lcErr(lc) === 1 ? "" : "s"} (${lc.by}, ${when(lc.time)}).`;
 }
 function askCheck(reason) {
   return new Promise((resolve) => {
@@ -1724,17 +1734,119 @@ async function gateOk() {
   const why = gateReason();
   return why ? askCheck(why) : true;
 }
-async function askCopilotChat() {
-  const ref = branch === MAIN ? MAIN : branch;
-  const url = `https://raw.githubusercontent.com/${REPO}/${ref}/content/${slug2}/guideline.md`;
-  const prompt = `Review the guideline article at ${url}. Use the rules in .github/copilot-instructions.md of the repository ${REPO}. List each problem with: where it is, what is wrong, and the corrected text. Check wording, full stops, commas, terms, and alt text.`;
-  try {
-    await navigator.clipboard.writeText(prompt);
-    toast("Prompt copied. Paste it in Copilot (the new tab).", "ok");
-  } catch {
-    toast(`Could not copy. Use this prompt in Copilot: ${prompt}`, "err");
+function replaceOnce(v, kind, original, fix) {
+  if (kind === "plain") return v.includes(original) ? v.replace(original, fix) : null;
+  const doc = new DOMParser().parseFromString(`<body>${v}</body>`, "text/html");
+  const w = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
+  let n;
+  while (n = w.nextNode()) {
+    const s = n.nodeValue ?? "";
+    if (s.includes(original)) {
+      n.nodeValue = s.replace(original, fix);
+      return clean(doc.body.innerHTML, kind === "inline");
+    }
   }
-  window.open("https://github.com/copilot", "_blank", "noopener");
+  return null;
+}
+function applyAiFix(f) {
+  const hits = [...F.values()].filter((fl) => toText(fl.get(), fl.kind).includes(f.original));
+  const tail = f.where.split(">").pop()?.trim().toLowerCase() ?? "";
+  const pick = hits.length === 1 ? hits[0] : hits.find((fl) => tail && fl.section.toLowerCase().includes(tail)) ?? hits[0];
+  const nv = pick ? replaceOnce(pick.get(), pick.kind, f.original, f.fix) : null;
+  if (!pick || nv === null) {
+    toast("This fix cannot be applied by itself (the text is split by bold or a link). Change it by hand.", "err");
+    return;
+  }
+  (review.state.aiDone ??= []).push(aiKey(f));
+  commit(pick.key, nv, "fix");
+  jump(pick.key);
+}
+function dismissAi(f) {
+  (review.state.aiDone ??= []).push(aiKey(f));
+  save();
+  renderSide();
+}
+function renderAi(p) {
+  const box = h("div", "fc");
+  const done = new Set(review.state.aiDone ?? []);
+  if (aiState.phase === "running") box.append(h("p", "", "\u23F3 AI check (Claude) is running. About a minute."));
+  if (aiState.phase === "failed") {
+    box.append(h("p", "", `\u26A0 AI check: ${aiState.msg}`));
+    if (aiState.url) {
+      const a = h("a", "", "Open the job on GitHub \u2197");
+      a.href = aiState.url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      box.append(a);
+    }
+  }
+  const open = aiReport ? aiReport.findings.filter((f) => !done.has(aiKey(f))) : [];
+  if (aiReport) box.append(h("p", "", `AI check (${aiReport.model}) \xB7 ${when(aiReport.time)} \xB7 ${aiReport.errors} errors, ${aiReport.hints} hints \xB7 ${open.length} still open`));
+  else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
+  p.append(box);
+  for (const f of open) {
+    const c = card([h("span", `sev ${f.severity === "error" ? "error" : "warning"}`, f.severity === "error" ? "AI error" : "AI hint"), f.where], document.createTextNode(`${f.problem}
+Now: ${f.original}
+Fix: ${f.fix}`));
+    const r = h("div", "row");
+    r.append(btn("Apply fix", () => applyAiFix(f), "small primary"), btn("Dismiss", () => dismissAi(f), "small"));
+    c.append(r);
+    p.append(c);
+  }
+}
+async function startAiCheck2() {
+  if (!getToken() || !version || branch === MAIN) {
+    aiState = { phase: "failed", msg: !getToken() ? "Paste your GitHub token first." : "Save a version first. The AI reads the saved version on GitHub." };
+    renderSide();
+    toast(`AI check not started. ${aiState.msg}`, "err");
+    return;
+  }
+  try {
+    if (dirty) await commitVersion(`${title()}: saved before the AI check by ${me()}`);
+    const since = Date.now() - 6e4;
+    await startAiCheck(slug2, targetBranch());
+    aiState = { phase: "running" };
+    renderSide();
+    toast("AI check started (Claude). The report comes back in about a minute.", "busy");
+    pollAi(since);
+  } catch (e) {
+    const m = e.message, hint = /not accessible|forbidden|Not Found|403|404/i.test(m) ? " Add Actions: read and write to your GitHub token." : "";
+    aiState = { phase: "failed", msg: m + hint };
+    renderSide();
+    toast(`AI check not started: ${m}${hint}`, "err");
+  }
+}
+function pollAi(since, round = 0) {
+  clearTimeout(aiTimer);
+  aiTimer = window.setTimeout(async () => {
+    try {
+      const run = await latestAiRun();
+      if (run && Date.parse(run.created) >= since && run.status === "completed") {
+        if (run.conclusion === "success") {
+          aiReport = await readJson(`content/${slug2}/review/ai-report.json`, targetBranch(), null);
+          aiState = { phase: "done" };
+          review.state.aiDone = [];
+          const lc = review.state.lastCheck;
+          if (lc && aiReport) lc.ai = { errors: aiReport.errors, hints: aiReport.hints, model: aiReport.model, time: aiReport.time };
+          renderBar();
+          renderSide();
+          save();
+          toast(`AI check done: ${aiReport?.errors ?? 0} errors, ${aiReport?.hints ?? 0} hints.`, aiReport?.errors ? "err" : "ok");
+        } else {
+          aiState = { phase: "failed", msg: "The AI job failed. Most likely the secret ANTHROPIC_API_KEY is missing, or the key has no credit.", url: run.url };
+          renderSide();
+          toast("AI check failed. The Checks tab has the link to the job.", "err");
+        }
+        return;
+      }
+    } catch {
+    }
+    if (round < 40) pollAi(since, round + 1);
+    else {
+      aiState = { phase: "failed", msg: "No answer after 4 minutes." };
+      renderSide();
+    }
+  }, 6e3);
 }
 async function runCheck() {
   findings = allFindings();
@@ -1748,6 +1860,7 @@ async function runCheck() {
   renderSide();
   renderBar();
   save();
+  void startAiCheck2();
   toast(`Check done: ${errs} error${errs === 1 ? "" : "s"}, ${hints} hint${hints === 1 ? "" : "s"}.${copilot.startsWith("review requested") ? " Copilot review requested on the pull request." : ""}`, errs ? "err" : "ok");
 }
 async function load(s, v = "", allowStart = false) {
@@ -1776,6 +1889,8 @@ async function load(s, v = "", allowStart = false) {
     history: await readJson(`content/${s}/review/history.json`, branch, []),
     state: await readJson(`content/${s}/review/state.json`, branch, {})
   };
+  aiReport = branch === MAIN ? null : await readJson(`content/${s}/review/ai-report.json`, branch, null);
+  aiState = { phase: "none" };
   {
     const old = review.state.status;
     if (old && LEGACY[old]) review.state.status = LEGACY[old];

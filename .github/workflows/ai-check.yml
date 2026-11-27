@@ -1,0 +1,46 @@
+# AI check in the background. Started by the editor's "Run check" button (or by hand). No pull request needed.
+# It reads the article on the version branch, asks Claude to check it with the rules in .github/copilot-instructions.md,
+# and saves the report as content/<guideline>/review/ai-report.json on that branch.
+# Needs the repository secret ANTHROPIC_API_KEY.
+name: AI check
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Guideline folder, for example expandable-text"
+        required: true
+      ref:
+        description: "Version branch with the article, for example v1-157/expandable-text"
+        required: true
+permissions:
+  contents: write
+jobs:
+  ai:
+    runs-on: ubuntu-latest
+    env:
+      SLUG: ${{ inputs.slug }}
+      REF: ${{ inputs.ref }}
+    steps:
+      - name: Script and rules (main)
+        uses: actions/checkout@v4
+      - name: Article (version branch)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          path: branch
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check the article with Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ARTICLE_DIR: branch
+        run: node scripts/ai-check.mjs "$SLUG"
+      - name: Save the report on the version branch
+        working-directory: branch
+        run: |
+          git config user.name "guideline-bot"
+          git config user.email "guideline-bot@users.noreply.github.com"
+          git add "content/$SLUG/review/ai-report.json"
+          git diff --cached --quiet || git commit -m "AI check report for $SLUG"
+          git push origin "HEAD:$REF"

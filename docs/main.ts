@@ -12,7 +12,7 @@ interface Sug { id: string; key: string; label: string; section: string; old: st
 interface Hist { key: string; label: string; section: string; old: string; new: string; author: string; time: string; kind: "edit" | "suggestion" | "fix" | "restore" | "image"; acceptedBy?: string }
 interface Sign { role: string; name: string; action: string; time: string }
 type Stage = "draft" | "writer" | "designer" | "editor" | "approved" | "uploaded";
-interface State { status?: Stage; lastCheck?: { by: string; role: string; time: string; errors: number; hints: number; fixes: number; copilot: string; skipped?: boolean }; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
+interface State { aiDone?: string[]; status?: Stage; lastCheck?: { by: string; role: string; time: string; errors: number; hints: number; fixes: number; copilot: string; skipped?: boolean; ai?: { errors: number; hints: number; model: string; time: string } }; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T;
 const h = (tag: string, cls = "", text = ""): HTMLElement => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
@@ -27,6 +27,15 @@ let branch = gh.MAIN, version = "", docRef: any = {}, dirty = false;
 let lastCommitUrl = "";
 // Result of the final check (rules and writing patterns) that GitHub runs after the editor approves.
 let finalCheck: gh.CheckResult | null = null, finalTimer = 0;
+// AI check (Claude) in the background: the report the GitHub Action saved on the version branch.
+interface AiFinding { where: string; severity: "error" | "hint"; problem: string; original: string; fix: string }
+interface AiReport { time: string; model: string; errors: number; hints: number; dropped?: number; findings: AiFinding[] }
+let aiReport: AiReport | null = null, aiTimer = 0;
+let aiState: { phase: "none" | "running" | "done" | "failed"; msg?: string; url?: string } = { phase: "none" };
+type LastCheck = NonNullable<State["lastCheck"]>;
+const lcErr = (lc: LastCheck) => lc.errors + (lc.ai?.errors ?? 0);
+const lcHints = (lc: LastCheck) => lc.hints + (lc.ai?.hints ?? 0);
+const aiKey = (f: AiFinding) => `${f.original}→${f.fix}`;
 async function refreshFinalCheck(): Promise<void> {
   try { finalCheck = await gh.finalCheck(slug); } catch (e) { finalCheck = { state: "error", description: (e as Error).message }; }
   renderBar(); if (tab === "aem") renderSide();
@@ -418,8 +427,8 @@ function renderSide() {
     const s = h("div", "sum"); s.append(h("strong", "", errors() ? `${errors()} to fix` : "No errors"), h("span", "muted", `${findings.filter((f) => f.severity === "warning").length} to look at · ${findings.filter((f) => f.severity === "info").length} notes`)); p.append(s);
     const order = { error: 0, warning: 1, info: 2 };
     const lc = review.state.lastCheck;
-    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) · ${when(lc.time)} · ${lc.errors} errors, ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made ${lc.copilot.startsWith("review requested") ? "· Copilot review requested" : ""}${checkIsStale() ? " · the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
-    const cop = h("div", "fc"); cop.append(h("p", "", "Copilot chat: ask your GitHub Copilot to review this article."), btn("Copy the prompt and open Copilot", () => { askCopilotChat(); }, "small")); p.append(cop);
+    p.append(h("p", "muted", lc ? `${lc.skipped ? "Check skipped" : "Last check"}: ${lc.by} (${lc.role}) · ${when(lc.time)} · ${lcErr(lc)} errors, ${lcHints(lc)} recommendation${lcHints(lc) === 1 ? "" : "s"}${lc.ai ? " (with the AI check)" : ""}, ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} made ${lc.copilot.startsWith("review requested") ? "· Copilot review requested" : ""}${checkIsStale() ? " · the text changed since" : ""}` : "Nobody has run the check yet. Click Run check in the bar."));
+    renderAi(p);
     for (const f of [...findings].sort((a, b) => order[a.severity] - order[b.severity])) {
       const keys = keysAt(f); const c = card([h("span", `sev ${f.severity}`, f.severity === "error" ? "Fix" : f.severity === "warning" ? "Look" : "Note"), f.where], document.createTextNode(f.message + (f.suggestion ? `\n→ ${f.suggestion}` : "")), keys[0]);
       if (fixOf(f) && keys.length && !locked()) { const r = h("div", "row"); r.append(btn(suggesting() ? "Suggest this fix" : "Fix", () => applyFix(f), "small primary")); c.append(r); }
@@ -572,7 +581,7 @@ async function sign(action: string, status: Stage) {
       const lc = review.state.lastCheck;
       let pr = review.state.pr ?? (await gh.findPR(targetBranch()));
       if (!pr) pr = await gh.openPR(targetBranch(), `${title()} update${review.state.jira ? ` (${review.state.jira})` : ""}`,
-        `Approved by ${who} (editor).\n\n${lc ? `${lc.skipped ? "Check skipped" : "Check run"} by ${lc.by} on ${lc.time}: ${lc.errors} errors, ${lc.hints} recommendations, ${lc.fixes} fixes made.` : "No check was run."}`);
+        `Approved by ${who} (editor).\n\n${lc ? `${lc.skipped ? "Check skipped" : "Check run"} by ${lc.by} on ${lc.time}: ${lcErr(lc)} errors, ${lcHints(lc)} recommendations, ${lc.fixes} fixes made.` : "No check was run."}`);
       review.state.pr = pr;
       await commitVersion(`${title()}: pull request #${pr.number}`);
       await gh.merge(pr.number);
@@ -592,8 +601,8 @@ function renderBar() {
   const nice = (x: string) => new Date(x).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   if (!lc) { mark.className = "checkbadge none"; mark.textContent = "No check run yet"; mark.title = "Click Run check. A person can also skip it and check by hand."; }
   else if (lc.skipped) { mark.className = `checkbadge skipped${stale ? " stale" : ""}`; mark.textContent = `⏭ Check skipped by ${lc.by} · ${nice(lc.time)} · human check${stale ? " · text changed since" : ""}`; mark.title = "A person checked the article by hand."; }
-  else if (lc.errors === 0) { mark.className = `checkbadge pass${stale ? " stale" : ""}`; mark.textContent = `✓ Check passed · ${lc.by} · ${nice(lc.time)} · ${lc.errors} errors · ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} · ${lc.hints} recommendation${lc.hints === 1 ? "" : "s"}${stale ? " · text changed since" : ""}`; mark.title = "Click to see the report."; }
-  else { mark.className = `checkbadge fail${stale ? " stale" : ""}`; mark.textContent = `⚠ Check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} · ${lc.by} · ${nice(lc.time)} · ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"}`; mark.title = "Click to see the report."; }
+  else if (lcErr(lc) === 0) { mark.className = `checkbadge pass${stale ? " stale" : ""}`; mark.textContent = `✓ Check passed · ${lc.by} · ${nice(lc.time)} · ${lcErr(lc)} errors · ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"} · ${lcHints(lc)} recommendation${lcHints(lc) === 1 ? "" : "s"}${stale ? " · text changed since" : ""}`; mark.title = "Click to see the report."; }
+  else { mark.className = `checkbadge fail${stale ? " stale" : ""}`; mark.textContent = `⚠ Check found ${lcErr(lc)} error${lcErr(lc) === 1 ? "" : "s"} · ${lc.by} · ${nice(lc.time)} · ${lc.fixes} fix${lc.fixes === 1 ? "" : "es"}`; mark.title = "Click to see the report."; }
   const c = $<HTMLButtonElement>("#commit"); c.disabled = !dirty; c.textContent = branch === gh.MAIN ? "Save version (new update)" : "Save version";
   const cl = $<HTMLAnchorElement>("#commitlink"); cl.href = lastCommitUrl || `https://github.com/${gh.REPO}/commits/${branch}`;
   const a = $("#actions"); a.replaceChildren();
@@ -712,11 +721,11 @@ function skipCheck() {
 // Before the article is marked uploaded to AEM: if no check passed on this version, ask. The person decides: run it, or skip it.
 function gateReason(): string {
   const lc = review.state.lastCheck, fc = finalCheck;
-  if (fc?.state === "success" || (lc && !checkIsStale() && (lc.skipped || lc.errors === 0))) return "";
+  if (fc?.state === "success" || (lc && !checkIsStale() && (lc.skipped || lcErr(lc) === 0))) return "";
   if (!lc && fc?.state === "failure") return `The automatic final check found errors: ${fc.description}`;
   if (!lc) return "Nobody has run the check on this version.";
   if (checkIsStale()) return `The text changed after the last check (${lc.by}, ${when(lc.time)}).`;
-  return `The last check found ${lc.errors} error${lc.errors === 1 ? "" : "s"} (${lc.by}, ${when(lc.time)}).`;
+  return `The last check found ${lcErr(lc)} error${lcErr(lc) === 1 ? "" : "s"} (${lc.by}, ${when(lc.time)}).`;
 }
 function askCheck(reason: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -742,6 +751,74 @@ async function askCopilotChat() {
 }
 // Run check: rules, wording, full stops, commas, alt text, links. Anyone can run it at any time. The report shows the fixes.
 // Where Copilot review is available (company GitHub), the same click also asks Copilot to review the pull request.
+// ----- AI check (Claude), in the background -----
+function replaceOnce(v: string, kind: Kind, original: string, fix: string): string | null {
+  if (kind === "plain") return v.includes(original) ? v.replace(original, fix) : null;
+  const doc = new DOMParser().parseFromString(`<body>${v}</body>`, "text/html"); const w = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT); let n: Node | null;
+  while ((n = w.nextNode())) { const s = n.nodeValue ?? ""; if (s.includes(original)) { n.nodeValue = s.replace(original, fix); return clean(doc.body.innerHTML, kind === "inline"); } }
+  return null;
+}
+function applyAiFix(f: AiFinding) {
+  const hits = [...F.values()].filter((fl) => toText(fl.get(), fl.kind).includes(f.original));
+  const tail = f.where.split(">").pop()?.trim().toLowerCase() ?? "";
+  const pick = hits.length === 1 ? hits[0] : hits.find((fl) => tail && fl.section.toLowerCase().includes(tail)) ?? hits[0];
+  const nv = pick ? replaceOnce(pick.get(), pick.kind, f.original, f.fix) : null;
+  if (!pick || nv === null) { toast("This fix cannot be applied by itself (the text is split by bold or a link). Change it by hand.", "err"); return; }
+  (review.state.aiDone ??= []).push(aiKey(f));
+  commit(pick.key, nv, "fix"); jump(pick.key);
+}
+function dismissAi(f: AiFinding) { (review.state.aiDone ??= []).push(aiKey(f)); save(); renderSide(); }
+function renderAi(p: HTMLElement) {
+  const box = h("div", "fc"); const done = new Set(review.state.aiDone ?? []);
+  if (aiState.phase === "running") box.append(h("p", "", "⏳ AI check (Claude) is running. About a minute."));
+  if (aiState.phase === "failed") { box.append(h("p", "", `⚠ AI check: ${aiState.msg}`)); if (aiState.url) { const a = h("a", "", "Open the job on GitHub ↗") as HTMLAnchorElement; a.href = aiState.url; a.target = "_blank"; a.rel = "noopener"; box.append(a); } }
+  const open = aiReport ? aiReport.findings.filter((f) => !done.has(aiKey(f))) : [];
+  if (aiReport) box.append(h("p", "", `AI check (${aiReport.model}) · ${when(aiReport.time)} · ${aiReport.errors} errors, ${aiReport.hints} hints · ${open.length} still open`));
+  else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
+  p.append(box);
+  for (const f of open) {
+    const c = card([h("span", `sev ${f.severity === "error" ? "error" : "warning"}`, f.severity === "error" ? "AI error" : "AI hint"), f.where], document.createTextNode(`${f.problem}\nNow: ${f.original}\nFix: ${f.fix}`));
+    const r = h("div", "row"); r.append(btn("Apply fix", () => applyAiFix(f), "small primary"), btn("Dismiss", () => dismissAi(f), "small")); c.append(r); p.append(c);
+  }
+}
+async function startAiCheck(): Promise<void> {
+  if (!gh.getToken() || !version || branch === gh.MAIN) {
+    aiState = { phase: "failed", msg: !gh.getToken() ? "Paste your GitHub token first." : "Save a version first. The AI reads the saved version on GitHub." }; renderSide(); toast(`AI check not started. ${aiState.msg}`, "err"); return;
+  }
+  try {
+    if (dirty) await commitVersion(`${title()}: saved before the AI check by ${me()}`);
+    const since = Date.now() - 60000;
+    await gh.startAiCheck(slug, targetBranch());
+    aiState = { phase: "running" }; renderSide(); toast("AI check started (Claude). The report comes back in about a minute.", "busy");
+    pollAi(since);
+  } catch (e) {
+    const m = (e as Error).message, hint = /not accessible|forbidden|Not Found|403|404/i.test(m) ? " Add Actions: read and write to your GitHub token." : "";
+    aiState = { phase: "failed", msg: m + hint }; renderSide(); toast(`AI check not started: ${m}${hint}`, "err");
+  }
+}
+function pollAi(since: number, round = 0) {
+  clearTimeout(aiTimer);
+  aiTimer = window.setTimeout(async () => {
+    try {
+      const run = await gh.latestAiRun();
+      if (run && Date.parse(run.created) >= since && run.status === "completed") {
+        if (run.conclusion === "success") {
+          aiReport = await gh.readJson<AiReport | null>(`content/${slug}/review/ai-report.json`, targetBranch(), null);
+          aiState = { phase: "done" }; review.state.aiDone = [];
+          const lc = review.state.lastCheck;
+          if (lc && aiReport) lc.ai = { errors: aiReport.errors, hints: aiReport.hints, model: aiReport.model, time: aiReport.time };
+          renderBar(); renderSide(); save();
+          toast(`AI check done: ${aiReport?.errors ?? 0} errors, ${aiReport?.hints ?? 0} hints.`, aiReport?.errors ? "err" : "ok");
+        } else {
+          aiState = { phase: "failed", msg: "The AI job failed. Most likely the secret ANTHROPIC_API_KEY is missing, or the key has no credit.", url: run.url };
+          renderSide(); toast("AI check failed. The Checks tab has the link to the job.", "err");
+        }
+        return;
+      }
+    } catch { /* look again */ }
+    if (round < 40) pollAi(since, round + 1); else { aiState = { phase: "failed", msg: "No answer after 4 minutes." }; renderSide(); }
+  }, 6000);
+}
 async function runCheck() {
   findings = allFindings();
   const errs = errors(), hints = findings.filter((f) => f.severity === "warning").length;
@@ -750,6 +827,7 @@ async function runCheck() {
   if (n && gh.getToken()) copilot = (await gh.requestCopilot(n).catch(() => false)) ? "review requested on the pull request" : "not available for this GitHub account";
   review.state.lastCheck = { by: me(), role: $<HTMLSelectElement>("#role").value, time: now(), errors: errs, hints, fixes: fixesMade(), copilot };
   tab = "checks"; document.body.classList.add("drawer-open"); renderSide(); renderBar(); save();
+  void startAiCheck();
   toast(`Check done: ${errs} error${errs === 1 ? "" : "s"}, ${hints} hint${hints === 1 ? "" : "s"}.${copilot.startsWith("review requested") ? " Copilot review requested on the pull request." : ""}`, errs ? "err" : "ok");
 }
 async function load(s: string, v = "", allowStart = false) {
@@ -771,6 +849,7 @@ async function load(s: string, v = "", allowStart = false) {
     history: await gh.readJson(`content/${s}/review/history.json`, branch, []),
     state: await gh.readJson(`content/${s}/review/state.json`, branch, {}),
   };
+  aiReport = branch === gh.MAIN ? null : await gh.readJson<AiReport | null>(`content/${s}/review/ai-report.json`, branch, null); aiState = { phase: "none" };
   { const old = review.state.status as string | undefined; if (old && LEGACY[old]) review.state.status = LEGACY[old]; }
   // Opened from a Jira link (…/fiori-guideline-studio/?jira=FIORIDESIGN-17845): the ticket is filled in, nobody pastes it.
   const fromLink = new URLSearchParams(location.search).get("jira")?.match(JIRA_KEY)?.[0];
