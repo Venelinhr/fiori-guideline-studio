@@ -267,7 +267,8 @@ function flag() {
 }
 function jump(key: string) {
   const el = document.querySelector<HTMLElement>(`[data-key="${CSS.escape(key)}"]`); if (!el) return;
-  el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  document.querySelectorAll(".hl").forEach((x) => x.classList.remove("hl"));
+  el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.add("hl");
 }
 const keysAt = (f: Finding): string[] => {
   const exact = [...F.values()].filter((x) => x.where === f.where).map((x) => x.key); if (exact.length) return exact;
@@ -794,6 +795,12 @@ function replaceOnce(v: string, kind: Kind, original: string, fix: string): stri
   while ((n = w.nextNode())) { const s = n.nodeValue ?? ""; if (s.includes(original)) { n.nodeValue = s.replace(original, fix); return clean(doc.body.innerHTML, kind === "inline"); } }
   return null;
 }
+// The article field that holds the AI finding's text. Used to jump to it.
+function aiKeyOf(f: AiFinding): string | undefined {
+  const hits = [...F.values()].filter((fl) => toText(fl.get(), fl.kind).includes(f.original));
+  const tail = f.where.split(">").pop()?.trim().toLowerCase() ?? "";
+  return (hits.length === 1 ? hits[0] : hits.find((fl) => tail && fl.section.toLowerCase().includes(tail)) ?? hits[0])?.key;
+}
 function applyAiFix(f: AiFinding) {
   const hits = [...F.values()].filter((fl) => toText(fl.get(), fl.kind).includes(f.original));
   const tail = f.where.split(">").pop()?.trim().toLowerCase() ?? "";
@@ -839,7 +846,7 @@ function renderAi(p: HTMLElement) {
     p.append(all);
   }
   for (const f of open) {
-    const c = card([h("span", `sev ${f.severity === "error" ? "error" : "warning"}`, f.severity === "error" ? "AI error" : "AI hint"), f.where], document.createTextNode(`${f.problem}\nNow: ${f.original}\nFix: ${f.fix}`));
+    const c = card([h("span", `sev ${f.severity === "error" ? "error" : "warning"}`, f.severity === "error" ? "AI error" : "AI hint"), f.where], document.createTextNode(`${f.problem}\nNow: ${f.original}\nFix: ${f.fix}`), aiKeyOf(f));
     const r = h("div", "row"); r.append(btn("Apply fix", () => applyAiFix(f), "small primary"), btn("Dismiss", () => dismissAi(f), "small")); c.append(r); p.append(c);
   }
 }

@@ -898,10 +898,9 @@ function flag() {
 function jump(key) {
   const el = document.querySelector(`[data-key="${CSS.escape(key)}"]`);
   if (!el) return;
+  document.querySelectorAll(".hl").forEach((x) => x.classList.remove("hl"));
   el.scrollIntoView({ block: "center", behavior: "smooth" });
-  el.classList.remove("flash");
-  void el.offsetWidth;
-  el.classList.add("flash");
+  el.classList.add("hl");
 }
 var keysAt = (f) => {
   const exact = [...F.values()].filter((x) => x.where === f.where).map((x) => x.key);
@@ -1824,6 +1823,11 @@ function replaceOnce(v, kind, original, fix) {
   }
   return null;
 }
+function aiKeyOf(f) {
+  const hits = [...F.values()].filter((fl) => toText(fl.get(), fl.kind).includes(f.original));
+  const tail = f.where.split(">").pop()?.trim().toLowerCase() ?? "";
+  return (hits.length === 1 ? hits[0] : hits.find((fl) => tail && fl.section.toLowerCase().includes(tail)) ?? hits[0])?.key;
+}
 function applyAiFix(f) {
   const hits = [...F.values()].filter((fl) => toText(fl.get(), fl.kind).includes(f.original));
   const tail = f.where.split(">").pop()?.trim().toLowerCase() ?? "";
@@ -1896,7 +1900,7 @@ function renderAi(p) {
   for (const f of open) {
     const c = card([h("span", `sev ${f.severity === "error" ? "error" : "warning"}`, f.severity === "error" ? "AI error" : "AI hint"), f.where], document.createTextNode(`${f.problem}
 Now: ${f.original}
-Fix: ${f.fix}`));
+Fix: ${f.fix}`), aiKeyOf(f));
     const r = h("div", "row");
     r.append(btn("Apply fix", () => applyAiFix(f), "small primary"), btn("Dismiss", () => dismissAi(f), "small"));
     c.append(r);

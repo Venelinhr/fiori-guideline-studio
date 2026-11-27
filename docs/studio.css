@@ -126,6 +126,8 @@ body:not(.no-hints) [data-key].empty::before { content: attr(data-ph); color: #8
 body.no-hints [data-key].flag-error, body.no-hints [data-key].flag-warning { box-shadow: none; }
 [data-key].sel { outline: 2px solid var(--link); }
 [data-key].flash { animation: flash 1.2s; }
+/* The place a clicked card points to: yellow until the next click. */
+[data-key].hl { background: #fff3a8; border-radius: 4px; }
 @keyframes flash { 0%, 60% { background: #fff3a8; } 100% { background: transparent; } }
 ins { background: var(--ins); text-decoration: none; border-radius: 2px; }
 del { background: var(--del); color: #aa0808; border-radius: 2px; }
