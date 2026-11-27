@@ -31,8 +31,23 @@ Be short. For each problem write: where it is, what is wrong, the corrected text
 - No repeated word ("the the").
 - Use only Latin letters. A Cyrillic or Greek letter that looks like a Latin one (for example "е" in "the") is an error.
 
+## Brand language (SAP Fiori)
+- Name the product "SAP Fiori" in full on first use in an article.
+- Button and link labels are exact. "Show More" and "Show Less" must not change.
+- Use "you" for the reader. Use "the user" only in technical notes.
+- Do not use marketing words: "seamless", "powerful", "simply", "easy", "easily".
+- Say what happens, not how good it is. Example: "The text is truncated." Not "The text is cleanly truncated."
+
 ## Links
 - Links use https. No links to Figma working files and no internal SAP hosts in public text.
 - Guideline links use one rule for versions: no version, or the version of this guideline.
+- A component name in "Related Links" must be a link. If the link is missing, give the link as the fix.
+- Every link text says where the link goes. "Click here" is an error. "See Expandable Text" is correct.
+
+## Mandatory content
+- Intro must have: a description, a hero image with alt text, and an availability table.
+- Accessibility must name keyboard, screen reader and contrast information.
+- Every image has a caption and alt text. A missing one is an error.
+- Two sections must not repeat the same text. Report the second one as a hint.
 
 The same rules run automatically in `scripts/final-check.mjs` (rules in `standards/rules.json`). Your review adds what a script cannot see: unclear wording, a wrong term for the context, a sentence that says the wrong thing.
