@@ -12,7 +12,7 @@ interface Sug { id: string; key: string; label: string; section: string; old: st
 interface Hist { key: string; label: string; section: string; old: string; new: string; author: string; time: string; kind: "edit" | "suggestion" | "fix" | "restore" | "image"; acceptedBy?: string }
 interface Sign { role: string; name: string; action: string; time: string }
 type Stage = "draft" | "writer" | "designer" | "editor" | "approved" | "uploaded";
-interface State { aiDone?: string[]; status?: Stage; lastCheck?: { by: string; role: string; time: string; errors: number; hints: number; fixes: number; copilot: string; skipped?: boolean; ai?: { errors: number; hints: number; model: string; time: string } }; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
+interface State { dismissed?: { by: string; role: string; time: string }; aiDone?: string[]; status?: Stage; lastCheck?: { by: string; role: string; time: string; errors: number; hints: number; fixes: number; copilot: string; skipped?: boolean; ai?: { errors: number; hints: number; model: string; time: string } }; jira?: string; signoffs?: Sign[]; pr?: { number: number; url: string } }
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector(s) as T;
 const h = (tag: string, cls = "", text = ""): HTMLElement => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
@@ -438,7 +438,7 @@ function renderSide() {
   if (errors()) db.append(h("span", "n bad", String(errors()))); else if (opens().length) db.append(h("span", "n", String(opens().length)));
   const p = $("#panel"); p.replaceChildren();
   if (tab === "checks") {
-    { const top = review.state.lastCheck; p.append(h("p", "muted", top ? `${top.skipped ? "Check skipped" : "Last check"}: ${top.by} (${top.role}) · ${when(top.time)}` : "Nobody has run the check yet. Click Run check in the bar.")); }
+    { const top = review.state.lastCheck, dis = review.state.dismissed; p.append(h("p", "muted", top ? `${top.skipped ? "Check skipped" : "Last check"}: ${top.by} (${top.role}) · ${when(top.time)}` : dis ? `Check dismissed by ${dis.by} (${dis.role}) · ${when(dis.time)}` : "Nobody has run the check yet. Click Run check in the bar.")); }
     // The headline counts the rule check and the AI check that are still open, so it never says "No errors" while the AI finds some.
     const doneAi = new Set(review.state.aiDone ?? []);
     const aiOpen = aiReport ? aiReport.findings.filter((f) => !doneAi.has(aiKey(f))) : [];
@@ -638,6 +638,7 @@ function renderBar() {
   const lc = review.state.lastCheck, mark = $("#checkbadge"), stale = checkIsStale();
   const nice = (x: string) => new Date(x).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   if (aiState.phase === "running") { mark.className = "checkbadge none"; mark.textContent = "⏳ AI check in progress"; mark.title = "Claude is checking the article. About a minute."; }
+  else if (!lc && review.state.dismissed) { mark.className = "checkbadge none"; mark.textContent = `Check dismissed by ${review.state.dismissed.by}`; mark.title = `Dismissed ${when(review.state.dismissed.time)}. Click Run check to check again.`; }
   else if (!lc) { mark.className = "checkbadge none"; mark.textContent = "No check run yet"; mark.title = "Click Run check. A person can also skip it and check by hand."; }
   else if (stale && !lc.skipped) { mark.className = "checkbadge none"; mark.textContent = "⟳ Text changed · run Check again"; mark.title = "The text changed after the last check, so its count is out of date. Click Run check."; }
   else if (lc.skipped) { mark.className = `checkbadge skipped${stale ? " stale" : ""}`; mark.textContent = "⏭ Check skipped"; mark.title = "A person checked the article by hand."; }
@@ -775,6 +776,7 @@ const lastEdit = () => review.history.reduce((m, x) => (x.time > m ? x.time : m)
 const checkIsStale = () => !!review.state.lastCheck && lastEdit() > review.state.lastCheck.time;
 // A person says: I checked this myself. The mark in the bar then shows who skipped the check, and when.
 function skipCheck() {
+  review.state.dismissed = undefined;
   review.state.lastCheck = { by: me(), role: $<HTMLSelectElement>("#role").value, time: now(), errors: errors(), hints: findings.filter((f) => f.severity === "warning").length, fixes: fixesMade(), copilot: "skipped, checked by a person", skipped: true };
   renderBar(); renderSide(); save();
 }
@@ -850,8 +852,9 @@ function applyAllAi() {
 function dismissAllAi() {
   recordNow(() => { if (aiReport) review.state.aiDone = aiReport.findings.map(aiKey); });
   review.state.lastCheck = undefined;
+  review.state.dismissed = { by: me(), role: $<HTMLSelectElement>("#role").value, time: now() };
   renderBar(); renderSide(); save();
-  toast("All AI findings dismissed. The check is cleared.", "ok");
+  toast(`Check dismissed by ${me()}.`, "ok");
 }
 function dismissAi(f: AiFinding) { recordNow(() => { (review.state.aiDone ??= []).push(aiKey(f)); }); save(); renderSide(); }
 function renderAi(p: HTMLElement) {
@@ -918,6 +921,7 @@ async function runCheck() {
   const n = review.state.pr?.number ?? (version && gh.getToken() ? (await gh.findPR(targetBranch()).catch(() => undefined))?.number : undefined);
   if (n && gh.getToken()) copilot = (await gh.requestCopilot(n).catch(() => false)) ? "review requested on the pull request" : "not available for this GitHub account";
   review.state.lastCheck = { by: me(), role: $<HTMLSelectElement>("#role").value, time: now(), errors: errs, hints, fixes: fixesMade(), copilot };
+  review.state.dismissed = undefined;
   tab = "checks"; document.body.classList.add("drawer-open"); renderSide(); renderBar(); save();
   void startAiCheck();
   toast(`Check done: ${errs} error${errs === 1 ? "" : "s"}, ${hints} hint${hints === 1 ? "" : "s"}.${copilot.startsWith("review requested") ? " Copilot review requested on the pull request." : ""}`, errs ? "err" : "ok");

@@ -1171,8 +1171,8 @@ function renderSide() {
   p.replaceChildren();
   if (tab === "checks") {
     {
-      const top = review.state.lastCheck;
-      p.append(h("p", "muted", top ? `${top.skipped ? "Check skipped" : "Last check"}: ${top.by} (${top.role}) \xB7 ${when(top.time)}` : "Nobody has run the check yet. Click Run check in the bar."));
+      const top = review.state.lastCheck, dis = review.state.dismissed;
+      p.append(h("p", "muted", top ? `${top.skipped ? "Check skipped" : "Last check"}: ${top.by} (${top.role}) \xB7 ${when(top.time)}` : dis ? `Check dismissed by ${dis.by} (${dis.role}) \xB7 ${when(dis.time)}` : "Nobody has run the check yet. Click Run check in the bar."));
     }
     const doneAi = new Set(review.state.aiDone ?? []);
     const aiOpen = aiReport ? aiReport.findings.filter((f) => !doneAi.has(aiKey(f))) : [];
@@ -1518,6 +1518,10 @@ function renderBar() {
     mark.className = "checkbadge none";
     mark.textContent = "\u23F3 AI check in progress";
     mark.title = "Claude is checking the article. About a minute.";
+  } else if (!lc && review.state.dismissed) {
+    mark.className = "checkbadge none";
+    mark.textContent = `Check dismissed by ${review.state.dismissed.by}`;
+    mark.title = `Dismissed ${when(review.state.dismissed.time)}. Click Run check to check again.`;
   } else if (!lc) {
     mark.className = "checkbadge none";
     mark.textContent = "No check run yet";
@@ -1809,6 +1813,7 @@ var fixesMade = () => review.history.filter((x) => x.kind === "fix").length;
 var lastEdit = () => review.history.reduce((m, x) => x.time > m ? x.time : m, "");
 var checkIsStale = () => !!review.state.lastCheck && lastEdit() > review.state.lastCheck.time;
 function skipCheck() {
+  review.state.dismissed = void 0;
   review.state.lastCheck = { by: me(), role: $("#role").value, time: now(), errors: errors(), hints: findings.filter((f) => f.severity === "warning").length, fixes: fixesMade(), copilot: "skipped, checked by a person", skipped: true };
   renderBar();
   renderSide();
@@ -1905,10 +1910,11 @@ function dismissAllAi() {
     if (aiReport) review.state.aiDone = aiReport.findings.map(aiKey);
   });
   review.state.lastCheck = void 0;
+  review.state.dismissed = { by: me(), role: $("#role").value, time: now() };
   renderBar();
   renderSide();
   save();
-  toast("All AI findings dismissed. The check is cleared.", "ok");
+  toast(`Check dismissed by ${me()}.`, "ok");
 }
 function dismissAi(f) {
   recordNow(() => {
@@ -2014,6 +2020,7 @@ async function runCheck() {
   const n = review.state.pr?.number ?? (version && getToken() ? (await findPR(targetBranch()).catch(() => void 0))?.number : void 0);
   if (n && getToken()) copilot = await requestCopilot(n).catch(() => false) ? "review requested on the pull request" : "not available for this GitHub account";
   review.state.lastCheck = { by: me(), role: $("#role").value, time: now(), errors: errs, hints, fixes: fixesMade(), copilot };
+  review.state.dismissed = void 0;
   tab = "checks";
   document.body.classList.add("drawer-open");
   renderSide();
