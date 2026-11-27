@@ -8,7 +8,8 @@ const slug = process.argv[2];
 if (!slug) { console.error("Usage: node scripts/ai-check.mjs <slug>"); process.exit(2); }
 const key = process.env.ANTHROPIC_API_KEY;
 if (!key) { console.error("The repository secret ANTHROPIC_API_KEY is not set. Add it in Settings > Secrets and variables > Actions > New repository secret."); process.exit(1); }
-const MODEL = process.env.AI_MODEL || "claude-sonnet-5-5";
+// Haiku 5.5 only, on purpose: the cheapest model, and enough for this check. Nothing can change it from outside.
+const MODEL = "claude-haiku-5-5";
 const base = process.env.ARTICLE_DIR || ".";
 
 const ENT = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&nbsp;": " " };
