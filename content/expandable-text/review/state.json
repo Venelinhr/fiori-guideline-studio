@@ -22,18 +22,20 @@
   ],
   "status": "editor",
   "aiDone": [
-    "open in a self popover→open in a popover",
-    "Preserve white space→Preserve whitespace",
-    "Expandable text with preserved white spaces→Expandable text with preserved whitespace",
-    "Keyboard interaction is supported through the Show More / Show Less link, which follows the keyboard behavior of the Link component.→Keyboard interaction is supported through the Show More / Show Less link, which follows the keyboard behavior of the Link component. The link text meets WCAG color contrast requirements against its background.",
-    "positioned relative to the expand text link→positioned relative to the Show More/Show Less link",
-    "to let the user collapse it back→to let users collapse it back",
-    "On mobile, popovers don't float, they open as a full-screen overlay→On mobile, popovers do not float. They open as a full-screen overlay"
+    "in the collapsed, showing→in the collapsed state, showing",
+    "Keyboard interaction is supported through the Show More / Show Less link, which follows the keyboard behavior of the Link component.→Keyboard interaction is supported through the Show More / Show Less link, which follows the keyboard behavior of the Link component. Add the contrast information for the link and text here, following the SAP Fiori contrast guidelines.",
+    "Gestures and Mapping→Gestures and mapping",
+    "Wrapping and Truncation→Wrapping and truncation",
+    "Text exceeding 100 characters is truncated and followed by a Show More link.→Text exceeding the character limit set for the use case is truncated and followed by a Show More link.",
+    "Show Less link is added at the end to let the user collapse it back.→Show Less link is added at the end to let you collapse it back.",
+    "the user can copy it in both collapsed and expanded modes.→you can copy it in both collapsed and expanded modes.",
+    "making it easier to read and interact with the content.→so that the full content is displayed in a full-screen view.",
+    "Screen readers read plain text through the virtual cursor, also known as browse mode or the virtual PC cursor.→Screen readers announce the Show More or Show Less link as a link. Describe how the expanded text is read after activation."
   ],
   "lastCheck": {
     "by": "Krisi",
     "role": "editor",
-    "time": "2026-11-27T13:30:33.053Z",
+    "time": "2026-11-27T13:35:05.702Z",
     "errors": 0,
     "hints": 2,
     "fixes": 4,
