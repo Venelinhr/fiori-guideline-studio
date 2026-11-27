@@ -50,7 +50,7 @@ Answer with ONLY JSON, no other words:
 const res = await fetch(process.env.AI_API_URL || "https://api.anthropic.com/v1/messages", {
   method: "POST",
   headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-  body: JSON.stringify({ model: MODEL, max_tokens: 4096, temperature: 0, system, messages: [{ role: "user", content: article }] }),
+  body: JSON.stringify({ model: MODEL, max_tokens: 4096, system, messages: [{ role: "user", content: article }] }),
 });
 const raw = await res.text();
 if (!res.ok) { console.error(`Claude answered ${res.status}: ${raw.slice(0, 500)}`); process.exit(1); }
