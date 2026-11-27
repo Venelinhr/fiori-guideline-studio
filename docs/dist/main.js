@@ -1368,6 +1368,10 @@ function signLine(s) {
 var STATUS = { draft: "Draft", writer: "With UX writer", designer: "With designer", editor: "In editor review", approved: "Approved \xB7 ready for AEM", uploaded: "In AEM" };
 var LEGACY = { review: "writer", changes: "designer", ready: "editor", shipped: "approved" };
 async function sign(action, status) {
+  if (action === "approved" && $("#role").value !== "editor") {
+    toast("Only the editor can approve. Approve opens the pull request and merges it.", "err");
+    return;
+  }
   if (!$("#name").value.trim()) {
     $("#name").focus();
     $("#saved").textContent = "Type your name first";

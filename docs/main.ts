@@ -557,6 +557,8 @@ const STATUS: Record<string, string> = { draft: "Draft", writer: "With UX writer
 const LEGACY: Record<string, Stage> = { review: "writer", changes: "designer", ready: "editor", shipped: "approved" };
 // Each click is a real step on GitHub: a commit, and for the review steps a pull request action.
 async function sign(action: string, status: Stage) {
+  // Only the editor decides the pull request. Everyone else only saves versions and passes the article on.
+  if (action === "approved" && $<HTMLSelectElement>("#role").value !== "editor") { toast("Only the editor can approve. Approve opens the pull request and merges it.", "err"); return; }
   if (!$<HTMLInputElement>("#name").value.trim()) { $("#name").focus(); $("#saved").textContent = "Type your name first"; return; }
   const who = me(), prevStatus = review.state.status, n0 = review.state.signoffs?.length ?? 0;
   try {
