@@ -6,26 +6,16 @@
       "name": "Venelin Hristov",
       "action": "sent",
       "time": "2026-11-26T18:39:12.606Z"
-    },
-    {
-      "role": "writer",
-      "name": "Alex",
-      "action": "returned",
-      "time": "2026-11-26T20:23:10.375Z"
     }
   ],
-  "status": "designer",
+  "status": "writer",
   "lastCheck": {
-    "by": "Veni",
-    "role": "designer",
-    "time": "2026-11-26T20:25:30.475Z",
+    "by": "Krisi",
+    "role": "editor",
+    "time": "2026-11-27T06:14:44.389Z",
     "errors": 0,
     "hints": 2,
     "fixes": 1,
     "copilot": "not available for this GitHub account"
-  },
-  "pr": {
-    "number": 1,
-    "url": "https://github.com/Venelinhr/fiori-guideline-studio/pull/1"
   }
 }
