@@ -12,9 +12,15 @@
       "name": "Alex",
       "action": "returned",
       "time": "2026-11-27T13:19:27.813Z"
+    },
+    {
+      "role": "designer",
+      "name": "Veni",
+      "action": "to-editor",
+      "time": "2026-11-27T13:22:56.600Z"
     }
   ],
-  "status": "designer",
+  "status": "editor",
   "aiDone": [
     "Preserve white space→Preserve whitespace",
     "Expandable text with preserved white spaces→Expandable text with preserved whitespace",
