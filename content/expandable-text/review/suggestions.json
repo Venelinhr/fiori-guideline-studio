@@ -21,7 +21,9 @@
     "new": "Gestures and Mapping",
     "author": "Venelin Hristov",
     "time": "2026-11-26T17:06:49.784Z",
-    "status": "open"
+    "status": "accepted",
+    "by": "Veni",
+    "byTime": "2026-11-27T13:16:41.018Z"
   },
   {
     "id": "hm5wiodf",
@@ -32,7 +34,9 @@
     "new": "Gestures and Mapping",
     "author": "Venelin Hristov",
     "time": "2026-11-26T17:06:50.693Z",
-    "status": "open"
+    "status": "accepted",
+    "by": "Veni",
+    "byTime": "2026-11-27T13:16:41.032Z"
   },
   {
     "id": "1y42w233",
@@ -108,6 +112,8 @@
     "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a self popover. </p>",
     "author": "Venelin Hristov",
     "time": "2026-11-26T19:08:43.174Z",
-    "status": "open"
+    "status": "accepted",
+    "by": "Veni",
+    "byTime": "2026-11-27T13:16:41.036Z"
   }
 ]

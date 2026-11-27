@@ -9,20 +9,13 @@
     }
   ],
   "status": "writer",
-  "lastCheck": {
-    "by": "Veni",
-    "role": "designer",
-    "time": "2026-11-27T08:13:55.377Z",
-    "errors": 0,
-    "hints": 2,
-    "fixes": 1,
-    "copilot": "not available for this GitHub account",
-    "ai": {
-      "errors": 3,
-      "hints": 4,
-      "model": "claude-haiku-5-5",
-      "time": "2026-11-27T08:14:23.872Z"
-    }
-  },
-  "aiDone": []
+  "aiDone": [
+    "Preserve white space→Preserve whitespace",
+    "Expandable text with preserved white spaces→Expandable text with preserved whitespace",
+    "follows the keyboard behavior of the Link component.→follows the keyboard behavior of the Link component. Add contrast information for the link text and its focus state.",
+    "positioned relative to the expand text link→positioned relative to the Show More link",
+    "Text exceeding 100 characters is truncated and followed by a Show More link.→Text exceeding the character limit set for the use case is truncated and followed by a Show More link. By default, the limit is 100 characters.",
+    "For more information, see Wrapping & Truncation→For more information, see Wrapping and Truncation",
+    "Components\nText\nLink\nPopover→Keep only the external links in this section, or remove the duplicate list."
+  ]
 }
