@@ -824,7 +824,10 @@ function renderAi(p: HTMLElement) {
   if (aiState.phase === "running") box.append(h("p", "", "⏳ AI check (Claude) is running. About a minute."));
   if (aiState.phase === "failed") { box.append(h("p", "", `⚠ AI check: ${aiState.msg}`)); if (aiState.url) { const a = h("a", "", "Open the job on GitHub ↗") as HTMLAnchorElement; a.href = aiState.url; a.target = "_blank"; a.rel = "noopener"; box.append(a); } }
   const open = aiReport ? aiReport.findings.filter((f) => !done.has(aiKey(f))) : [];
-  if (aiReport) box.append(h("p", "", `AI check (${aiReport.model}) · ${when(aiReport.time)} · ${aiReport.errors} errors, ${aiReport.hints} hints · ${open.length} still open`));
+  if (aiReport) {
+    box.append(h("p", "", `AI check (${aiReport.model}) · ${when(aiReport.time)}`));
+    box.append(h("p", "", `${aiReport.errors} errors, ${aiReport.hints} hints, ${open.length} still open`));
+  }
   else if (aiState.phase === "none") box.append(h("p", "muted", "AI check: not run yet. Click Run check in the bar."));
   p.append(box);
   if (open.length) {
