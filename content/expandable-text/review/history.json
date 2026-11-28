@@ -1,0 +1,168 @@
+[
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
+    "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 111111</p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T17:06:05.534Z",
+    "kind": "suggestion",
+    "acceptedBy": "Venelin Hristov"
+  },
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 111111</p>",
+    "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T17:06:14.353Z",
+    "kind": "edit"
+  },
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
+    "new": "<p>Expandableee text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T17:35:19.488Z",
+    "kind": "suggestion",
+    "acceptedBy": "Venelin Hristov"
+  },
+  {
+    "key": "s1b1:alt",
+    "label": "Image alt text",
+    "section": "Intro",
+    "old": "An expandable text in the collapsed state, showing 'The request includes read access to the financial reporting module and write access to...' followed by a 'Show More' link.",
+    "new": "An expandable text in the collapsed, showing 'The request includes read access to the financial reporting module and write access to...' followed by a 'Show More' link.",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T17:35:26.900Z",
+    "kind": "suggestion",
+    "acceptedBy": "Venelin Hristov"
+  },
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandableee text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
+    "new": "<p>Expandableee text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 123</p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T17:56:36.529Z",
+    "kind": "edit"
+  },
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandableee text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 123</p>",
+    "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T18:36:54.276Z",
+    "kind": "edit"
+  },
+  {
+    "key": "s16:title",
+    "label": "Heading",
+    "section": "Behavior and Interaction > Gestures & Mapping",
+    "old": "Gestures & Mapping",
+    "new": "Gestures and Mapping",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T18:37:10.018Z",
+    "kind": "fix"
+  },
+  {
+    "key": "s28b0:html",
+    "label": "Text",
+    "section": "Framework Comparison",
+    "old": "<p>There are no differences between SAPUI5 and SAP Web Components regarding thе component's behaviors and framework-specific patterns.</p>",
+    "new": "<p>There are no differences between SAPUI5 and SAP Web Components regarding the component's behaviors and framework-specific patterns.</p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T18:37:10.422Z",
+    "kind": "edit"
+  },
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover.</p>",
+    "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 444444444</p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T18:49:01.698Z",
+    "kind": "edit"
+  },
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. 444444444</p>",
+    "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. </p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-26T18:49:22.810Z",
+    "kind": "edit"
+  },
+  {
+    "key": "s16:title",
+    "label": "Heading",
+    "section": "Behavior and Interaction > Gestures and Mapping",
+    "old": "Gestures and Mapping",
+    "new": "Gestures and Mapping",
+    "author": "Venelin Hristov",
+    "time": "2026-11-27T13:16:41.017Z",
+    "kind": "suggestion",
+    "acceptedBy": "Veni"
+  },
+  {
+    "key": "s16:title",
+    "label": "Heading",
+    "section": "Behavior and Interaction > Gestures and Mapping",
+    "old": "Gestures and Mapping",
+    "new": "Gestures and Mapping",
+    "author": "Venelin Hristov",
+    "time": "2026-11-27T13:16:41.032Z",
+    "kind": "suggestion",
+    "acceptedBy": "Veni"
+  },
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. </p>",
+    "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a self popover. </p>",
+    "author": "Venelin Hristov",
+    "time": "2026-11-27T13:16:41.036Z",
+    "kind": "suggestion",
+    "acceptedBy": "Veni"
+  },
+  {
+    "key": "s1b0:html",
+    "label": "Text",
+    "section": "Intro",
+    "old": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a self popover. </p>",
+    "new": "<p>Expandable text is a UI component that displays long text in a collapsed or expanded state. By default, it shows a short preview with a Show More link to reveal the full content and a Show Less link to collapse it again. Depending on the use case, the text can expand inline or open in a popover. </p>",
+    "author": "Krisi",
+    "time": "2026-11-27T13:27:26.719Z",
+    "kind": "fix"
+  },
+  {
+    "key": "s26:title",
+    "label": "Heading",
+    "section": "Features > Preserve white space",
+    "old": "Preserve white space",
+    "new": "Preserve whitespace",
+    "author": "Krisi",
+    "time": "2026-11-27T13:27:32.376Z",
+    "kind": "fix"
+  },
+  {
+    "key": "s26b1:html",
+    "label": "Text",
+    "section": "Features > Preserve whitespace",
+    "old": "<p>Expandable text with preserved white spaces</p>",
+    "new": "<p>Expandable text with preserved whitespace</p>",
+    "author": "Krisi",
+    "time": "2026-11-27T13:27:38.293Z",
+    "kind": "fix"
+  }
+]

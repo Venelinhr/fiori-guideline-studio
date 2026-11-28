@@ -1,0 +1,1482 @@
+{
+  "meta": {
+    "figmaUrl": "https://www.figma.com/design/Em0Gv9BUPSiVdcXM56W7lr/-TEST--Tab-Bar--Guideline-1.157?node-id=0-1",
+    "fileKey": "Em0Gv9BUPSiVdcXM56W7lr"
+  },
+  "model": {
+    "component": "tab-bar",
+    "source": "figma",
+    "sections": [
+      {
+        "title": "Message Strip",
+        "noTitle": true,
+        "blocks": [
+          {
+            "type": "message-strip",
+            "style": "information",
+            "html": "<p>This guideline now covers both SAPUI5 and SAP Web Components. Learn More.</p>"
+          }
+        ]
+      },
+      {
+        "title": "Intro",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The tab bar is a UI component that contains a set of tabs, each linking to a different content area or view. Use the tab bar to navigate between sections of content, to filter a list of items, or to visualize process steps.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:4940",
+            "figmaName": "01_TabBar_Intro_01_v1154",
+            "caption": "Tab bar",
+            "variant": "large",
+            "alt": "A tab bar with four icon tabs, each showing a different icon, item count, and label: '37 Laptops', '16 Monitors', '25 Printers', and '45 Accessories'. A 'More' overflow button appears on the right."
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Component availability",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>This component is available in the following libraries:</p>"
+          },
+          {
+            "type": "table",
+            "rows": [
+              [
+                "<strong>Library</strong>",
+                "<strong>Technical Name</strong>",
+                "<strong>Identifier</strong>"
+              ],
+              [
+                "SAPUI5 Demo Kit",
+                "<a href=\"https://ui5.sap.com/#/entity/sap.m.IconTabBar\">sap.m.IconTabBar</a>",
+                "<p>:badge, info, large, _, SAPUI5:</p>"
+              ],
+              [
+                "SAP Web Components",
+                "<a href=\"https://ui5.github.io/webcomponents/components/TabContainer/\">ui5-tabcontainer</a>",
+                "<p>:badge, info, large, _, SAP Web Components:</p>"
+              ],
+              [
+                "SAP Web UI Kit (Figma)",
+                "<a href=\"https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=1216-3190\">Tab Bar</a>",
+                "<p>:badge, info, large, _, Figma:</p>"
+              ]
+            ]
+          },
+          {
+            "type": "info",
+            "infoClass": "toptip",
+            "html": "<ul><li>Use the tab bar only for switching between tabs. Avoid cross-navigation, such as opening another tab from an item inside the current tab, as it breaks back navigation and confuses users.</li><li>Choose icon-only tabs when you have 4–5 tabs that are clearly identifiable by their icon. Choose text-only tabs when you have more tabs or no clear icons to represent them.</li><li>Apply labels consistently: either all tabs have a label or none do.</li><li>Use semantic colors only when users need to take action, such as an error or a critical situation. Otherwise, use the neutral default colors.</li><li>Always pair a semantic color with a semantic icon and matching tab text, so meaning is conveyed by more than color alone.</li><li>For processes with a fixed order, disable tab reordering so consecutive steps can't be rearranged.</li><li>Show a tab badge only when new items are triggered from outside the app, not when users add items themselves.</li><li>Hide tabs that have no content and can't receive any. Show an empty tab only when users can add content to it, such as notes or attachments.</li></ul>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "When to Use",
+        "blocks": [
+          {
+            "type": "when-to-use",
+            "items": [
+              {
+                "doOrDont": "do",
+                "html": "<p>Use the tab bar to:</p><ul><li>Show multiple facets of a business object at the same time</li><li>Let users browse through those facets.</li><li>Provide a prominent, highly visual filter above a list.</li><li>Visualize clear-cut process steps.</li></ul>",
+                "showDivider": false
+              },
+              {
+                "doOrDont": "dont",
+                "html": "<p>Don't use the tab bar to:</p><ul><li>Show only a single tab</li><li>Lay out tabs in a responsive table or grid. Use the <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/table-bar\">table toolbar</a> instead</li><li>Display hierarchical navigation. Use a <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/tree\">tree</a> or <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/breadcrumb\">breadcrumb</a> component instead</li><li>Navigate to unrelated pages. Use <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/link\">links</a> or navigation components instead</li></ul>",
+                "showDivider": false
+              }
+            ]
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Anatomy",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Tab bar",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The tab bar consists of the following elements:</p>"
+          },
+          {
+            "type": "text",
+            "html": "<ol><li><strong>Tab: </strong>Represents a navigation item that displays its corresponding content when selected.</li><li><strong>Separator:</strong> Separates the tabs visually.</li><li><strong>Main bar: </strong>Contains the tabs, tab separators, and the overflow menu.</li><li><strong>Overflow menu: </strong>Contains any remaining tabs that can't be displayed in the available space.</li><li><strong>Content area: </strong>Displays the content associated with the currently selected tab.</li></ol>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5031",
+            "figmaName": "02_TabBar_Anatomy_01_v1154",
+            "caption": "Tab bar anatomy",
+            "variant": "large",
+            "alt": "Anatomy diagram of a tab bar with five callout labels: (1) tab, pointing to the selected 'Tab A'; (2) separator, pointing to the divider between tabs; (3) main bar, indicating the full bar container; (4) overflow menu, pointing to the 'More ∨' button; and (5) content area, pointing to the panel below."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Tab",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The tab consists of the following elements:</p>"
+          },
+          {
+            "type": "text",
+            "html": "<ol><li><strong>Icon (optional): </strong>Displays a symbol that visually represents the tab's content.</li><li><strong>Counter (optional): </strong>Displays the number of items in the tab.</li><li><strong>Text: </strong>Contains the text shown for the tab.</li><li><strong>Selection bar: </strong>Indicates that the tab is selected. Its length depends on the tab type.</li><li><strong>Drop-down icon: </strong>Opens the drop-down that holds the subtabs.</li><li><strong>Subtabs drop-down: </strong>Tabs grouped under a parent tab. For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/ui-elements/icontabbar#hierarchies\">Hierarchies</a>.</li></ol>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5068",
+            "figmaName": "03_TabBar_Anatomy_02_v1154",
+            "caption": "Tab anatomy",
+            "variant": "large",
+            "alt": "Two tab anatomy diagrams side by side. Left: a selected tab with four callout labels: (1) icon, (2) counter '1 of 123', (3) text 'Tab A', and (4) selection bar. Right: a tab with a drop-down chevron with two callout labels: (5) drop-down icon and (6) subtab, pointing to a list showing 'Tab A1' and 'Tab A2'."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Types",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The tab bar supports four tab types: text tabs, icon tabs, filter tabs, and process tabs. Choose the type based on whether users need to switch between content areas, filter content, or navigate through a process.</p>"
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Text tabs",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Text tabs display a text label with an optional count. Text tab labels are never truncated, so keep them short enough to stay readable on smaller screens. </p><p><strong>Note: </strong>Use when there are no suitable icons to represent the content, or when labels need to be longer.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5118",
+            "figmaName": "04_TabBar_Types_01_v1154",
+            "caption": "Text tabs - tab bar",
+            "variant": "large",
+            "alt": "A text tab bar with four tabs: 'Tab A (17)' selected in blue with an underline, and 'Tab B (10)', 'Tab C (16)', 'Tab D (15)' unselected."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Icon tabs",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Icon tabs display icons from the SAP icon font to indicate the type of content they contain. They can also include optional text labels and counters. Labels below the icon are truncated when space is limited, while labels beside the icon are always displayed in full.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5149",
+            "figmaName": "05_TabBar_Types_02_v1.154",
+            "caption": "Icon tabs - tab bar",
+            "variant": "large",
+            "alt": "An icon tab bar with four tabs, each showing a different icon and a counter (3, 7, 11, and 9), with the first tab selected and marked by a blue icon and selection bar."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Filter tabs",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>When used as a filter, the tab bar can include an optional tab that shows all items, alongside individual tabs for each filter attribute. Show an item count on each filter tab to indicate how many items it contains.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5187",
+            "figmaName": "06_TabBar_Types_03_v1154",
+            "caption": "Icon and Text tabs - tab bar",
+            "variant": "large",
+            "alt": "A filter tab bar with '123 Products' on the left, followed by four icon filter tabs: '57 Filter 1' (selected with a blue underline), '85 Filter 2', '75 Filter 3', and '75 Filter 4'."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Icon and Text tabs",
+        "blocks": [],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Process tabs",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The tab bar can represent a process, with each tab standing for one step. Use chevron icons instead of the default separators to indicate the sequence of steps.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5242",
+            "figmaName": "07_TabBar_Types_04_v1154",
+            "caption": "Process tabs - tab bar",
+            "variant": "large",
+            "alt": "A process tab bar with four steps connected by double-chevron separators: '71 of 123 Step 1' (selected, filled blue icon), '53 of 123 Step 2', '32 of 123 Step 3', and '11 of 123 Step 4'."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "States",
+        "blocks": []
+      },
+      {
+        "title": "Component states",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Each tab in the tab bar supports two component states: enabled and disabled.</p><p><strong>A. Enabled: </strong>The tab can be selected to display its content.</p><p><strong>B. Disabled: </strong>The tab appears faded and cannot be selected to display its content.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5301",
+            "figmaName": "08_TabBar_States_01_v1154",
+            "caption": "Component states of the tab bar",
+            "variant": "large",
+            "alt": "Two rows labeled A and B showing enabled and disabled tab states. Row A: an enabled text tab 'Tab A (17)' and an enabled icon tab with counter '3' and a filled blue icon. Row B: a disabled text tab 'Tab A (17)' and a disabled icon tab with a grayed-out icon."
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/foundations/interaction/states/interaction-foundations-component-states\">Component States</a>.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Interaction states",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The tab bar supports different interaction states for text tabs and icon tabs.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5377",
+            "figmaName": "09_TabBar_States_02_v1154",
+            "caption": "Interaction states of text tab",
+            "variant": "large",
+            "alt": "Three rows labeled A, B, and C, each showing an unselected and selected text tab labeled 'Tab A (17)'. The selected tabs have blue text and a blue underline."
+          },
+          {
+            "type": "text",
+            "html": "<p>The text tab supports the following interaction states: regular, hover, and down. The first column shows unselected tabs, and the second shows selected tabs.</p><p><strong>A. Regular: </strong>The text tab's default appearance when it is not being interacted with.</p><p><strong>B. Hover: </strong>The state shown when the pointer is positioned over the text tab.</p><p><strong>C. Down: </strong>The state shown when the text tab is pressed.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Icon tab",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The icon tab supports the following interaction states: regular, hover, and down.</p><p><strong>A. Regular: </strong>The default appearance of the icon tab when it is neither hovered over nor pressed.<strong> B. Hover: </strong>The appearance of the icon tab when the pointer is positioned over it.<strong> C. Down: </strong>The appearance of the icon tab while it is being pressed.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5434",
+            "caption": "",
+            "figmaName": "10_TabBar_States_03_v1154",
+            "variant": "large",
+            "alt": "Three rows labeled A, B, and C, each showing an unselected and selected icon tab labeled 'Tab A' with the counter '3'. The selected tabs have a blue icon and selection bar."
+          },
+          {
+            "type": "text",
+            "html": "<p>Interaction states of icon tab</p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/foundations/interaction/states/interaction-foundations-interaction-states\">Interaction States</a>.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Value states",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The value states of the tab bar are defined by the tab, which supports value states to indicate the following statuses:</p><p><strong>A. Negative: </strong>Indicates an error or a condition that requires corrective action.</p><p><strong>B. Critical: </strong>Flags a situation that may need attention but is not an error.<strong> </strong></p><p><strong>C. Positive: </strong>Confirms a successful or completed condition.</p><p><strong>D. Neutral: </strong>Applies a neutral color when no semantic meaning is needed.</p><p>Each value state is shown across four tab presentations, from left to right:</p><ul><li><strong>Unselected text tab </strong>(first column): The semantic color applies to the label and icon.</li><li><strong>Selected text tab</strong> (second column): The same semantic color, with a selection bar in the matching color.</li><li><strong>Unselected icon tab</strong> (third column): Semantic color on the icon and its status icon.</li><li><strong>Selected icon tab</strong> (fourth column): Icon filled with the semantic color, plus a matching selection bar.</li></ul>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5505",
+            "figmaName": "11_TabBar_States_04_v1154",
+            "caption": "Value states of tab bar",
+            "variant": "large",
+            "alt": "Four rows labeled A through D showing text and icon tabs in four value states, each in unselected and selected versions. Row A: negative state with a red error indicator. Row B: critical state with an orange warning indicator. Row C: positive state with a green checkmark indicator. Row D: neutral state with no indicator."
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/v1-142/foundations/interaction/states/interaction-foundations-value-states\">Value States</a>.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Focus states",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The focus state indicates which component, or element within the component, will receive the user's input when using an input device such as a keyboard.</p><p><strong>A. Unfocused: </strong>Applies to all tab bar elements that are not focused.</p><p><strong>B. Focused: </strong>Visualized by an additional border around the focused tab bar element.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5655",
+            "figmaName": "12_TabBar_States_05_v1154",
+            "caption": "Focus states of tab bar",
+            "variant": "large",
+            "alt": "Two rows labeled A and B: (A) a text tab bar with tabs A–F and a More button, with Tab A outlined in blue; (B) a filter tab bar with '123 Products' and four filter tabs."
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/foundations/interaction/states/interaction-foundations-focus-states\">Focus state</a>.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Behavior and Interaction",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>With an expandable and collapsible content area, all tabs can be deselected so that none is active. When no tab is selected by default, clicking a tab selects it and expands its content area.</p><p><strong>A. Down: </strong>Clicking Tab A applies focus and the down state, replacing hover.<strong> B. Selected: </strong>On release, Tab A is selected. Focus stays, the down state returns to hover, and Tab A's content expands and is shown.</p><p><strong>Note: </strong>The same interaction works in reverse. Click a tab that's already open, and its content closes and the tab turns off, leaving no tab selected.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5820",
+            "figmaName": "15_TabBar_BehaviorAndInteraction_03_v1154",
+            "caption": "Icon and Text tabs - tab bar",
+            "variant": "large",
+            "alt": "Two steps labeled A and B. A: 'Tab A (5)' selected, 'Tab B (2)' in the down state with the mouse button pressed. B: 'Tab B (2)' is now selected with a blue underline."
+          },
+          {
+            "type": "text",
+            "html": "<p>In split mode, a tab has two interactive areas. Clicking the text element opens the main tab's content, while clicking the arrow element opens a menu with its subtabs. </p><p><strong>A. Text element: </strong>Clicking the text element opens the parent tab's own content.</p><p><strong>B. Arrow element: </strong>Clicking the arrow element opens the subtab menu.</p><p><strong>Note:</strong> Selecting a subtab and all other interactions follow the same behavior described in the Tab selection sections above. </p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5966",
+            "figmaName": "18_TabBar_BehaviorAndInteraction_06_v1154",
+            "caption": "Text element (A) opens the content, arrow element (B) opens the subtab menu",
+            "variant": "large",
+            "alt": "Two steps labeled A and B showing the overflow button hover. A: a tab bar with 'Tab A' through 'Tab F' and a 'More ∨' button; mouse outside. B: the 'More ∨' button highlighted in the hover state."
+          },
+          {
+            "type": "text",
+            "html": "<p>In start and end mode, overflow menus can appear on both sides of the tab bar. Selecting a hidden tab moves it into the main bar in its original sequence position, so the tab order is always preserved. Tabs that no longer fit move to the overflow on the left, the right, or both sides.</p><p>The two frames below show the essential behavior: opening the overflow to reveal the hidden tabs, and the final state where the selected tab sits in its sequence position while the earlier tabs collect in the left overflow.</p><p><strong>A. Releasing the mouse button opens the overflow menu, with focus on the first item, Tab G. B. Opening the left overflow menu shows the first 3 tabs in their original order.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6252",
+            "caption": "",
+            "figmaName": "23_TabBar_BehaviorAndInteraction_11_v1154",
+            "variant": "large",
+            "alt": "Two steps labeled A and B showing bilateral overflow. A: Tab A selected, tabs B–F visible, a '+3 ∨' overflow on the right; dropdown shows 'Tab G', 'Tab H', 'Tab I' with Tab G highlighted. B: after selecting Tab G, the bar shifts — tabs D–G are now visible, a new overflow appears on each end, and the left overflow dropdown shows 'Tab A', 'Tab B', 'Tab C'."
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Selecting a tab",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Clicking an unselected tab selects it and deselects the previously selected one. Only one tab can be selected at a time.</p><p><strong>A. Selecting:</strong> Tab A is selected, and its content is shown. <strong>B. Pressing: </strong>The cursor moves over Tab B, applying the hover state. <strong>C. Selected: </strong>Clicking Tab B applies focus and the down state, replacing hover. Tab A's content still shows. <strong>D. Navigated: </strong>Tab B is selected and Tab A is deselected. The down state returns to hover, focus stays on Tab B, and Tab B's content is shown.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5751",
+            "figmaName": "13_TabBar_BehaviorAndInteraction_01_v1154",
+            "caption": "Selecting and pressing a tab - tab bar",
+            "variant": "large",
+            "alt": "Two steps labeled A and B. A: a text tab bar with 'Tab A (5)' selected and a 'Content area' below; mouse positioned outside the bar. B: 'Tab B (2)' highlighted in the hover state with a blue border."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Tab selection",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "1:5782",
+            "figmaName": "14_TabBar_BehaviorAndInteraction_02_v1154",
+            "caption": "Selecting and navigating to another tab's content - tab bar",
+            "variant": "large",
+            "alt": "Two steps labeled A and B. A: 'Tab A (5)' selected, 'Tab B (2)' in the hover state. B: 'Tab B (2)' is now selected with a blue underline after a click; Tab A is deselected."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Expand and collapse behavior",
+        "blocks": [],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Menu mode",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>In menu mode, clicking a parent tab opens a menu with its subtabs directly. The parent tab has no content of its own and acts only as a heading with a single interactive area.</p><p><strong>A. Down: </strong>Clicking the parent tab (Tab B) applies focus and the down state.</p><p><strong>B. Menu open: </strong>The menu opens directly, and focus moves to the first subtab.</p><p><strong>C. Down: </strong>Moving the cursor over subtab B2 applies the hover state.</p><p><strong>D. Selected: </strong>Clicking subtab B2 applies the down state. On release, the menu closes, Tab B is now selected with focus applied, and Subtab B2's content is shown.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:5859",
+            "figmaName": "16_TabBar_BehaviorAndInteraction_04_v1154",
+            "caption": "Opening the subtab menu in menu mode - tab bar",
+            "variant": "large",
+            "alt": "Two illustrations labeled A and B showing tabs A, B, and C: (A) the tab bar without an open menu; (B) a menu below Tab B listing Tab B1, Tab B2, and Tab B3."
+          },
+          {
+            "type": "image",
+            "ref": "1:5903",
+            "figmaName": "17_TabBar_BehaviorAndInteraction_05_v1154",
+            "caption": "Selecting a subtab in menu mode - tab bar",
+            "variant": "large",
+            "alt": "Two illustrations labeled C and D showing a menu below Tab B with Tab B1, Tab B2, and Tab B3. In D, Tab B2 has a highlighted background."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Subtabs",
+        "blocks": [],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Split mode",
+        "blocks": [],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "End mode",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>In end mode, the overflow menu appears on the right side of the tab bar. Selecting a hidden tab makes it the last visible tab on the main bar, and the previously last tab moves into the overflow. The other tabs stay in place, and the original order is not preserved.</p><p><strong>A. The tab bar contains 11 tabs. 6 tabs are visible in the main bar and the rest are hidden in the overflow. B. Moving the pointer over the overflow button applies the hover state.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6020",
+            "caption": "",
+            "figmaName": "19_TabBar_BehaviorAndInteraction_07_v1154",
+            "variant": "large",
+            "alt": "Two illustrations labeled A and B showing tabs A–F and a More button, with a different appearance of the More button in each illustration."
+          },
+          {
+            "type": "text",
+            "html": "<p><strong>C. Pressing the overflow button applies focus and replaces the hover state with the down state. D. Releasing the mouse button opens the overflow menu and moves focus to the first item, Tab G. The overflow button returns to the hover state.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6073",
+            "figmaName": "20_TabBar_BehaviorAndInteraction_08_v1154",
+            "caption": "",
+            "variant": "large",
+            "alt": "Two illustrations labeled C and D showing tabs A–F and a More button: (C) the More button has a highlighted background; (D) a menu below More lists Tab G, Tab H, and Tab I."
+          },
+          {
+            "type": "text",
+            "html": "<p><strong>E. Moving the pointer over Tab I applies the hover state and removes it from the overflow button. Focus remains on Tab G.  F. Pressing Tab I moves focus to it and replaces the hover state with the down state.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6127",
+            "figmaName": "21_TabBar_BehaviorAndInteraction_09_v1154",
+            "caption": "",
+            "variant": "large",
+            "alt": "Two illustrations labeled E and F showing the open More menu with tabs G, H, and I: (E) Tab G has a highlighted background; (F) Tab I has a highlighted background."
+          },
+          {
+            "type": "text",
+            "html": "<p><strong>G. Releasing the mouse button selects Tab I, deselects Tab A, and moves Tab I to the last visible position with focus. H. Opening the overflow menu shows Tab F in the menu.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6195",
+            "figmaName": "22_TabBar_BehaviorAndInteraction_10_v1154",
+            "caption": "",
+            "variant": "large",
+            "alt": "Two illustrations labeled G and H showing Tab I as the last visible tab in the main bar: (G) Tab I has a blue selection bar; (H) the More menu is open, listing Tab F, Tab G, and Tab H."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Overflow",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>When there isn't enough space to show all the tabs, an overflow menu appears automatically and holds the remaining tabs. You can set the overflow mode to match your use case.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Start and end mode",
+        "blocks": [],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Drag and drop: Placing a tab between tabs",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Dragging a tab between two others reorders it at the same level. A drop handle appears to mark where the tab will land.</p><p><strong>A. As you start dragging Tab 4, a copy of it follows your cursor. Its old spot turns grey so you can see where it came from. B. Drag it between Tab 2 and Tab 3. Drop indicator pops up between them to show exactly where the tab will drop. C. Tab 4 lands in its new place. If it was the selected tab before, it's still selected after.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6330",
+            "caption": "",
+            "figmaName": "24_TabBar_BehaviorAndInteraction_12_v1154",
+            "variant": "large",
+            "alt": "Three illustrations labeled A, B, and C showing tabs 1–6: (A) a separate Tab 4 label below the bar; (B) the separate Tab 4 label below the space between tabs 2 and 3, with a blue insertion marker; (C) Tab 4 positioned between tabs 2 and 3 in the bar."
+          },
+          {
+            "type": "text",
+            "html": "<p>Dragging a tab onto a tab with no subtabs nests it directly as a subtab, with no other placement options.</p><p><strong>A. The user starts dragging Tab 4. It appears as a ghost element that follows the cursor, while its original position stays greyed out. B. The user drags Tab 4 onto Tab 6. The whole of Tab 6 highlights as the drop area, showing the tab will nest inside it.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6407",
+            "caption": "",
+            "figmaName": "25_TabBar_BehaviorAndInteraction_13_v1154",
+            "variant": "large",
+            "alt": "Two illustrations labeled A and B showing tabs 1–6: (A) a separate Tab 4 label below the bar; (B) the separate Tab 4 label below Tab 6, which is highlighted."
+          },
+          {
+            "type": "text",
+            "html": "<p><strong>C. The user drops Tab 4 onto Tab 6. Tab 4 becomes a subtab of Tab 6, and an arrow appears next to Tab 6 to show it now has subtabs. D. The user clicks the arrow next to Tab 6. The subtab menu opens and shows Tab 4 inside, with focus applied to it.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6456",
+            "caption": "",
+            "figmaName": "26_TabBar_BehaviorAndInteraction_14_v1154",
+            "variant": "large",
+            "alt": "Two illustrations labeled C and D showing tabs 1, 2, 3, 5, and 6: (C) Tab 6 has a drop-down arrow; (D) a menu below Tab 6 contains Tab 4."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Tab reordering",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>If reordering is enabled, users can rearrange tabs by dragging and dropping them across the tab bar, subtabs, and overflow menus. When nesting is also enabled, tabs can be dropped at different hierarchy levels.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Canceling the reordering",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>To cancel reordering, drop the tab anywhere outside the tab bar. The tab returns to its original position.</p>"
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Drag and drop on a tab with subtabs",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Dragging a tab onto a tab that already contains sub-tabs adds the dragged tab as an additional sub-tab at the desired hierarchy level.</p><ol><li>Dropping onto the tab</li></ol><p><strong>A. Users drag the ghost element of Tab 3 over a tab that already has sub-tabs, Tab 6 highlights as a drop area. B. Dropping the ghost element of Tab 3 directly onto Tab 6 adds Tab 4 to its sub-tabs. C. Opening the sub-tab menu of Tab 6 shows Tab 3 as the last sub-tab.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6501",
+            "caption": "",
+            "figmaName": "27_TabBar_BehaviorAndInteraction_15_v1154",
+            "variant": "large",
+            "alt": "Three illustrations labeled A, B, and C: (A) a separate Tab 3 label below the tab bar; (B) Tab 6 highlighted with the separate Tab 3 label below it; (C) a menu below Tab 6 listing Tab 6.1, Tab 6.2, and Tab 3."
+          },
+          {
+            "type": "text",
+            "html": "<ol><li>Opening the sub-tab menu</li></ol><p><strong>A. Holding the ghost element of a tab over a tab with sub-tabs opens its sub-tab menu automatically. Focus moves to the first sub-tab. B. Dragging the ghost element between two sub-tabs displays a drop handle at the drop position. C. Dropping the tab at the drop handle inserts it as a sub-tab at that position.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6580",
+            "caption": "",
+            "figmaName": "28_TabBar_BehaviorAndInteraction_16_v1154",
+            "variant": "large",
+            "alt": "Three illustrations labeled A, B, and C showing the Tab 6 menu: (A) a separate Tab 3 label beside the menu; (B) the Tab 3 label beside a position between menu items; (C) Tab 3 listed between Tab 6.2 and Tab 6.3."
+          },
+          {
+            "type": "text",
+            "html": "<ol><li>Dropping onto a sub-tab</li></ol><p><strong>A. The user drags the ghost element of Tab 3 onto sub-tab 6.2, and sub-tab 6.2 appears as a drop target. B. Opening the sub-tab menu of Tab 6 shows Tab 3 nested under sub-tab 6.2. Focus is on sub-tab 6.1, the first sub-tab in the menu.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6692",
+            "caption": "",
+            "figmaName": "29_TabBar_BehaviorAndInteraction_17_v1154",
+            "variant": "large",
+            "alt": "Two steps labeled A and B showing a tab dropped into a subtab dropdown. A: 'Tab 3' (floating) is dragged over 'Tab 6 ∨' whose dropdown shows 'Tab 6.1', 'Tab 6.2', 'Tab 6.3'. B: the dropdown reorders to 'Tab 6.1', 'Tab 6.2', 'Tab 3', 'Tab 6.3'."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Drag and drop within overflow: between tabs",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Dragging a tab onto the overflow button opens the overflow menu, where user choose where to place it. The user can't drop the tab on the button itself; you wait for the menu to open, then place it inside. </p><p>Dropping it between two tabs adds it at the same level, while dropping it onto a tab nests it as a subtab, if nesting is enabled. Once dropped, the overflow closes and the remaining tabs shift to fill the gap. The same interaction works in reverse, moving a tab from the overflow back to the main bar.</p><p><strong>A. The user drags Tab 4 onto the overflow button. B. The overflow menu opens automatically, with focus on the first item. The tab can now be placed inside the menu.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6770",
+            "caption": "",
+            "figmaName": "30_TabBar_BehaviorAndInteraction_18_v1154",
+            "variant": "large",
+            "alt": "Two illustrations labeled A and B showing tabs 1–6 and an open More menu: (A) a separate Tab 4 label beside the menu listing tabs 7, 8, and 9; (B) the separate Tab 4 label positioned within the menu."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Drag and drop within overflow: onto tabs",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Tabs inside the overflow can be reordered or nested, and moved to different hierarchy levels. When a tab with subtabs is moved, its subtabs move with it, so the hierarchy stays intact.</p><p><strong>A. The user drags Tab 8.1, which has its own subtab. It appears as a ghost element, and its original position is greyed out. B. The user drags it over Tab 7. A drop indicator covers the whole of Tab 7, showing the tab will nest inside it.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6851",
+            "caption": "",
+            "figmaName": "31_TabBar_BehaviorAndInteraction_19_v1154",
+            "variant": "large",
+            "alt": "Two steps labeled A and B showing reordering within the overflow dropdown. A: the overflow shows 'Tab 7', 'Tab 8', an indented 'Tab 8.1', and 'Tab 8.1.1'; 'Tab 8.1' is being dragged upward. B: 'Tab 8.1' is repositioned above 'Tab 8', becoming a top-level item in the overflow list."
+          },
+          {
+            "type": "text",
+            "html": "<p><strong>C. The user drops the tab. The overflow closes and focus returns to the selected tab. D. Reopening the overflow shows Tab 8.1 nested under Tab 7, together with its own subtab, Tab 8.1.1.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6934",
+            "caption": "",
+            "figmaName": "32_TabBar_BehaviorAndInteraction_20_v1154",
+            "variant": "large",
+            "alt": "Two steps labeled C and D. C: 'Tab 1' has a focused state with a blue border. D: the 'More ∨' overflow dropdown opens showing the reordered list: 'Tab 7', 'Tab 8.1', 'Tab 8.1.1', 'Tab 8'."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Drag and drop of selected tab onto overflow",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Only an unselected tab can move into the overflow. Dragging the currently selected tab onto the overflow button does nothing: the menu stays closed, and the tab snaps back when the user releases it.</p><p><strong>A. The user drags the selected Tab 1 onto the overflow button. The menu stays closed, because a selected tab can't move into the overflow. B. The user releases the mouse button. Tab 1 snaps back to its original position and returns to its normal state.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:6996",
+            "caption": "",
+            "figmaName": "33_TabBar_BehaviorAndInteraction_21_v1154",
+            "variant": "large",
+            "alt": "Two steps labeled A and B. A: 'Tab 1' is being dragged toward the overflow area; a floating 'Tab 1' tooltip appears near the 'More ∨' button. B: the drag is released and the tab bar returns to its normal state."
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Drag and drop: Placing tab in subtab menu and overflow menu",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Dragging a tab onto another tab adds it as a subtab. A drop area appears on the target tab to show where the dragged tab will land. A tab can just as easily be moved back out: drag it from the subtab menu onto the tab bar to make it a main tab again.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Gestures & Mapping",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Touch interaction with the tab bar works like mouse interaction, without the hover effect. The following gestures trigger it:</p><ul><li><strong>Tap: </strong>Select a tab, open the overflow, or expand and collapse a tab.</li><li><strong>Drag: </strong>Reorder a tab.</li><li><strong>Swipe: </strong>Navigate the menu or the content.</li></ul>"
+          },
+          {
+            "type": "text",
+            "html": "<p><strong>A. The tab bar has 10 tabs, but only Tab 1 and Tab 2 fit, so the rest sit in the overflow. The user taps the overflow button. B. The overflow opens as a full-screen dialog listing all the tabs. The user taps Tab 7.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7047",
+            "figmaName": "03_Expandable Text_States_v1.151",
+            "caption": "",
+            "variant": "large"
+          },
+          {
+            "type": "image",
+            "ref": "1:7046",
+            "caption": "",
+            "figmaName": "34_TabBar_BehaviorAndInteraction_22_v1154",
+            "variant": "large",
+            "alt": "Two illustrations labeled A and B: (A) a mobile tab bar with Tab 1, Tab 2, and More above a content area; (B) a full-screen list of tabs 1–10 with a Cancel button at the bottom."
+          },
+          {
+            "type": "text",
+            "html": "<p><strong>C. The dialog closes and the tab bar returns. Tab 7 moves onto the main bar, becomes selected, and shows its content.</strong></p><p><strong>D. Reopening the overflow lists all the tabs in order, with Tab 7 selected.</strong></p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7088",
+            "caption": "",
+            "figmaName": "35_TabBar_BehaviorAndInteraction_23_v1154",
+            "variant": "large",
+            "alt": "Two steps labeled C and D continuing the mobile overflow flow. C: the mobile tab bar now shows 'Tab 1' and 'Tab 7' plus 'More ∨'; a touch cursor taps 'More'. D: the full-screen list reopens with 'Tab 7' highlighted as the currently selected tab."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Tooltip",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>You can configure a tooltip for individual tabs to give extra context about the tab's content. The tooltip appears on hover when the tab label is truncated or when the tab needs more guidance. For icon-only tabs, the tooltip conveys the tab's purpose and provides its accessible name.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7128",
+            "figmaName": "36_TabBar_BehaviorAndInteraction_24_v1154",
+            "caption": "Tab with a tooltip",
+            "variant": "large",
+            "alt": "An icon tab bar with four tabs showing truncated labels ('Tab wi...') and counters 3, 7, 11, and 9; the first tab is selected. A mouse hover on the first tab reveals a tooltip: 'Tab with very long text'."
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Responsiveness",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/foundations/visual/cozy-compact\">Content Density</a>.</p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>The tab bar adjusts how many tabs it shows based on the available horizontal space. The tab bar supports two content density modes: compact for mouse and keyboard input, and cozy for touch input. </p><p><strong>A: Compact:</strong> For mouse and keyboard input.</p><p><strong>B: Cozy: </strong>For touch input.</p><p><strong>Note: </strong>Only the icon size changes between the modes. Text stays the same size in both.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7179",
+            "figmaName": "37_TabBar_BehaviorAndInteraction_25_v1154",
+            "caption": "Tab bar in compact and cozy modes",
+            "variant": "large",
+            "alt": "Two rows labeled A and B, each showing four icon tabs labeled Tab A–D with counters 15, 22, 5, and 10: (A) smaller icons; (B) larger icons."
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Accessibility",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>SAP follows international standards, such as WCAG and WAI-ARIA, and strives to make our business solutions accessible and inclusive. For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/discover/sap-design-system/product-standards/accessibility-in-sap-fiori\">Accessibility in SAP Fiori</a> and the <a href=\"https://www.sap.com/documents/2023/11/bc210d8b-977e-0010-bca6-c68f7e60039b.html\">Accessibility Design Tools Handbook</a>. </p>"
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Keyboard navigation",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The following keyboard combinations are supported by the tab bar.</p>"
+          },
+          {
+            "type": "table",
+            "rows": [
+              [
+                "<p><strong>Key Combination</strong></p>",
+                "<p><strong>What it Does</strong></p>"
+              ],
+              [
+                "<p><strong>Tab</strong></p>",
+                "<p>Moves the focus to the selected tab item within the Icon Tab Bar. If the focus is already there, the focus is moved to the next UI element.</p>"
+              ],
+              [
+                "<p><strong>Shift + Tab</strong></p>",
+                "<p>Backward navigation (reverse tab order).</p>"
+              ],
+              [
+                "<p><strong>Arrow Left / Arrow Up </strong></p>",
+                "<p>Moves focus to the previous tab, or does nothing if focus is already on the first tab.</p>"
+              ],
+              [
+                "<p><strong>Arrow Right / Arrow Down </strong></p>",
+                "<p>Moves focus to the next tab, or does nothing if focus is already on the last tab.</p>"
+              ],
+              [
+                "<p><strong>Home</strong></p>",
+                "<p>Moves focus to the first item within the icon tab bar.</p>"
+              ],
+              [
+                "<p><strong>End</strong></p>",
+                "<p>Moves focus to the last item within the icon tab bar.</p>"
+              ],
+              [
+                "<p><strong>Spacebar /</strong> <strong>Enter</strong></p>",
+                "<p>Selects the focused tab, on Space release or Enter press. In split mode, selects the parent tab. On an expandable tab, toggles its content between expanded and collapsed. If focus is on a tab close button, closes the tab. If focus is on the overflow button, opens the overflow menu. If focus is on a menu tab, opens its menu.</p>"
+              ],
+              [
+                "<p><strong>Down</strong></p>",
+                "<p>Opens the related menu of the currently focused tab.</p>"
+              ],
+              [
+                "<p><strong>Ctrl + Left / Up</strong></p>",
+                "<p>Moves the focused tab one position to the left, keeping focus on it. Inside a subtab or overflow menu, it moves up instead, and moving past the top of the menu returns it to the main bar.</p>"
+              ],
+              [
+                "<p><strong>Ctrl + Right / Down</strong></p>",
+                "<p>Moves the focused tab one position to the right, keeping focus on it. Inside a subtab or overflow menu, it moves down instead, and stops at the bottom of the menu.</p>"
+              ],
+              [
+                "<p><strong>Ctrl + Home</strong></p>",
+                "<p>Moves the focused tab to the start. In a dropdown, moves it to the top; pressing again moves it to the first tab on the main bar.</p>"
+              ],
+              [
+                "<p><strong>Ctrl + End</strong></p>",
+                "<p>Moves the focused tab to the end. In the tab bar, pressing again moves focus to the last dropdown item.</p>"
+              ],
+              [
+                "<p><strong>Esc</strong></p>",
+                "<p>Closes the menu without making a selection. Focus is set back to the overflow or the parent tab.</p>"
+              ],
+              [
+                "<p><strong>Page Up</strong></p>",
+                "<p>Moves selection up by one page. If fewer items remain than the page size, selects the first item.</p>"
+              ],
+              [
+                "<p><strong>Page Down</strong></p>",
+                "<p>Moves selection down by one page. If fewer items remain than the page size, selects the last item.</p>"
+              ]
+            ]
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Screen Reader Support",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>For details on screen reader support and Accessible Rich Internet Applications (ARIA), see <a href=\"https://ui5.sap.com/#/topic/33fae3482358438e93daea5232527093\">UI5 Screen Reader Support</a> and <a href=\"https://www.w3.org/TR/wai-aria-1.2/\">WAI-ARIA Authoring</a>. </p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Content",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Localization",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The tab bar component supports both left-to-right (LTR) and right-to-left (RTL) reading directions.</p>"
+          },
+          {
+            "type": "columns",
+            "columnCount": 2,
+            "columns": [
+              [
+                {
+                  "type": "image",
+                  "ref": "1:7377",
+                  "figmaName": "38_TabBar_Content_01_v1154",
+                  "caption": "Left-to-right text directions",
+                  "variant": "small",
+                  "alt": "A text tab bar in LTR layout showing 'Tab 1' (selected, blue) and 'Tab 2', with a 'More ∨' overflow button."
+                }
+              ],
+              [
+                {
+                  "type": "image",
+                  "ref": "1:7393",
+                  "figmaName": "39_TabBar_Content_02_v1154",
+                  "caption": "Right-to-left text directions",
+                  "variant": "small",
+                  "alt": "A text tab bar in RTL layout with Arabic-language labels. The first tab is selected (right-aligned, blue underline), followed by a second tab and an overflow button on the far left."
+                }
+              ]
+            ]
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Wrapping and Truncation",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Tab labels don't wrap. Text stays on one line and truncates with an ellipsis only for icon tabs with the label below the icon. Text tabs, and icon tabs with the label beside the icon, always show the full label.</p><p><strong>A. Tabs that don't truncate: </strong>Text tabs, and icon tabs with the label beside the icon, always show the full label.</p><p><strong>B. Tabs that truncate: </strong>Only icon tabs with the label below the icon truncate, using an ellipsis when space runs out.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7418",
+            "caption": "",
+            "figmaName": "40_TabBar_Content_03_v1154",
+            "variant": "large",
+            "alt": "Two examples labeled A and B. A: text and icon tabs with full-length labels ('Tab text'). B: the same icon tabs with labels truncated to 'Tab tex...' when available width is reduced."
+          },
+          {
+            "type": "text",
+            "html": "<p>Tabs that don't truncate (A) and tabs that truncate (B) </p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.figma.com/design/7lMqfFtQTQWVpQsGte2cgB/Wrapping-and-Truncation?node-id=1762-2154&amp;p=f&amp;t=k35Wql5A7kDen2CK-0\">Wrapping &amp; Truncation</a>.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Overflow display",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>When there isn't enough space for all the tabs, the ones that don't fit move into an overflow menu, on the right by default or split across both sides. Use both sides for processes with a fixed order, so tabs keep their sequence; use a single overflow on the right for tabs that can be rearranged.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7510",
+            "caption": "",
+            "figmaName": "41_TabBar_Content_04_v1154",
+            "variant": "large",
+            "alt": "A text tab bar with overflow on both ends: a '+3 ∨' button on the left (dropdown shows 'Tab A', 'Tab B', 'Tab C') and a '+5 ∨' button on the right; 'Tab D', 'Tab E', 'Tab F', 'Tab G' are visible in the center."
+          },
+          {
+            "type": "text",
+            "html": "<p>Tab bar with overflow on both sides</p>"
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Tab variants within the overflow",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Tab variants appear differently inside the overflow menu, depending on which one you use:</p><ul><li><strong>Text tabs with separator: </strong>The label appears with its separator carried into the menu.</li><li><strong>Icon tabs: </strong>The icon appears alongside the label so the tab stays recognizable without relying on position.</li><li><strong>Filter and process tabs:</strong> The count or step indicator appears with the label, keeping the filter value or process order clear.</li><li><strong>Tabs with subtabs: </strong>The parent tab appears with its subtabs nested beneath it, preserving the hierarchy.</li></ul>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7556",
+            "caption": "",
+            "figmaName": "42_TabBar_Content_05_v1154",
+            "variant": "large",
+            "alt": "Two tab bars: the upper bar shows tabs A–F with counts 17, 10, 16, 15, 15, and 7; the lower bar shows tabs A–C and an open More menu listing tabs D, E, and F with their counts."
+          },
+          {
+            "type": "text",
+            "html": "<p>Text tabs with separator</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7624",
+            "caption": "",
+            "figmaName": "43_TabBar_Content_05_v1154",
+            "variant": "large",
+            "alt": "Two states showing responsive overflow for icon filter tabs. Top: a wide layout with five icon tabs (counters 53, 70, 12, 43, 70), all visible. Bottom: a narrower layout showing three tabs and a 'More ∨' dropdown containing the remaining two tabs with icons and counts."
+          },
+          {
+            "type": "text",
+            "html": "<p>Icon tabs</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7716",
+            "caption": "",
+            "figmaName": "44_TabBar_Content_06_v1154",
+            "variant": "large",
+            "alt": "Two states showing responsive overflow for process tabs. Top: five steps — 'Confirm' (53 of 123), 'Check Date' (70 of 86), 'Pack' (12 of 23), 'Ship' (43 of 50), 'Payment' (70 of 74). Bottom: two steps visible and a 'More ∨' dropdown listing 'Pack (12 of 23)', 'Ship (43 of 50)', 'Payment (70 of 74)'."
+          },
+          {
+            "type": "text",
+            "html": "<p>Filter and process tabs</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7805",
+            "caption": "",
+            "figmaName": "45_TabBar_Content_07_v1154",
+            "variant": "large",
+            "alt": "Two states showing responsive overflow for tabs with subtabs. Top: six tabs each with a dropdown chevron ('Tab A ∨' through 'Tab F ∨'). Bottom: two tabs visible and a 'More ∨' dropdown that preserves the nested hierarchy, listing Tab C, indented Tab C.1, Tab D, Tab E, indented Tab E.1, Tab E.1.1, Tab E.1.1.1, and Tab F."
+          },
+          {
+            "type": "text",
+            "html": "<p>Tabs with subtabs</p>"
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Overflow text",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Use &quot;More&quot; (A) for a simple label, or &quot;+N&quot; (B) when you want to indicate exactly how many tabs are hidden.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7875",
+            "caption": "",
+            "figmaName": "46_TabBar_Content_08_v1154",
+            "variant": "large",
+            "alt": "Two rows labeled A and B showing overflow button label variants. A: a 'More ∨' text overflow button; dropdown shows 'Tab G', 'Tab H', 'Tab I'. B: a '+3 ∨' count overflow button with the same dropdown content."
+          },
+          {
+            "type": "text",
+            "html": "<p>Text tabs with separator</p>"
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Overflow on mobile phones",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>On small touch devices, overflow and subtab menus open as full-screen dialogs instead of popovers, using the responsive popover component.</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:7935",
+            "caption": "",
+            "figmaName": "47_TabBar_Content_09_v1154",
+            "variant": "large",
+            "alt": "A full-screen mobile tab selection list showing 'Tab 1' through 'Tab 9' with 'Tab 1' selected (blue highlight) and a 'Cancel' button at the bottom."
+          },
+          {
+            "type": "text",
+            "html": "<p>Overflow menu as a full-screen dialog</p>"
+          }
+        ],
+        "titleLevel": "h4"
+      },
+      {
+        "title": "Overflow behavior",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>When the tabs don't all fit, the tab bar collapses the extra ones into an overflow menu. You can control where the overflow appears and how it behaves.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Features",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Count placement",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "1:7967",
+            "figmaName": "48_TabBar_Features_01_v1154",
+            "caption": "Tabs with different count placement",
+            "variant": "large",
+            "alt": "Two examples labeled A and B comparing tab display options. A: a text tab bar ('Tab A (17)' through 'Tab D (15)') paired with the same tabs shown with optional inline icons before each label. B: two icon tab bar variants — one with the counter displayed above the icon circle, and one with the counter shown as a badge overlaid on the icon."
+          },
+          {
+            "type": "text",
+            "html": "<p>The count can appear in a tab in two ways: in brackets after the label, or as a separate element positioned above the label (or next to the icon, if the tab has one).</p><p><strong>A. Count next to text: </strong>The count sits in brackets after the label</p><p><strong>B. Count as a separate element: </strong>The count appears above the label, or next to the icon if the tab has one.</p><p><strong>Note: </strong>For text tabs, show the count after the label.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Text placement for icon tabs",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "1:8127",
+            "figmaName": "49_TabBar_Features_02_v1154",
+            "caption": "Text placement for icon tabs",
+            "variant": "large",
+            "alt": "Two rows labeled A and B showing icon tab bars in two size variants. Each row has four tabs ('Tab A' through 'Tab D') with counters (3, 7, 11, 9) and filled or outlined circular icons; the first tab is selected with a filled blue icon. Row A has larger icons; row B has smaller icons."
+          },
+          {
+            "type": "text",
+            "html": "<p>Place the label next to the icon when possible. Alternatively, position it below the icon.</p><p><strong>A. Horizontal:</strong> Text next to the icon. <strong>B. Vertical:</strong> Text below the icon.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Background design",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "1:8190",
+            "figmaName": "50_TabBar_Features_03_v1154",
+            "caption": "Background design examples of tab bar header",
+            "variant": "large",
+            "alt": "Three rows labeled A, B, and C showing tabs A–F and a More button with different background appearances."
+          },
+          {
+            "type": "text",
+            "html": "<p>The tab bar supports three background settings that can be applied independently to the header bar and content area: solid (A), transparent (B), and translucent (C).</p><p><strong>Note: </strong>The effect of the transparent and translucent settings depends on the container's background.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Expandable and collapsible tabs",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "1:8234",
+            "figmaName": "51_TabBar_Features_04_v1154",
+            "caption": "Background design examples of tab bar header",
+            "variant": "large",
+            "alt": "Two rows labeled A and B showing tabs A (17), B (10), C (16), and D (15): (A) the tab bar without a content area below; (B) Tab A with a blue selection bar and a content area labeled 'Content Tab A' below."
+          },
+          {
+            "type": "text",
+            "html": "<p>The tab bar can expand or collapse its content area when the user interacts with a tab. Pressing the selected tab toggles its content between collapsed (A) and expanded (B).</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Custom separator",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "1:8288",
+            "figmaName": "52_TabBar_Features_05_v1154",
+            "caption": "Tab bar with custom separator",
+            "variant": "large",
+            "alt": "A process tab bar showing three visible steps: '1 Screening' (selected, filled icon), '2 Interview', '3 Hiring', and a 'More ∨' overflow. The overflow dropdown shows two additional steps: 'Onboarding (4)' and 'Assessment (7)', each preceded by a double-chevron separator."
+          },
+          {
+            "type": "text",
+            "html": "<p>The tab bar supports custom separator icons instead of the default line to visually reinforce the relationship between tabs, such as chevrons that indicate the sequence of process steps.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Initial tab selection",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "1:8359",
+            "figmaName": "53_TabBar_Features_06_v1154",
+            "caption": "Tab bar with initial selection on the second tab",
+            "variant": "large",
+            "alt": "An icon tab bar with 'Tab B' (10) selected (filled blue icon and selection bar), flanked by 'Tab A' (17), 'Tab C' (16), and 'Tab D' (15)."
+          },
+          {
+            "type": "text",
+            "html": "<p>By default, the tab bar opens with the first tab selected, though you can set any tab as the initial selection.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Badges",
+        "blocks": [
+          {
+            "type": "image",
+            "ref": "1:8409",
+            "caption": "",
+            "figmaName": "54_TabBar_Features_07_v1154",
+            "variant": "large",
+            "alt": "Two rows labeled A and B: (A) text tabs A–D, with red dots beside tabs B and D; (B) icon tabs with red dots on the icons for tabs B and D."
+          },
+          {
+            "type": "text",
+            "html": "<p>Badges on text and icons tab types</p>"
+          },
+          {
+            "type": "image",
+            "ref": "1:8478",
+            "figmaName": "55_TabBar_Features_08_v1154",
+            "caption": "Badges on semantic and overflow tab types",
+            "variant": "large",
+            "alt": "Two rows labeled C and D. C: three icon tabs with value state styling — 'Tab A' (positive, green icon with a checkmark badge), 'Tab B' (critical, orange icon with a warning badge), 'Tab C' (negative, red icon with an error badge). D: a text tab bar where 'Tab B', 'Tab D', and 'Tab F' have red notification dots; the 'More ∨' overflow button also carries a dot, and its dropdown shows 'Tab G' and 'Tab I' with notification dots."
+          },
+          {
+            "type": "text",
+            "html": "<p>The tab bar supports badges on individual tabs to signal that the system has added new items. A badge can also appear on the overflow button when one or more hidden tabs contain new items, and inside the overflow menu, each affected tab carries its own badge. </p><p><strong>A. Badges on text tabs: </strong>The badge appears on the tab, next to its label, marking that the tab's content has new items.</p><p><strong>B. Badges on icon tabs: </strong>On the top-right of the icon, a dot stays visible even without a text label.</p><p><strong>C. Badges on semantic tabs: </strong>The badge takes the tab's semantic color instead of the default red, so it stays consistent with the tab's positive, critical, or negative state.</p><p><strong>D. Badges in the overflow: </strong>When a hidden tab has new items, a dot marks the overflow button, and each affected tab inside the menu carries one too.  <strong>Note:</strong> Badges are red by default. If a tab has a semantic state, its badge color matches that state.</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Framework Comparison",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>The table below summarizes the differences between SAPUI5 and SAP Web Components and lists the framework-specific patterns.</p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>Available</p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>Not available</p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>To request this feature for SAP Web Components, submit an InnerSource <a href=\"https://sap.sharepoint.com/sites/204212/SitePages/Request.aspx\">request</a>.</p>"
+          },
+          {
+            "type": "table",
+            "rows": [
+              [
+                "<p><strong>Features</strong></p>",
+                "<p><strong>SAPUI5</strong></p>",
+                "<p><strong>SAP Web Components</strong></p>"
+              ],
+              [
+                "<p>Uses a custom separator icon instead of the default line, to reinforce the relationship between tabs.</p>",
+                "<p>Available</p>",
+                "<p>Not available</p>"
+              ]
+            ]
+          }
+        ],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Related Links",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Guidelines",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Components</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/button-web-component\">Button</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/split-button-web-component\">Split Button</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/segmented-button-web-component\">Segmented Button</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/menu-web-component\">Menu</a></p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>Elements and Controls</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/foundations/visual/how-to-use-semantic-colors\">How To Use Semantic Colors</a></p>"
+          },
+          {
+            "type": "text",
+            "html": "<p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/button-web-component\">Button</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/split-button-web-component\">Split Button</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/segmented-button-web-component\">Segmented Button</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/menu-web-component\">Menu</a></p>"
+          },
+          {
+            "type": "text",
+            "html": "<p><a href=\"https://ui5.sap.com/#/entity/sap.m.IconTabBar\">Icon Tab Bar</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.IconTabBar/sample/sap.m.sample.IconTabBarBadges\">Icon Tab Bar – Badges</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/api/sap.m.IconTabBar\">Icon Tab Bar</a> (API reference)</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Implementation",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>SAPUI5</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.IconTabBar\">Icon Tab Bar</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.IconTabBar/sample/sap.m.sample.IconTabBarBadges\">Icon Tab Bar – Badges</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/api/sap.m.IconTabBar\">Icon Tab Bar</a> (API reference)</p><p>UI5 Web Components</p><p><a href=\"https://ui5.github.io/webcomponents/components/TabContainer/\">Tab Container</a></p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Specifications",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p><a href=\"https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2822229674/Tab+Bar+Horizon\">Tab Bar</a> (visual design)</p><p><a href=\"https://wiki.one.int.sap/wiki/pages/viewpage.action?pageId=2698913732\">Icon Tab Bar</a> (visual design specification)</p><p><a href=\"https://wiki.one.int.sap/wiki/pages/viewpage.action?pageId=2698913813\">Icon Tab Bar – Badges</a> (visual design specification)</p><p><a href=\"https://wiki.one.int.sap/wiki/pages/viewpage.action?pageId=2650676507\">Semantic Colors</a> (visual design specification)</p><p><a href=\"https://wiki.one.int.sap/wiki/pages/viewpage.action?pageId=2697902638\">Badges</a> (visual design specification)</p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "SAP Web UI Kit",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p><a href=\"https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=1216-3190\">Tab Bar</a><a href=\"https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=1216-3190\"> (Figma)</a></p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Related Links (external only)",
+        "blocks": [],
+        "titleLevel": "h2"
+      },
+      {
+        "title": "Guidelines",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>Components</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/button-web-component\">Button</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/split-button-web-component\">Split Button</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/segmented-button-web-component\">Segmented Button</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/ui-elements/menu-web-component\">Menu</a></p>"
+          },
+          {
+            "type": "text",
+            "html": "<p>Elements and Controls</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/foundations/visual/how-to-use-semantic-colors\">How To Use Semantic Colors</a></p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "Implementation",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>SAPUI5</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.IconTabBar\">Icon Tab Bar</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.IconTabBar/sample/sap.m.sample.IconTabBarBadges\">Icon Tab Bar – Badges</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/api/sap.m.IconTabBar\">Icon Tab Bar</a> (API reference)</p><p>UI5 Web Components</p><p><a href=\"https://ui5.github.io/webcomponents/components/TabContainer/\">Tab Container</a></p>"
+          }
+        ],
+        "titleLevel": "h3"
+      },
+      {
+        "title": "UI Kit (Figma)",
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p><a href=\"https://www.figma.com/community/file/1494295794601744471\">SAP Fiori for Web UI Kit </a><a href=\"https://www.figma.com/community/file/1494295794601744471\">/</a></p><p>Tab Bar </p>"
+          }
+        ],
+        "titleLevel": "h3"
+      }
+    ],
+    "pageTitle": "Tab Bar"
+  },
+  "mergedDuplicateSections": [
+    "Behavior and Interaction",
+    "Drag and drop: Placing a tab between tabs",
+    "Responsiveness",
+    "Accessibility"
+  ],
+  "textFramesConverted": [
+    "Components",
+    "Components",
+    "Guidelines",
+    "Components",
+    "Components",
+    "Guidelines"
+  ],
+  "imageNamesResolved": [
+    "23_TabBar_BehaviorAndInteraction_11_v1154",
+    "19_TabBar_BehaviorAndInteraction_07_v1154",
+    "20_TabBar_BehaviorAndInteraction_08_v1154",
+    "21_TabBar_BehaviorAndInteraction_09_v1154",
+    "22_TabBar_BehaviorAndInteraction_10_v1154",
+    "24_TabBar_BehaviorAndInteraction_12_v1154",
+    "25_TabBar_BehaviorAndInteraction_13_v1154",
+    "26_TabBar_BehaviorAndInteraction_14_v1154",
+    "27_TabBar_BehaviorAndInteraction_15_v1154",
+    "28_TabBar_BehaviorAndInteraction_16_v1154",
+    "29_TabBar_BehaviorAndInteraction_17_v1154",
+    "30_TabBar_BehaviorAndInteraction_18_v1154",
+    "31_TabBar_BehaviorAndInteraction_19_v1154",
+    "32_TabBar_BehaviorAndInteraction_20_v1154",
+    "33_TabBar_BehaviorAndInteraction_21_v1154",
+    "34_TabBar_BehaviorAndInteraction_22_v1154",
+    "35_TabBar_BehaviorAndInteraction_23_v1154"
+  ],
+  "imagesAddedFromFigma": [
+    "09_TabBar_States_02_v1154",
+    "03_Expandable Text_States_v1.151"
+  ],
+  "leftoverFramesIgnored": [
+    "03_Expandable Text_States_v1.151"
+  ],
+  "imagesNotPlaced": [],
+  "tablesAddedFromFigma": [
+    "Keyboard Navigation (15 rows)",
+    "Framework Comparison Overview (1 rows)"
+  ],
+  "textAddedFromFigma": [
+    {
+      "text": "The text tab supports the following interaction states: regu",
+      "section": "Interaction states"
+    },
+    {
+      "text": "The count can appear in a tab in two ways: in brackets after",
+      "section": "Count placement"
+    },
+    {
+      "text": "Place the label next to the icon when possible. Alternativel",
+      "section": "Text placement for icon tabs"
+    },
+    {
+      "text": "The tab bar supports three background settings that can be a",
+      "section": "Background design"
+    },
+    {
+      "text": "The tab bar can expand or collapse its content area when the",
+      "section": "Expandable and collapsible tabs"
+    },
+    {
+      "text": "The tab bar supports custom separator icons instead of the d",
+      "section": "Custom separator"
+    },
+    {
+      "text": "By default, the tab bar opens with the first tab selected, t",
+      "section": "Initial tab selection"
+    },
+    {
+      "text": "The tab bar supports badges on individual tabs to signal tha",
+      "section": "Badges"
+    },
+    {
+      "text": "Button Split Button Segmented Button Menu",
+      "section": "Guidelines"
+    },
+    {
+      "text": "Icon Tab Bar (samples) Icon Tab Bar – Badges (samples) Icon ",
+      "section": "Guidelines"
+    }
+  ],
+  "emptySectionsFilled": [
+    "Canceling the reordering (1)",
+    "Accessibility (1)"
+  ],
+  "textNotPlaced": [
+    "Get Construction Information and Rules From the Guidelines"
+  ],
+  "articleTextNotInExport": [
+    "Get Construction Information and Rules From the Guidelines"
+  ],
+  "removedNonGuidelineImages": [
+    "Tag",
+    ".Row",
+    "Cell/Default",
+    "message-success",
+    "message-error"
+  ]
+}

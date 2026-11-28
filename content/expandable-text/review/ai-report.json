@@ -1,0 +1,101 @@
+{
+  "time": "2026-11-28T12:38:43.702Z",
+  "model": "claude-haiku-5-5",
+  "slug": "expandable-text",
+  "errors": 5,
+  "hints": 8,
+  "dropped": 1,
+  "findings": [
+    {
+      "where": "Intro",
+      "severity": "error",
+      "problem": "The 'Component availability' inline heading (h3) is missing above the availability line.",
+      "original": "This component is available in the following libraries:",
+      "fix": "<h3>Component availability</h3> This component is available in the following libraries:"
+    },
+    {
+      "where": "Intro > Image alt text",
+      "severity": "error",
+      "problem": "Alt text is missing the word 'state' after 'collapsed'.",
+      "original": "An expandable text in the collapsed, showing",
+      "fix": "An expandable text in the collapsed state, showing"
+    },
+    {
+      "where": "Accessibility",
+      "severity": "error",
+      "problem": "Contrast information is missing. The section must name keyboard, screen reader and contrast information.",
+      "original": "or section.",
+      "fix": "or section.\n\n### Contrast\nText and link colors meet the WCAG 2.1 contrast ratio of at least 4.5:1 against the background."
+    },
+    {
+      "where": "Related Links",
+      "severity": "error",
+      "problem": "The links are plain lists. They must use a columns block with level-4 column titles: Guidelines | Implementation | Specifications (internal) and Guidelines | Implementation | UI Kit (Figma) (external). SAP Web UI Kit is missing under Specifications.",
+      "original": "Components",
+      "fix": "#### Guidelines\nComponents"
+    },
+    {
+      "where": "Related Links > external block",
+      "severity": "error",
+      "problem": "Stray trailing slash in the UI Kit entry.",
+      "original": "SAP Fiori for Web UI Kit /",
+      "fix": "SAP Fiori for Web UI Kit"
+    },
+    {
+      "where": "Intro",
+      "severity": "hint",
+      "problem": "'Learn More' link text does not say where the link goes.",
+      "original": "Learn More.",
+      "fix": "See the SAPUI5 and SAP Web Components guidelines."
+    },
+    {
+      "where": "Content > Wrapping and Truncation",
+      "severity": "hint",
+      "problem": "The fixed 100-character limit conflicts with the Intro advice to set the limit by use case. Also, 'Less than 100 characters' leaves exactly 100 characters undefined.",
+      "original": "Less than 100 characters: Text is displayed in full and no Show More link.",
+      "fix": "100 characters or less: Text is displayed in full and no Show More link."
+    },
+    {
+      "where": "States > Empty state",
+      "severity": "hint",
+      "problem": "'the user's' is third person. The guideline addresses the reader as 'you'.",
+      "original": "The symbol may vary depending on the user's language.",
+      "fix": "The symbol may vary depending on your language."
+    },
+    {
+      "where": "Behavior and Interaction > Expanding/Collapsing",
+      "severity": "hint",
+      "problem": "Third person 'the user' in a non-technical note. Use 'you'.",
+      "original": "the user can copy it",
+      "fix": "you can copy it"
+    },
+    {
+      "where": "Behavior and Interaction > Gestures and Mapping",
+      "severity": "hint",
+      "problem": "Vague wording. It does not say what the gestures are.",
+      "original": "The behavior is similar to mouse interaction.",
+      "fix": "Tapping Show More or Show Less expands or collapses the text, as a mouse click does."
+    },
+    {
+      "where": "Responsiveness",
+      "severity": "hint",
+      "problem": "Judges the result instead of stating what happens.",
+      "original": "making it easier to read and interact with the content.",
+      "fix": "so that the content is displayed in a full-screen view."
+    },
+    {
+      "where": "Types > Expanded in popover",
+      "severity": "hint",
+      "problem": "'expand text link' is not the defined term. Anatomy names it the expand/collapse link (Show More link).",
+      "original": "positioned relative to the expand text link",
+      "fix": "positioned relative to the Show More link"
+    },
+    {
+      "where": "Features > Preserve whitespace",
+      "severity": "hint",
+      "problem": "The section has an image but no explanatory text describing the feature.",
+      "original": "Image caption: Expandable text with preserved whitespace",
+      "fix": "Add one sentence before the image that states what the preserved whitespace setting does."
+    }
+  ]
+}

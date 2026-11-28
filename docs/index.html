@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guideline Studio</title>
+<link rel="stylesheet" href="./studio.css?v=20261126195504">
+</head>
+<body>
+<!-- Figma "Masthead - XL" -->
+<header class="masthead">
+  <div class="mh-left">
+    <img src="./assets/sap-logo.svg" width="64" height="32" alt="SAP">
+    <span class="mh-title">Design System</span>
+    <span class="mh-menu">Web <img src="./assets/slim-arrow-down.svg" width="16" height="16" alt=""></span>
+  </div>
+  <div class="mh-search">
+    <span>Search across SAP Design System for Web</span>
+    <span class="mh-search-btn"><img src="./assets/search-bg.svg" width="28" height="28" alt=""><img class="mh-search-icon" src="./assets/search.svg" width="18" height="18" alt=""></span>
+  </div>
+  <div class="mh-icons">
+    <img src="./assets/ai.svg" width="18" height="18" alt="">
+    <img src="./assets/bell.svg" width="18" height="18" alt="">
+    <img src="./assets/person.svg" width="18" height="18" alt="">
+    <img src="./assets/menu.svg" width="18" height="18" alt="">
+  </div>
+</header>
+
+<!-- Figma "Side Navigation" -->
+<nav class="sidenav" aria-label="Portal navigation">
+  <div class="sn-main">
+    <span class="sn-item"><img src="./assets/nav-1.svg" width="16" height="16" alt=""></span>
+    <span class="sn-item"><img src="./assets/nav-2.svg" width="16" height="16" alt=""></span>
+    <img src="./assets/nav-3-selected.svg" width="48" height="44" alt="">
+    <span class="sn-item"><img src="./assets/nav-4.svg" width="16" height="16" alt=""></span>
+    <span class="sn-item"><img src="./assets/nav-5.svg" width="16" height="16" alt=""></span>
+  </div>
+  <div class="sn-util">
+    <img src="./assets/nav-divider.svg" width="48" height="16" alt="">
+    <span class="sn-item"><img src="./assets/nav-6.svg" width="16" height="16" alt=""></span>
+    <span class="sn-item"><img src="./assets/nav-7.svg" width="16" height="16" alt=""></span>
+    <span class="sn-item"><img src="./assets/nav-8.svg" width="16" height="16" alt=""></span>
+  </div>
+</nav>
+
+<!-- The article, as on the portal. Every text is editable in place. -->
+<div id="page">
+  <div id="hero" class="hero"></div>
+  <div class="body">
+    <main id="content" class="content"></main>
+    <aside class="onpage">
+      <div class="op-title">On this page</div>
+      <div id="onpage-list" class="op-list"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- Figma "Footer - XL" -->
+<footer class="footer">
+  <img src="./assets/footer-logo.svg" width="52" height="26" alt="SAP">
+  <span class="ft-sep"></span>
+  <span>Privacy</span><span>Legal Disclosure</span><span>Copyright</span><span>Terms of Use</span><span>Cookie Preferences</span>
+</footer>
+
+<!-- Message box: shows saving, saved and errors -->
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- Work bar: the only part that is not the template -->
+<div id="bar" class="workbar">
+  <select id="guideline" title="Guideline"></select>
+  <input id="version" placeholder="Version" size="7" title="Version of this update, for example v1-158. Saves go to a branch named <version>/<guideline>.">
+  <span id="status" class="pill"></span>
+  <span id="tools" class="tools">
+    <button data-cmd="bold" title="Bold"><b>B</b></button>
+    <button data-cmd="italic" title="Italic"><i>I</i></button>
+    <button data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+    <button data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+    <button data-cmd="link" title="Add or change a link">Link</button>
+  </span>
+  <label class="chk" title="Show alt text and empty-field hints"><input type="checkbox" id="hints" checked> Edit hints</label>
+  <label class="chk" title="Your text changes become suggestions. The article does not change until someone accepts."><input type="checkbox" id="suggest"> Suggest mode</label>
+  <span class="grow"></span>
+  <span id="saved" class="muted"></span>
+  <input id="name" placeholder="Your name" size="10" title="Your name, shown on changes and sign-offs">
+  <select id="role" title="Your role">
+    <option value="designer">Designer</option>
+    <option value="writer">UX writer</option>
+    <option value="editor">Editor</option>
+  </select>
+  <input id="token" type="password" size="14" title="GitHub token with Contents and Pull requests write access to this repo. Stored in this browser only." autocomplete="off">
+  <button id="commit" class="primary" disabled>Save version</button>
+  <span id="actions" class="actions"></span>
+  <button id="drawerBtn" class="drawer-btn">Review panel</button>
+</div>
+
+<!-- Review panel -->
+<aside id="side" class="drawer">
+  <div class="dr-head"><strong>Review</strong><button id="drawerClose" class="small" title="Close">✕</button></div>
+  <nav id="tabs">
+    <button data-tab="checks">Checks</button>
+    <button data-tab="changes">What changed</button>
+    <button data-tab="history">Text history</button>
+    <button data-tab="jira">Jira</button>
+  </nav>
+  <div id="panel"></div>
+</aside>
+
+<input type="file" id="file" accept="image/png" hidden>
+<script type="module" src="./dist/main.js?v=20261126195504"></script>
+</body>
+</html>

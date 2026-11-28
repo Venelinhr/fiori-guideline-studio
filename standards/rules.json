@@ -1,0 +1,113 @@
+{
+  "_comment": "Company standards. The rule audit reads this file. Edit here, not in code. Badge text (':badge, ...') is never changed or flagged: it triggers a badge in AEM.",
+  "requiredSections": [
+    "Intro",
+    "When to Use",
+    "Anatomy",
+    "Behavior and Interaction",
+    "Responsiveness",
+    "Accessibility",
+    "Related Links"
+  ],
+  "sectionOrder": [
+    "Intro",
+    "When to Use",
+    "Anatomy",
+    "Types",
+    "States",
+    "Behavior and Interaction",
+    "Responsiveness",
+    "Accessibility",
+    "Content",
+    "Features",
+    "Framework Comparison",
+    "Related Links",
+    "Related Links (external only)"
+  ],
+  "terminology": [
+    {
+      "wrong": "scroll bar",
+      "right": "scrollbar"
+    },
+    {
+      "wrong": "fixed-height",
+      "right": "fixed height"
+    },
+    {
+      "wrong": "drop-down",
+      "right": "dropdown"
+    },
+    {
+      "wrong": "check box",
+      "right": "checkbox"
+    },
+    {
+      "wrong": "click on",
+      "right": "click"
+    },
+    {
+      "wrong": "white space",
+      "right": "whitespace",
+      "severity": "info",
+      "why": "Both forms are in this guideline. Pick one."
+    }
+  ],
+  "bannedPhrases": [
+    {
+      "phrase": "etc.",
+      "why": "Be specific. Name the items."
+    },
+    {
+      "phrase": "no action takes place",
+      "why": "Use an active verb: \"does not trigger any action\"."
+    },
+    {
+      "phrase": "please",
+      "why": "Do not use filler words in guidelines."
+    },
+    {
+      "phrase": "simply",
+      "why": "Do not judge how easy a task is."
+    }
+  ],
+  "placeholders": [
+    "lorem ipsum",
+    "placeholder",
+    "PLACE COMPONENT HERE",
+    "COMPONENT HERE",
+    "TBD",
+    "TODO",
+    "xxx"
+  ],
+  "links": {
+    "workingToolHosts": [
+      "figma.com/design",
+      "figma.com/file",
+      "figma.com/proto"
+    ],
+    "workingToolAllowedIn": [
+      "table",
+      "Related Links"
+    ],
+    "internalHosts": [
+      "wiki.one.int.sap",
+      ".int.sap",
+      "wdf.sap.corp"
+    ],
+    "internalAllowedInSections": [
+      "Related Links"
+    ],
+    "versionedPathPattern": "/fiori-design-web/v(\\d+)-(\\d+)/",
+    "workingLinkSeverity": "info",
+    "workingLinkNote": "Internal use. Replace with the published page before any external release."
+  },
+  "style": {
+    "maxSentenceWords": 35,
+    "headingAmpersand": false,
+    "h3Case": "consistent",
+    "imagesNeedCaption": true,
+    "skipTextStartingWith": [
+      ":badge"
+    ]
+  }
+}
