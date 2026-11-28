@@ -44,6 +44,35 @@ function inlineAvailability(sections: Section[]): Section[] {
   return out;
 }
 
+/** Links in Related Links are plain underlined links, as on the reference page: the link text is wrapped in <u>. Idempotent. */
+export const underlineLinks = (html: string): string =>
+  html.replace(/<a\b([^>]*)>(?!\s*<u>)([\s\S]*?)<\/a>/gi, (_m, attrs: string, inner: string) => `<a${attrs}><u>${inner}</u></a>`);
+
+/** The page puts an arrow after a link that stands ALONE in its paragraph. On the reference page consecutive links share
+ *  one paragraph, separated by line breaks, and have no arrow; a single link keeps its arrow. So here:
+ *  - two or more link-only paragraphs in a row become one paragraph with <br> between the links,
+ *  - a short plain line (up to 4 words) in front of links is a group label and is bold ("Components", "SAPUI5").
+ *  Text that is not made of plain paragraphs (lists, other tags) is left as it is. Idempotent. */
+export function linkParagraphs(html: string): string {
+  const paras = [...html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)].map(m => m[1].replace(/(?:\s|&nbsp;|\u00a0)+$/g, "").replace(/^(?:\s|&nbsp;|\u00a0)+/g, ""));
+  if (!paras.length || html.replace(/<p\b[^>]*>[\s\S]*?<\/p>/gi, "").trim() !== "") return html;
+  const linkOnly = (p: string) => /^<a\b[^>]*>(?:<u>)?[^<]*(?:<\/u>)?<\/a>$/i.test(p);
+  const startsWithLink = (p: string | undefined) => !!p && /^<a\b/i.test(p);
+  const out: string[] = [];
+  for (let i = 0; i < paras.length; i++) {
+    const p = paras[i];
+    if (linkOnly(p)) {
+      const run = [p];
+      while (i + 1 < paras.length && linkOnly(paras[i + 1])) run.push(paras[++i]);
+      out.push(`<p>${run.join("<br>")}</p>`);
+    } else if (p && !/[<>]/.test(p) && p.split(/\s+/).length <= 4 && startsWithLink(paras[i + 1])) out.push(`<p><strong>${p}</strong></p>`);
+    else out.push(`<p>${p}</p>`);
+  }
+  return out.join("");
+}
+const linksHtml = (html: string) => linkParagraphs(underlineLinks(html));
+const underlineBlock = (b: Block): Block => (b.type === "text" ? { ...b, html: linksHtml(b.html) } : b);
+
 /** The sub-sections of a links group become the columns: first, second, and the rest stacked in the third. */
 function linksColumns(subs: Section[], idBase?: string): ColumnsBlock {
   const cols: Block[][] = subs.length <= 3 ? subs.map(() => []) : [[], [], []];
@@ -91,6 +120,16 @@ function relatedLinks(sections: Section[]): Section[] {
     i = next - 1;
   }
   return out;
+}
+
+/** How the links of Related Links are written into AEM. Only for AEM: the arrow after a link is AEM's own style, so the
+ *  article on GitHub and in the editor keeps its plain links. Changes the given model in place and returns it. */
+export function presentForAem(m: GuidelineModel): GuidelineModel {
+  for (const s of m.sections) {
+    if (!isRelated(s.title)) continue;
+    for (const b of s.blocks) if (b.type === "columns") b.columns.forEach(col => col.forEach((x, i) => { col[i] = underlineBlock(x); }));
+  }
+  return m;
 }
 
 export function normalizeToReference(m: GuidelineModel): GuidelineModel {

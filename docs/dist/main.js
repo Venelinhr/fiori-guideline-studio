@@ -883,8 +883,6 @@ function blockEl(b) {
       fig.append(box, fieldEl(`${b.id}:caption`, "figcaption", "Add a caption"), alt);
       return fig;
     }
-    case "title":
-      return h(`h${Math.min(4, Math.max(2, b.level))}`, "", b.text);
     default:
       return h("div");
   }
