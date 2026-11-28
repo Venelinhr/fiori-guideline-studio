@@ -24,9 +24,15 @@
       "name": "Krisi",
       "action": "approved",
       "time": "2026-11-27T13:39:00.104Z"
+    },
+    {
+      "role": "editor",
+      "name": "Krisi",
+      "action": "uploaded",
+      "time": "2026-11-28T12:43:14.586Z"
     }
   ],
-  "status": "approved",
+  "status": "uploaded",
   "aiDone": [
     "This component is available in the following libraries:→<h3>Component availability</h3> This component is available in the following libraries:",
     "An expandable text in the collapsed, showing→An expandable text in the collapsed state, showing",
@@ -42,13 +48,18 @@
     "positioned relative to the expand text link→positioned relative to the Show More link",
     "Image caption: Expandable text with preserved whitespace→Add one sentence before the image that states what the preserved whitespace setting does."
   ],
+  "lastCheck": {
+    "by": "Krisi",
+    "role": "editor",
+    "time": "2026-11-28T12:40:20.317Z",
+    "errors": 0,
+    "hints": 2,
+    "fixes": 4,
+    "copilot": "skipped, checked by a person",
+    "skipped": true
+  },
   "pr": {
     "number": 1,
     "url": "https://github.com/Venelinhr/fiori-guideline-studio/pull/1"
-  },
-  "dismissed": {
-    "by": "Krisi",
-    "role": "editor",
-    "time": "2026-11-28T12:39:59.944Z"
   }
 }
