@@ -38,12 +38,11 @@
   "lastCheck": {
     "by": "Krisi",
     "role": "editor",
-    "time": "2026-11-27T13:38:05.168Z",
+    "time": "2026-11-28T12:37:56.449Z",
     "errors": 0,
     "hints": 2,
     "fixes": 4,
-    "copilot": "skipped, checked by a person",
-    "skipped": true
+    "copilot": "not available for this GitHub account"
   },
   "pr": {
     "number": 1,
