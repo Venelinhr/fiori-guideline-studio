@@ -108,7 +108,9 @@ The expandable text component inherits the interaction states for the Show More/
 **C. Down:** Displayed while the link is being activated.
 
 ![Three expandable text items labeled A–C showing truncated text. B displays an underlined "Show More" link, while A and C do not.](images/06-expandable-text-states-v1-151.png "06_Expandable Text_States_v1.151")
-Caption: For more information, see Interaction States.
+Caption: Interaction states of expandable text
+
+For more information, see [Interaction States](https://www.sap.com/design-system/fiori-design-web/foundations/interaction/states/interaction-foundations-interaction-states).
 
 ### Focus
 
@@ -119,7 +121,9 @@ The focus state indicates the element that currently has keyboard focus. In the 
 **B. Focused:** Displayed when the link receives focus, visualized with a focus highlight around it.
 
 ![Two expandable text items labeled A and B, each showing truncated text. B displays a blue focus outline around the "Show More" link, while A does not.](images/07-expandable-text-states-v1-151.png "07_Expandable Text_States_v1.151")
-Caption: For more information, see Focus state.
+Caption: Expandable text - focus state
+
+For more information, see [Focus state](https://www.sap.com/design-system/fiori-design-web/v1-136/foundations/interaction/states/interaction-foundations-focus-states).
 
 ### Empty state
 
@@ -139,14 +143,12 @@ For more information, see [Empty States](https://www.sap.com/design-system/fiori
 The expandable text expands either inline or in a popover. Clicking _Show More_ reveals the full content. The text is selectable and the user can copy it in both collapsed and expanded modes.
 
 ![Two interaction steps labeled A and B: (A) a collapsed Expandable Text showing truncated text '...without taking... Show More', and (B) the same text expanded in place showing the full paragraph followed by a 'Show Less' link.](images/09-expandable-text-behavior-and-interaction-v1-151.png "09_Expandable Text_Behavior_And_Interaction_v1.151")
-
-Collapsed (A) and expanded in place (B)
+Caption: Collapsed (A) and expanded in place (B)
 
 Clicking Show Less or outside the popover collapses the text.
 
 ![Two interaction steps labeled C and D: (C) a collapsed Expandable Text showing truncated text '...without taking... Show More', and (D) a popover appearing alongside the text displaying the full paragraph ending with '...revealed only when the user needs more context.'](images/10-expandable-text-behavior-and-interaction-v1-151.png "10_Expandable Text_Behavior_And_Interaction_v1.151")
-
-Collapsed (C) and expanded in popover (D)
+Caption: Collapsed (C) and expanded in popover (D)
 
 ### Gestures and Mapping
 
@@ -228,14 +230,12 @@ Caption: Expandable text in right-to-left mode
 ### Preserve whitespace
 
 ![Two expandable text items labeled A and B: (A) shows text with consecutive whitespaces collapsed to normal spacing by the browser, and (B) shows the same text with whitespaces preserved, resulting in visibly expanded spacing between words.](images/16-expandable-text-features-v1-151.png "16_Expandable Text_Features_v1.151")
-
-Expandable text with preserved whitespace
+Caption: Expandable text with preserved whitespace
 
 ### Text align
 
 ![Three expandable text items labeled A, B, and C showing different text alignment options: (A) left-aligned text with a left-aligned 'Show More' link, (B) center-aligned text with a centered 'Show More' link, and (C) right-aligned text with a right-aligned 'Show More' link.](images/17-expandable-text-features-v1-151.png "17_Expandable Text_Features_v1.151")
-
-Text alignment - left, right, and center
+Caption: Text alignment - left, right, and center
 
 ## Framework Comparison
 
@@ -243,9 +243,10 @@ There are no differences between SAPUI5 and SAP Web Components regarding the com
 
 ## Related Links
 
+[internal_only]
 
-
-### Guidelines
+::: columns 3
+#### Guidelines
 
 Components
 
@@ -255,7 +256,9 @@ Components
 
 [Popover](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover)
 
-### Implementation
+--- column ---
+
+#### Implementation
 
 SAPUI5
 
@@ -267,21 +270,25 @@ UI5 Web Components
 
 [Expandable text](https://ui5.github.io/webcomponents/components/ExpandableText/)
 
-### Specifications
+--- column ---
+
+#### Specifications
 
 [Text](https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698915836/Text+Horizon) (visual design)
 
 [Link](https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698914103/Link+Horizon) (visual design)
 
-### SAP Web UI Kit
+#### SAP Web UI Kit
 
 [Text](https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=224294-72)
+:::
 
-## Related Links (external only)
+[/internal_only]
 
+[external_only]
 
-
-### Guidelines
+::: columns 3
+#### Guidelines
 
 Components
 
@@ -291,7 +298,9 @@ Components
 
 [Popover](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover)
 
-### Implementation
+--- column ---
+
+#### Implementation
 
 SAPUI5
 
@@ -303,8 +312,13 @@ UI5 Web Components
 
 [Expandable text](https://ui5.github.io/webcomponents/components/ExpandableText/)
 
-### UI Kit (Figma)
+--- column ---
+
+#### UI Kit (Figma)
 
 [SAP Fiori for Web UI Kit ](https://www.figma.com/community/file/1494295794601744471)[/](https://www.figma.com/community/file/1494295794601744471)
 
 Text
+:::
+
+[/external_only]

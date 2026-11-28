@@ -36,17 +36,10 @@
             "variant": "large",
             "alt": "An expandable text in the collapsed, showing 'The request includes read access to the financial reporting module and write access to...' followed by a 'Show More' link.",
             "id": "s1b1"
-          }
-        ],
-        "titleLevel": "h2",
-        "id": "s1"
-      },
-      {
-        "title": "Component availability",
-        "blocks": [
+          },
           {
             "type": "text",
-            "html": "<p>This component is available in the following libraries:</p>",
+            "html": "<h3>Component availability</h3><p>This component is available in the following libraries:</p>",
             "id": "s2b0"
           },
           {
@@ -82,8 +75,8 @@
             "id": "s2b2"
           }
         ],
-        "titleLevel": "h3",
-        "id": "s2"
+        "titleLevel": "h2",
+        "id": "s1"
       },
       {
         "title": "When to Use",
@@ -232,10 +225,15 @@
             "type": "image",
             "ref": "0:2870",
             "figmaName": "06_Expandable Text_States_v1.151",
-            "caption": "For more information, see Interaction States.",
+            "caption": "Interaction states of expandable text",
             "variant": "large",
             "alt": "Three expandable text items labeled A–C showing truncated text. B displays an underlined \"Show More\" link, while A and C do not.",
             "id": "s11b1"
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/foundations/interaction/states/interaction-foundations-interaction-states\">Interaction States</a>.</p>",
+            "id": "s11b2"
           }
         ],
         "titleLevel": "h3",
@@ -253,10 +251,15 @@
             "type": "image",
             "ref": "0:2896",
             "figmaName": "07_Expandable Text_States_v1.151",
-            "caption": "For more information, see Focus state.",
+            "caption": "Expandable text - focus state",
             "variant": "large",
             "alt": "Two expandable text items labeled A and B, each showing truncated text. B displays a blue focus outline around the \"Show More\" link, while A does not.",
             "id": "s12b1"
+          },
+          {
+            "type": "text",
+            "html": "<p>For more information, see <a href=\"https://www.sap.com/design-system/fiori-design-web/v1-136/foundations/interaction/states/interaction-foundations-focus-states\">Focus state</a>.</p>",
+            "id": "s12b2"
           }
         ],
         "titleLevel": "h3",
@@ -306,15 +309,10 @@
             "type": "image",
             "ref": "0:2955",
             "figmaName": "09_Expandable Text_Behavior_And_Interaction_v1.151",
-            "caption": "",
+            "caption": "Collapsed (A) and expanded in place (B)",
             "variant": "large",
             "alt": "Two interaction steps labeled A and B: (A) a collapsed Expandable Text showing truncated text '...without taking... Show More', and (B) the same text expanded in place showing the full paragraph followed by a 'Show Less' link.",
             "id": "s15b1"
-          },
-          {
-            "type": "text",
-            "html": "<p>Collapsed (A) and expanded in place (B)</p>",
-            "id": "s15b2"
           },
           {
             "type": "text",
@@ -325,15 +323,10 @@
             "type": "image",
             "ref": "0:2981",
             "figmaName": "10_Expandable Text_Behavior_And_Interaction_v1.151",
-            "caption": "",
+            "caption": "Collapsed (C) and expanded in popover (D)",
             "variant": "large",
             "alt": "Two interaction steps labeled C and D: (C) a collapsed Expandable Text showing truncated text '...without taking... Show More', and (D) a popover appearing alongside the text displaying the full paragraph ending with '...revealed only when the user needs more context.'",
             "id": "s15b4"
-          },
-          {
-            "type": "text",
-            "html": "<p>Collapsed (C) and expanded in popover (D)</p>",
-            "id": "s15b5"
           }
         ],
         "titleLevel": "h3",
@@ -524,16 +517,11 @@
           {
             "type": "image",
             "ref": "0:3225",
-            "caption": "",
+            "caption": "Expandable text with preserved whitespace",
             "figmaName": "16_Expandable Text_Features_v1.151",
             "variant": "large",
             "alt": "Two expandable text items labeled A and B: (A) shows text with consecutive whitespaces collapsed to normal spacing by the browser, and (B) shows the same text with whitespaces preserved, resulting in visibly expanded spacing between words.",
             "id": "s26b0"
-          },
-          {
-            "type": "text",
-            "html": "<p>Expandable text with preserved whitespace</p>",
-            "id": "s26b1"
           }
         ],
         "titleLevel": "h3",
@@ -545,16 +533,11 @@
           {
             "type": "image",
             "ref": "0:3245",
-            "caption": "",
+            "caption": "Text alignment - left, right, and center",
             "figmaName": "17_Expandable Text_Features_v1.151",
             "variant": "large",
             "alt": "Three expandable text items labeled A, B, and C showing different text alignment options: (A) left-aligned text with a left-aligned 'Show More' link, (B) center-aligned text with a centered 'Show More' link, and (C) right-aligned text with a right-aligned 'Show More' link.",
             "id": "s27b0"
-          },
-          {
-            "type": "text",
-            "html": "<p>Text alignment - left, right, and center</p>",
-            "id": "s27b1"
           }
         ],
         "titleLevel": "h3",
@@ -574,99 +557,133 @@
       },
       {
         "title": "Related Links",
-        "blocks": [],
+        "blocks": [
+          {
+            "type": "text",
+            "html": "<p>[internal_only]</p>",
+            "id": "s29r0"
+          },
+          {
+            "type": "columns",
+            "columnCount": 3,
+            "columns": [
+              [
+                {
+                  "type": "title",
+                  "level": 4,
+                  "text": "Guidelines",
+                  "id": "s29r1c0b0"
+                },
+                {
+                  "type": "text",
+                  "html": "<p>Components</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text\">Text</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link\">Link</a> </p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover\">Popover</a> </p>",
+                  "id": "s30b0"
+                }
+              ],
+              [
+                {
+                  "type": "title",
+                  "level": 4,
+                  "text": "Implementation",
+                  "id": "s29r1c1b0"
+                },
+                {
+                  "type": "text",
+                  "html": "<p>SAPUI5</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.ExpandableText\">Expandable text</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/api/sap.m.ExpandableText\">Expandable text</a> (API reference)</p><p>UI5 Web Components</p><p><a href=\"https://ui5.github.io/webcomponents/components/ExpandableText/\">Expandable text</a></p>",
+                  "id": "s31b0"
+                }
+              ],
+              [
+                {
+                  "type": "title",
+                  "level": 4,
+                  "text": "Specifications",
+                  "id": "s29r1c2b0"
+                },
+                {
+                  "type": "text",
+                  "html": "<p><a href=\"https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698915836/Text+Horizon\">Text</a> (visual design)</p><p><a href=\"https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698914103/Link+Horizon\">Link</a> (visual design)</p>",
+                  "id": "s32b0"
+                },
+                {
+                  "type": "title",
+                  "level": 4,
+                  "text": "SAP Web UI Kit",
+                  "id": "s29r1c2b2"
+                },
+                {
+                  "type": "text",
+                  "html": "<p><a href=\"https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=224294-72\">Text</a></p>",
+                  "id": "s33b0"
+                }
+              ]
+            ],
+            "id": "s29r1"
+          },
+          {
+            "type": "text",
+            "html": "<p>[/internal_only]</p>",
+            "id": "s29r2"
+          },
+          {
+            "type": "text",
+            "html": "<p>[external_only]</p>",
+            "id": "s29r3"
+          },
+          {
+            "type": "columns",
+            "columnCount": 3,
+            "columns": [
+              [
+                {
+                  "type": "title",
+                  "level": 4,
+                  "text": "Guidelines",
+                  "id": "s29r4c0b0"
+                },
+                {
+                  "type": "text",
+                  "html": "<p>Components</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text\">Text</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link\">Link</a> </p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover\">Popover</a> </p>",
+                  "id": "s35b0"
+                }
+              ],
+              [
+                {
+                  "type": "title",
+                  "level": 4,
+                  "text": "Implementation",
+                  "id": "s29r4c1b0"
+                },
+                {
+                  "type": "text",
+                  "html": "<p>SAPUI5</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.ExpandableText\">Expandable text</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/api/sap.m.ExpandableText\">Expandable text</a> (API reference)</p><p>UI5 Web Components</p><p><a href=\"https://ui5.github.io/webcomponents/components/ExpandableText/\">Expandable text</a></p>",
+                  "id": "s36b0"
+                }
+              ],
+              [
+                {
+                  "type": "title",
+                  "level": 4,
+                  "text": "UI Kit (Figma)",
+                  "id": "s29r4c2b0"
+                },
+                {
+                  "type": "text",
+                  "html": "<p><a href=\"https://www.figma.com/community/file/1494295794601744471\">SAP Fiori for Web UI Kit </a><a href=\"https://www.figma.com/community/file/1494295794601744471\">/</a></p><p>Text</p>",
+                  "id": "s37b0"
+                }
+              ]
+            ],
+            "id": "s29r4"
+          },
+          {
+            "type": "text",
+            "html": "<p>[/external_only]</p>",
+            "id": "s29r5"
+          }
+        ],
         "titleLevel": "h2",
         "id": "s29"
-      },
-      {
-        "title": "Guidelines",
-        "blocks": [
-          {
-            "type": "text",
-            "html": "<p>Components</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text\">Text</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link\">Link</a> </p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover\">Popover</a> </p>",
-            "id": "s30b0"
-          }
-        ],
-        "titleLevel": "h3",
-        "id": "s30"
-      },
-      {
-        "title": "Implementation",
-        "blocks": [
-          {
-            "type": "text",
-            "html": "<p>SAPUI5</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.ExpandableText\">Expandable text</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/api/sap.m.ExpandableText\">Expandable text</a> (API reference)</p><p>UI5 Web Components</p><p><a href=\"https://ui5.github.io/webcomponents/components/ExpandableText/\">Expandable text</a></p>",
-            "id": "s31b0"
-          }
-        ],
-        "titleLevel": "h3",
-        "id": "s31"
-      },
-      {
-        "title": "Specifications",
-        "blocks": [
-          {
-            "type": "text",
-            "html": "<p><a href=\"https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698915836/Text+Horizon\">Text</a> (visual design)</p><p><a href=\"https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698914103/Link+Horizon\">Link</a> (visual design)</p>",
-            "id": "s32b0"
-          }
-        ],
-        "titleLevel": "h3",
-        "id": "s32"
-      },
-      {
-        "title": "SAP Web UI Kit",
-        "blocks": [
-          {
-            "type": "text",
-            "html": "<p><a href=\"https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=224294-72\">Text</a></p>",
-            "id": "s33b0"
-          }
-        ],
-        "titleLevel": "h3",
-        "id": "s33"
-      },
-      {
-        "title": "Related Links (external only)",
-        "blocks": [],
-        "titleLevel": "h2",
-        "id": "s34"
-      },
-      {
-        "title": "Guidelines",
-        "blocks": [
-          {
-            "type": "text",
-            "html": "<p>Components</p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text\">Text</a></p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link\">Link</a> </p><p><a href=\"https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover\">Popover</a> </p>",
-            "id": "s35b0"
-          }
-        ],
-        "titleLevel": "h3",
-        "id": "s35"
-      },
-      {
-        "title": "Implementation",
-        "blocks": [
-          {
-            "type": "text",
-            "html": "<p>SAPUI5</p><p><a href=\"https://ui5.sap.com/#/entity/sap.m.ExpandableText\">Expandable text</a> (samples)</p><p><a href=\"https://ui5.sap.com/#/api/sap.m.ExpandableText\">Expandable text</a> (API reference)</p><p>UI5 Web Components</p><p><a href=\"https://ui5.github.io/webcomponents/components/ExpandableText/\">Expandable text</a></p>",
-            "id": "s36b0"
-          }
-        ],
-        "titleLevel": "h3",
-        "id": "s36"
-      },
-      {
-        "title": "UI Kit (Figma)",
-        "blocks": [
-          {
-            "type": "text",
-            "html": "<p><a href=\"https://www.figma.com/community/file/1494295794601744471\">SAP Fiori for Web UI Kit </a><a href=\"https://www.figma.com/community/file/1494295794601744471\">/</a></p><p>Text</p>",
-            "id": "s37b0"
-          }
-        ],
-        "titleLevel": "h3",
-        "id": "s37"
       }
     ],
     "pageTitle": "Expandable Text"
