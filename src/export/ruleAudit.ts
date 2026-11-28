@@ -13,7 +13,9 @@ export interface Rules {
   links: { workingToolHosts: string[]; workingLinkSeverity?: Severity; workingLinkNote?: string; internalHosts: string[]; versionedPathPattern: string };
   style: { maxSentenceWords: number; headingAmpersand: boolean; imagesNeedCaption: boolean; skipTextStartingWith?: string[];
     /** Images that need no caption: the image name (for example "03_Dialog_Types_v1.151") or a section title. Empty by default. */
-    imageCaptionOptional?: string[] };
+    imageCaptionOptional?: string[];
+    /** A text right before an image that explains a flow with lettered steps (A. … B. …, or C. … D. …) replaces the caption. On unless set to false. */
+    noCaptionAfterFlowText?: boolean };
 }
 
 interface Item { section: string; parent: string; where: string; kind: "h2" | "h3" | "h4" | "p" | "li" | "th" | "td" | "caption" | "alt" | "label"; text: string; links: { text: string; url: string }[] }
@@ -93,12 +95,37 @@ export function auditModel(m: GuidelineModel, R: Rules): Finding[] {
   };
   const sepCaption = new Set<string>();
   for (const s of m.sections) s.blocks.forEach((b, i) => { if (b.type === "image" && !b.caption.trim() && captionLine(s.blocks, i)) sepCaption.add(b.figmaName ?? b.ref); });
+  // The text right before an image can narrate a FLOW in lettered steps: "A. The tab bar contains 11 tabs. …" then
+  // "B. Moving the pointer … applies the hover state." The image then shows that flow and needs no caption.
+  // It does NOT count when the letters label ELEMENTS ("A. Text element: Clicking …", "B. Arrow element: …"): a step is
+  // a sentence, an element description starts with a short label (up to 4 words, not starting like a sentence) and a colon. Then the caption is mandatory.
+  // At least two steps with consecutive letters are needed. A step may be its own paragraph, follow a line break,
+  // or follow the end of the sentence before it.
+  const isFlowText = (html: string): boolean => {
+    // Keep the line breaks (plain() would flatten them): a step can follow a heading that has no full stop.
+    const text = html.replace(/<\/p>|<\/li>|<br\s*\/?>/gi, "\n").replace(/[\u2028\u2029]/g, "\n").replace(/<[^>]+>/g, "")
+      .replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (x) => ENT[x]).replace(/[ \t\u00a0]+/g, " ");
+    const marks: { letter: number; at: number; end: number }[] = [];
+    const re = /(^|\n|[.!?]\s)\s*([A-Z])\.\s+(?=\S)/g; let m: RegExpExecArray | null;
+    while ((m = re.exec(text))) marks.push({ letter: m[2].charCodeAt(0), at: m.index, end: m.index + m[0].length });
+    if (marks.length < 2 || !marks.every((x, i) => i === 0 || x.letter === marks[i - 1].letter + 1)) return false;
+    // An element description: the first words up to a colon, before the first full stop.
+    return !marks.some((x, i) => {
+      const body = text.slice(x.end, marks[i + 1]?.at ?? text.length).trimStart();
+      const colon = body.indexOf(":"), stop = body.search(/[.!?]/);
+      const label = body.slice(0, colon).trim();
+      return colon > 0 && colon <= 40 && label.split(/\s+/).length <= 4 && !/^(the|a|an|this|these|when|after|before|if|once)\b/i.test(label) && (stop === -1 || colon < stop);
+    });
+  };
+  const afterFlow = new Set<string>();
+  if (R.style.noCaptionAfterFlowText !== false)
+    for (const s of m.sections) s.blocks.forEach((b, i) => { const pv = s.blocks[i - 1]; if (b.type === "image" && pv?.type === "text" && isFlowText(pv.html)) afterFlow.add(b.figmaName ?? b.ref); });
   const optional = new Set((R.style.imageCaptionOptional ?? []).map((x) => x.trim().toLowerCase()));
   // A caption describes the picture. A pointer ("For more information, see …") or a full sentence is a paragraph, not a caption.
   const looksLikeParagraph = (c: string) => /^for more information\b/i.test(c.trim()) || (/[.!?]$/.test(c.trim()) && c.trim().split(/\s+/).length > 14);
   for (const { block, section } of real) {
     const name = block.figmaName ?? block.ref;
-    const exempt = optional.has(name.toLowerCase()) || optional.has(section.toLowerCase());
+    const exempt = optional.has(name.toLowerCase()) || optional.has(section.toLowerCase()) || afterFlow.has(name);
     if (R.style.imagesNeedCaption && !block.caption.trim() && !exempt) {
       if (sepCaption.has(name)) add("warning", "structure", "image-caption-separate", `Image "${name}": the caption is a separate text line after the image. Move it into the image caption.`, section, "Put that line in the caption field of the image.");
       else add("error", "structure", "image-caption", `Image "${name}" has no caption.`, section, "Add the caption in Figma (the text under the image), or list this image in standards/rules.json > style > imageCaptionOptional if it needs none.");

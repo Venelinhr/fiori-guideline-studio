@@ -50,6 +50,8 @@ Be short. For each problem write: where it is, what is wrong, the corrected text
 - Every image has a caption and alt text. A missing one is an error.
   - The caption is a short label that describes the picture. It is not a paragraph, and it is not a pointer such as "For more information, see …". A pointer line is its own text below the image. If the caption is a pointer or a long sentence, report it and say the real caption is missing.
   - A caption that sits as a separate text line right after the image must be moved into the image caption.
+  - Exception, expected behaviour: when the text right before the image NARRATES A FLOW in lettered steps, the image needs no caption. A step is a full sentence: "A. The tab bar contains 11 tabs. …" then "B. Moving the pointer over the overflow button applies the hover state." (consecutive letters, at least two; also "C. …" then "D. …"). The lettered text takes the place of the caption. Do not report a missing caption for such an image.
+  - NOT an exception: lettered text that DESCRIBES ELEMENTS. It starts with a short label and a colon: "A. Text element: Clicking …", "B. Arrow element: …", "A. Regular: …". Here the caption is mandatory. Report a missing caption as an error.
   - Exception: an image that needs no caption is listed in `standards/rules.json` under `style > imageCaptionOptional` (by image name or by section title). Do not report a missing caption for a listed image.
 - Two sections must not repeat the same text. Report the second one as a hint.
 

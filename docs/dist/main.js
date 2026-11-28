@@ -179,11 +179,31 @@ function auditModel(m, R) {
   for (const s of m.sections) s.blocks.forEach((b, i) => {
     if (b.type === "image" && !b.caption.trim() && captionLine(s.blocks, i)) sepCaption.add(b.figmaName ?? b.ref);
   });
+  const isFlowText = (html) => {
+    const text = html.replace(/<\/p>|<\/li>|<br\s*\/?>/gi, "\n").replace(/[\u2028\u2029]/g, "\n").replace(/<[^>]+>/g, "").replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (x) => ENT2[x]).replace(/[ \t\u00a0]+/g, " ");
+    const marks = [];
+    const re = /(^|\n|[.!?]\s)\s*([A-Z])\.\s+(?=\S)/g;
+    let m2;
+    while (m2 = re.exec(text)) marks.push({ letter: m2[2].charCodeAt(0), at: m2.index, end: m2.index + m2[0].length });
+    if (marks.length < 2 || !marks.every((x, i) => i === 0 || x.letter === marks[i - 1].letter + 1)) return false;
+    return !marks.some((x, i) => {
+      const body = text.slice(x.end, marks[i + 1]?.at ?? text.length).trimStart();
+      const colon = body.indexOf(":"), stop = body.search(/[.!?]/);
+      const label = body.slice(0, colon).trim();
+      return colon > 0 && colon <= 40 && label.split(/\s+/).length <= 4 && !/^(the|a|an|this|these|when|after|before|if|once)\b/i.test(label) && (stop === -1 || colon < stop);
+    });
+  };
+  const afterFlow = /* @__PURE__ */ new Set();
+  if (R.style.noCaptionAfterFlowText !== false)
+    for (const s of m.sections) s.blocks.forEach((b, i) => {
+      const pv = s.blocks[i - 1];
+      if (b.type === "image" && pv?.type === "text" && isFlowText(pv.html)) afterFlow.add(b.figmaName ?? b.ref);
+    });
   const optional = new Set((R.style.imageCaptionOptional ?? []).map((x) => x.trim().toLowerCase()));
   const looksLikeParagraph = (c) => /^for more information\b/i.test(c.trim()) || /[.!?]$/.test(c.trim()) && c.trim().split(/\s+/).length > 14;
   for (const { block, section } of real) {
     const name = block.figmaName ?? block.ref;
-    const exempt = optional.has(name.toLowerCase()) || optional.has(section.toLowerCase());
+    const exempt = optional.has(name.toLowerCase()) || optional.has(section.toLowerCase()) || afterFlow.has(name);
     if (R.style.imagesNeedCaption && !block.caption.trim() && !exempt) {
       if (sepCaption.has(name)) add("warning", "structure", "image-caption-separate", `Image "${name}": the caption is a separate text line after the image. Move it into the image caption.`, section, "Put that line in the caption field of the image.");
       else add("error", "structure", "image-caption", `Image "${name}" has no caption.`, section, "Add the caption in Figma (the text under the image), or list this image in standards/rules.json > style > imageCaptionOptional if it needs none.");

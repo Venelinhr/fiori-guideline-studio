@@ -127,6 +127,7 @@
     "h3Case": "consistent",
     "imagesNeedCaption": true,
     "imageCaptionOptional": [],
+    "noCaptionAfterFlowText": true,
     "skipTextStartingWith": [
       ":badge"
     ]
