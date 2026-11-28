@@ -11,7 +11,9 @@ export interface Rules {
   terminology: { wrong: string; right: string; severity?: Severity; why?: string }[];
   bannedPhrases: { phrase: string; why: string }[]; placeholders: string[];
   links: { workingToolHosts: string[]; workingLinkSeverity?: Severity; workingLinkNote?: string; internalHosts: string[]; versionedPathPattern: string };
-  style: { maxSentenceWords: number; headingAmpersand: boolean; imagesNeedCaption: boolean; skipTextStartingWith?: string[] };
+  style: { maxSentenceWords: number; headingAmpersand: boolean; imagesNeedCaption: boolean; skipTextStartingWith?: string[];
+    /** Images that need no caption: the image name (for example "03_Dialog_Types_v1.151") or a section title. Empty by default. */
+    imageCaptionOptional?: string[] };
 }
 
 interface Item { section: string; parent: string; where: string; kind: "h2" | "h3" | "h4" | "p" | "li" | "th" | "td" | "caption" | "alt" | "label"; text: string; links: { text: string; url: string }[] }
@@ -91,12 +93,18 @@ export function auditModel(m: GuidelineModel, R: Rules): Finding[] {
   };
   const sepCaption = new Set<string>();
   for (const s of m.sections) s.blocks.forEach((b, i) => { if (b.type === "image" && !b.caption.trim() && captionLine(s.blocks, i)) sepCaption.add(b.figmaName ?? b.ref); });
+  const optional = new Set((R.style.imageCaptionOptional ?? []).map((x) => x.trim().toLowerCase()));
+  // A caption describes the picture. A pointer ("For more information, see …") or a full sentence is a paragraph, not a caption.
+  const looksLikeParagraph = (c: string) => /^for more information\b/i.test(c.trim()) || (/[.!?]$/.test(c.trim()) && c.trim().split(/\s+/).length > 14);
   for (const { block, section } of real) {
     const name = block.figmaName ?? block.ref;
-    if (R.style.imagesNeedCaption && !block.caption.trim()) {
-      if (sepCaption.has(name)) add("info", "structure", "image-caption-separate", `Image "${name}": the caption is a separate text line after the image, not attached to the image.`, section);
-      else add("error", "structure", "image-caption", `Image "${name}" has no caption.`, section);
+    const exempt = optional.has(name.toLowerCase()) || optional.has(section.toLowerCase());
+    if (R.style.imagesNeedCaption && !block.caption.trim() && !exempt) {
+      if (sepCaption.has(name)) add("warning", "structure", "image-caption-separate", `Image "${name}": the caption is a separate text line after the image. Move it into the image caption.`, section, "Put that line in the caption field of the image.");
+      else add("error", "structure", "image-caption", `Image "${name}" has no caption.`, section, "Add the caption in Figma (the text under the image), or list this image in standards/rules.json > style > imageCaptionOptional if it needs none.");
     }
+    if (R.style.imagesNeedCaption && block.caption.trim() && looksLikeParagraph(block.caption))
+      add("warning", "structure", "image-caption-is-paragraph", `Image "${name}": the caption "${block.caption.trim().slice(0, 60)}" reads like a paragraph or a pointer, not a description of the image.`, section, "Use a short label for the picture as the caption. Keep this line as its own text below the image.");
     if (!block.alt?.trim()) add("error", "structure", "image-alt", `Image "${name}" has no alt text.`, section, "Add the alt text in the Alt Tag frame under the image in Figma.");
   }
   // Numbering is checked only for images that carry the guideline's own name. A frame kept from another guideline has its own number.

@@ -6,7 +6,7 @@ Be short. For each problem write: where it is, what is wrong, the corrected text
 ## Required structure
 - Sections, in this order: Intro, When to Use, Anatomy, Types, States, Behavior and Interaction, Responsiveness, Accessibility, Content, Features, Framework Comparison, Related Links, Related Links (external only).
 - Required sections: Intro, When to Use, Anatomy, Behavior and Interaction, Responsiveness, Accessibility, Related Links.
-- Every image has a caption and alt text. Alt text describes what the image shows.
+- Every image has a caption and alt text. The caption is a short label for the picture (for example "Expandable text anatomy"). Alt text describes what the image shows.
 
 ## Wording
 - Use "scrollbar", not "scroll bar".
@@ -48,6 +48,9 @@ Be short. For each problem write: where it is, what is wrong, the corrected text
 - Intro must have: a description, a hero image with alt text, and an availability table.
 - Accessibility must name keyboard, screen reader and contrast information.
 - Every image has a caption and alt text. A missing one is an error.
+  - The caption is a short label that describes the picture. It is not a paragraph, and it is not a pointer such as "For more information, see …". A pointer line is its own text below the image. If the caption is a pointer or a long sentence, report it and say the real caption is missing.
+  - A caption that sits as a separate text line right after the image must be moved into the image caption.
+  - Exception: an image that needs no caption is listed in `standards/rules.json` under `style > imageCaptionOptional` (by image name or by section title). Do not report a missing caption for a listed image.
 - Two sections must not repeat the same text. Report the second one as a hint.
 
 The same rules run automatically in `scripts/final-check.mjs` (rules in `standards/rules.json`). Your review adds what a script cannot see: unclear wording, a wrong term for the context, a sentence that says the wrong thing.

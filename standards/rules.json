@@ -126,6 +126,7 @@
     "headingAmpersand": false,
     "h3Case": "consistent",
     "imagesNeedCaption": true,
+    "imageCaptionOptional": [],
     "skipTextStartingWith": [
       ":badge"
     ]
