@@ -35,6 +35,13 @@ export function htmlToMd(html: string): string {
 const cell = (s: string) => htmlToMd(s).replace(/\n+/g, " ").replace(/\|/g, "\\|");
 export const imageFile = (b: ImageBlock) => `images/${slug(b.figmaName ?? b.ref)}.png`;
 
+/** Text inside a column is one compact group: its paragraphs (group label, links, links with text) share one paragraph with
+ *  line breaks, so the lines sit close together, as on the page. A heading or other block is written as before. */
+function renderColumnBlock(b: Block): string {
+  if (b.type !== "text") return renderBlock(b);
+  return htmlToMd(b.html.replace(/<\/p>\s*<p[^>]*>/gi, "<br>"));
+}
+
 export function renderBlock(b: Block): string {
   switch (b.type) {
     case "text": return htmlToMd(b.html);
@@ -52,7 +59,7 @@ export function renderBlock(b: Block): string {
     case "message-strip": return `::: message-strip ${b.style}\n${htmlToMd(b.html)}\n:::`;
     case "info": return `::: info ${b.infoClass}\n${htmlToMd(b.html)}\n:::`;
     case "columns":
-      return `::: columns ${b.columnCount}\n${b.columns.map((col) => col.map(renderBlock).join("\n\n")).join("\n\n--- column ---\n\n")}\n:::`;
+      return `::: columns ${b.columnCount}\n${b.columns.map((col) => col.map(renderColumnBlock).join("\n\n")).join("\n\n--- column ---\n\n")}\n:::`;
     case "when-to-use": return b.items.map((i) => `::: ${i.doOrDont}\n${htmlToMd(i.html)}\n:::`).join("\n\n");
     default: return `<!-- unsupported block -->`;
   }

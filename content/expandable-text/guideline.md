@@ -248,34 +248,26 @@ There are no differences between SAPUI5 and SAP Web Components regarding the com
 ::: columns 3
 #### Guidelines
 
-Components
-
-[Text](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text)
-
-[Link](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link)
-
+Components\
+[Text](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text)\
+[Link](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link) \
 [Popover](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover)
 
 --- column ---
 
 #### Implementation
 
-SAPUI5
-
-[Expandable text](https://ui5.sap.com/#/entity/sap.m.ExpandableText) (samples)
-
-[Expandable text](https://ui5.sap.com/#/api/sap.m.ExpandableText) (API reference)
-
-UI5 Web Components
-
+SAPUI5\
+[Expandable text](https://ui5.sap.com/#/entity/sap.m.ExpandableText) (samples)\
+[Expandable text](https://ui5.sap.com/#/api/sap.m.ExpandableText) (API reference)\
+UI5 Web Components\
 [Expandable text](https://ui5.github.io/webcomponents/components/ExpandableText/)
 
 --- column ---
 
 #### Specifications
 
-[Text](https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698915836/Text+Horizon) (visual design)
-
+[Text](https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698915836/Text+Horizon) (visual design)\
 [Link](https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698914103/Link+Horizon) (visual design)
 
 #### SAP Web UI Kit
@@ -290,34 +282,26 @@ UI5 Web Components
 ::: columns 3
 #### Guidelines
 
-Components
-
-[Text](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text)
-
-[Link](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link)
-
+Components\
+[Text](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/text)\
+[Link](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/link) \
 [Popover](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover)
 
 --- column ---
 
 #### Implementation
 
-SAPUI5
-
-[Expandable text](https://ui5.sap.com/#/entity/sap.m.ExpandableText) (samples)
-
-[Expandable text](https://ui5.sap.com/#/api/sap.m.ExpandableText) (API reference)
-
-UI5 Web Components
-
+SAPUI5\
+[Expandable text](https://ui5.sap.com/#/entity/sap.m.ExpandableText) (samples)\
+[Expandable text](https://ui5.sap.com/#/api/sap.m.ExpandableText) (API reference)\
+UI5 Web Components\
 [Expandable text](https://ui5.github.io/webcomponents/components/ExpandableText/)
 
 --- column ---
 
 #### UI Kit (Figma)
 
-[SAP Fiori for Web UI Kit ](https://www.figma.com/community/file/1494295794601744471)[/](https://www.figma.com/community/file/1494295794601744471)
-
+[SAP Fiori for Web UI Kit ](https://www.figma.com/community/file/1494295794601744471)[/](https://www.figma.com/community/file/1494295794601744471)\
 Text
 :::
 
