@@ -28,24 +28,27 @@
   ],
   "status": "approved",
   "aiDone": [
-    "For more information, see Accessibility in SAP Fiori and the Accessibility Design Tools Handbook.→The Show More and Show Less links meet WCAG 2.1 AA contrast requirements in all states. For more information, see Accessibility in SAP Fiori and the Accessibility Design Tools Handbook.",
+    "This component is available in the following libraries:→<h3>Component availability</h3> This component is available in the following libraries:",
+    "An expandable text in the collapsed, showing→An expandable text in the collapsed state, showing",
+    "or section.→or section.\n\n### Contrast\nText and link colors meet the WCAG 2.1 contrast ratio of at least 4.5:1 against the background.",
+    "Components→#### Guidelines\nComponents",
+    "SAP Fiori for Web UI Kit /→SAP Fiori for Web UI Kit",
+    "Learn More.→See the SAPUI5 and SAP Web Components guidelines.",
+    "Less than 100 characters: Text is displayed in full and no Show More link.→100 characters or less: Text is displayed in full and no Show More link.",
+    "The symbol may vary depending on the user's language.→The symbol may vary depending on your language.",
     "the user can copy it→you can copy it",
-    "B. Less than 100 characters:→B. 100 characters or less:",
-    "### Guidelines\nComponents\nText\nLink\nPopover\n\n### Implementation\nSAPUI5\nExpandable text (samples)\nExpandable text (API reference)\nUI5 Web Components\nExpandable text\n\n### UI Kit (Figma)→Keep only the external links here and remove the duplicated internal guideline links, or check that the section is needed.",
-    "Learn More.→See the SAP Web Components section.",
-    "positioned relative to the expand text link→positioned relative to the Show More/Show Less link"
+    "The behavior is similar to mouse interaction.→Tapping Show More or Show Less expands or collapses the text, as a mouse click does.",
+    "making it easier to read and interact with the content.→so that the content is displayed in a full-screen view.",
+    "positioned relative to the expand text link→positioned relative to the Show More link",
+    "Image caption: Expandable text with preserved whitespace→Add one sentence before the image that states what the preserved whitespace setting does."
   ],
-  "lastCheck": {
-    "by": "Krisi",
-    "role": "editor",
-    "time": "2026-11-28T12:37:56.449Z",
-    "errors": 0,
-    "hints": 2,
-    "fixes": 4,
-    "copilot": "not available for this GitHub account"
-  },
   "pr": {
     "number": 1,
     "url": "https://github.com/Venelinhr/fiori-guideline-studio/pull/1"
+  },
+  "dismissed": {
+    "by": "Krisi",
+    "role": "editor",
+    "time": "2026-11-28T12:39:59.944Z"
   }
 }
