@@ -4,6 +4,45 @@ import { readFileSync, writeFileSync, appendFileSync, readdirSync, existsSync } 
 // src/export/mdRender.ts
 var isGuidelineImage = (b) => /^\d{2}_/.test(b.figmaName ?? "");
 
+// src/export/reference.ts
+var CA = /^component availability$/i;
+var isRelated = (t) => /^related links$/i.test(t.trim());
+var isRelatedExternal = (t) => /^related links\s*\(\s*external only\s*\)$/i.test(t.trim());
+var level = (s) => s.titleLevel ?? "h2";
+var isSub = (s) => level(s) === "h3" || level(s) === "h4";
+function referenceProblems(m) {
+  const out = [];
+  for (const s of m.sections) {
+    if (CA.test(s.title.trim())) out.push({
+      rule: "component-availability-layout",
+      where: s.title,
+      message: "Component availability is its own section. In the reference it is an inline heading inside the Intro section, followed by its table (and info box)."
+    });
+    if (isRelatedExternal(s.title)) out.push({
+      rule: "related-links-layout",
+      where: s.title,
+      message: '"Related Links (external only)" is its own section. In the reference there is one Related Links section with an [external_only] block inside.'
+    });
+  }
+  const rl = m.sections.find((s) => isRelated(s.title));
+  if (rl) {
+    const hasSubs = isSub(m.sections[m.sections.indexOf(rl) + 1] ?? { titleLevel: "h2" });
+    if (hasSubs) out.push({
+      rule: "related-links-layout",
+      where: rl.title,
+      message: "Related Links has sub-sections (Guidelines, Implementation, \u2026). In the reference these are the columns of one columns block, with titles inside."
+    });
+    if (!hasSubs && !rl.blocks.some((b) => b.type === "columns"))
+      out.push({ rule: "related-links-layout", where: rl.title, message: "Related Links has no columns block. In the reference the links sit in a columns block." });
+    const texts = rl.blocks.filter((b) => b.type === "text").map((b) => b.html.replace(/<[^>]+>/g, "").trim());
+    const cols = rl.blocks.filter((b) => b.type === "columns").length;
+    const has = (w) => texts.includes(w);
+    if (cols >= 2 && !(has("[internal_only]") && has("[/internal_only]") && has("[external_only]") && has("[/external_only]")))
+      out.push({ rule: "related-links-layout", where: rl.title, message: "Related Links has two sets of links but not the marker lines [internal_only] [/internal_only] [external_only] [/external_only]." });
+  }
+  return out;
+}
+
 // src/export/ruleAudit.ts
 var ENT = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&nbsp;": " " };
 var plain = (h) => h.replace(/<[^>]+>/g, "").replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (m) => ENT[m]).replace(/\s+/g, " ").trim();
@@ -96,6 +135,8 @@ function auditModel(m, R) {
   for (const it of items) if (!skip(it.text)) {
     for (const ph of R.placeholders) if (new RegExp(`\\b${esc(ph)}\\b`, "i").test(it.text)) add("error", "structure", "placeholder", `Placeholder text "${ph}" in: "${it.text.slice(0, 80)}".`, at(it));
   }
+  if (R.style.requireReferenceLayout !== false)
+    for (const p of referenceProblems(m)) add("error", "structure", p.rule, p.message, p.where, "Run the Figma export again: it writes the reference layout. Or move the content by hand in the editor.");
   const real = images.filter((i) => isGuidelineImage(i.block));
   const captionLine = (blocks, i) => {
     const nx = blocks[i + 1];

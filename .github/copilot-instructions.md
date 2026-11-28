@@ -8,6 +8,11 @@ Be short. For each problem write: where it is, what is wrong, the corrected text
 - Required sections: Intro, When to Use, Anatomy, Behavior and Interaction, Responsiveness, Accessibility, Related Links.
 - Every image has a caption and alt text. The caption is a short label for the picture (for example "Expandable text anatomy"). Alt text describes what the image shows.
 
+## Mandatory layout (reference page)
+Two sections have a fixed layout, taken from an approved AEM page. A different layout is an error.
+- **Component availability** is not its own section. Its heading is an inline heading (`<h3>`) in the first text of the **Intro** section, together with the line "This component is available in the following libraries:". The table follows, then the info box ("Top Tips"). With two tables, the first is wrapped in `[internal_only]` … `[/internal_only]` and the second in `[external_only]` … `[/external_only]`.
+- **Related Links** is ONE section. Its blocks, in this order: the text `[internal_only]`, a columns block (Guidelines | Implementation | Specifications, with SAP Web UI Kit under Specifications), the text `[/internal_only]`, the text `[external_only]`, a columns block (Guidelines | Implementation | UI Kit (Figma)), the text `[/external_only]`. Every column starts with a title (level 4) followed by its text with the links. "Related Links (external only)" is never a section of its own. With only one set of links there are no marker lines.
+
 ## Wording
 - Use "scrollbar", not "scroll bar".
 - Use "fixed height", not "fixed-height".

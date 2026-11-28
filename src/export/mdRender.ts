@@ -24,6 +24,8 @@ export function htmlToMd(html: string): string {
   });
   h = h.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (_m, inner: string) =>
     "\n" + inner.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (_x, t: string) => `- ${t.trim()}\n`) + "\n");
+  // An inline heading inside a text (Component availability) is a Markdown heading line.
+  h = h.replace(/<h([2-6])[^>]*>([\s\S]*?)<\/h\1>/gi, (_m, n: string, t: string) => `\n\n${"#".repeat(Number(n))} ${t.replace(/<[^>]+>/g, "").trim()}\n\n`);
   h = h.replace(/<\/p>\s*<p[^>]*>/gi, "\n\n").replace(/<\/?p[^>]*>/gi, "\n");
   h = h.replace(/<[^>]+>/g, "");
   // Canonical form: no spaces at the start or end of a line. The file is then stable when read back.

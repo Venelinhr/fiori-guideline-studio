@@ -243,9 +243,10 @@ There are no differences between SAPUI5 and SAP Web Components regarding the com
 
 ## Related Links
 
+[internal_only]
 
-
-### Guidelines
+::: columns 3
+#### Guidelines
 
 Components
 
@@ -255,7 +256,9 @@ Components
 
 [Popover](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover)
 
-### Implementation
+--- column ---
+
+#### Implementation
 
 SAPUI5
 
@@ -267,21 +270,25 @@ UI5 Web Components
 
 [Expandable text](https://ui5.github.io/webcomponents/components/ExpandableText/)
 
-### Specifications
+--- column ---
+
+#### Specifications
 
 [Text](https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698915836/Text+Horizon) (visual design)
 
 [Link](https://wiki.one.int.sap/wiki/spaces/visualcore/pages/2698914103/Link+Horizon) (visual design)
 
-### SAP Web UI Kit
+#### SAP Web UI Kit
 
 [Text](https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=224294-72)
+:::
 
-## Related Links (external only)
+[/internal_only]
 
+[external_only]
 
-
-### Guidelines
+::: columns 3
+#### Guidelines
 
 Components
 
@@ -291,7 +298,9 @@ Components
 
 [Popover](https://www.sap.com/design-system/fiori-design-web/v1-151/ui-elements/popover)
 
-### Implementation
+--- column ---
+
+#### Implementation
 
 SAPUI5
 
@@ -303,8 +312,13 @@ UI5 Web Components
 
 [Expandable text](https://ui5.github.io/webcomponents/components/ExpandableText/)
 
-### UI Kit (Figma)
+--- column ---
+
+#### UI Kit (Figma)
 
 [SAP Fiori for Web UI Kit ](https://www.figma.com/community/file/1494295794601744471)[/](https://www.figma.com/community/file/1494295794601744471)
 
 Text
+:::
+
+[/external_only]

@@ -3,6 +3,7 @@
 // Read-only: it only reports.
 import type { GuidelineModel, Section, Block } from "../model";
 import { isGuidelineImage } from "./mdRender";
+import { referenceProblems } from "./reference";
 
 export type Severity = "error" | "warning" | "info";
 export interface Finding { severity: Severity; rule: string; agent: "structure" | "content" | "technical"; message: string; where: string; suggestion?: string }
@@ -15,7 +16,9 @@ export interface Rules {
     /** Images that need no caption: the image name (for example "03_Dialog_Types_v1.151") or a section title. Empty by default. */
     imageCaptionOptional?: string[];
     /** A text right before an image that explains a flow with lettered steps (A. … B. …, or C. … D. …) replaces the caption. On unless set to false. */
-    noCaptionAfterFlowText?: boolean };
+    noCaptionAfterFlowText?: boolean;
+    /** Component availability and Related Links must have the reference layout (src/export/reference.ts). On unless set to false. */
+    requireReferenceLayout?: boolean };
 }
 
 interface Item { section: string; parent: string; where: string; kind: "h2" | "h3" | "h4" | "p" | "li" | "th" | "td" | "caption" | "alt" | "label"; text: string; links: { text: string; url: string }[] }
@@ -84,6 +87,9 @@ export function auditModel(m: GuidelineModel, R: Rules): Finding[] {
     else if (!hasChildren) add("warning", "structure", "empty-section", "The sub-section has no content.", s.title);
   });
   for (const it of items) if (!skip(it.text)) for (const ph of R.placeholders) if (new RegExp(`\\b${esc(ph)}\\b`, "i").test(it.text)) add("error", "structure", "placeholder", `Placeholder text "${ph}" in: "${it.text.slice(0, 80)}".`, at(it));
+  // Mandatory layout of two sections, taken from the approved reference page.
+  if (R.style.requireReferenceLayout !== false)
+    for (const p of referenceProblems(m)) add("error", "structure", p.rule, p.message, p.where, "Run the Figma export again: it writes the reference layout. Or move the content by hand in the editor.");
   const real = images.filter((i) => isGuidelineImage(i.block));
   // A caption is the caption field, or a short line of text right after the image (how the Figma parser
   // delivers it for some frames). A short line = one paragraph, up to 14 words, no full stop at the end.

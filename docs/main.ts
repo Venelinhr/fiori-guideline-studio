@@ -70,7 +70,7 @@ function assignIds(m: GuidelineModel) {
   const walk = (bs: Block[], p: string) => bs.forEach((b: any, i) => { b.id ??= `${p}b${i}`; if (b.type === "columns") b.columns.forEach((c: Block[], ci: number) => walk(c, `${b.id}c${ci}`)); });
   m.sections.forEach((s: any, i) => { s.id ??= `s${i}`; walk(s.blocks, s.id); });
 }
-const LABEL: Record<string, string> = { text: "Text", info: "Info box", "message-strip": "Message strip", table: "Table", "when-to-use": "Do / Don't", image: "Image" };
+const LABEL: Record<string, string> = { text: "Text", title: "Column heading", info: "Info box", "message-strip": "Message strip", table: "Table", "when-to-use": "Do / Don't", image: "Image" };
 function collect(m: GuidelineModel): Map<string, Field> {
   const out = new Map<string, Field>(); let parent = "";
   const add = (key: string, kind: Kind, label: string, section: string, where: string, get: () => string, set: (v: string) => void) => out.set(key, { key, kind, label, section, where, get, set });
@@ -85,6 +85,7 @@ function collect(m: GuidelineModel): Map<string, Field> {
       const where = `${path} > ${prefix}block ${++n} (${b.type})`; const L = LABEL[b.type] ?? b.type;
       switch (b.type) {
         case "text": case "info": case "message-strip": add(`${b.id}:html`, "html", L, path, where, () => b.html, (v) => { b.html = v; }); break;
+        case "title": add(`${b.id}:text`, "plain", "Heading", path, where, () => b.text, (v) => { b.text = v; }); break;
         case "image":
           add(`${b.id}:caption`, "plain", "Image caption", path, where, () => b.caption ?? "", (v) => { b.caption = v; });
           add(`${b.id}:alt`, "plain", "Image alt text", path, where, () => b.alt ?? "", (v) => { b.alt = v; }); break;
@@ -100,7 +101,7 @@ function collect(m: GuidelineModel): Map<string, Field> {
 
 // ---------- safe HTML in and out ----------
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const BLOCK = new Set(["p", "div", "ul", "ol"]);
+const BLOCK = new Set(["p", "div", "ul", "ol", "h3", "h4"]);
 // Keeps only the tags a guideline uses. All other tags, styles and scripts are dropped.
 function clean(html: string, inline = false): string {
   const doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
@@ -115,6 +116,7 @@ function clean(html: string, inline = false): string {
       case "i": case "em": return inner.trim() ? `<em>${inner}</em>` : inner;
       case "a": { const href = el.getAttribute("href") ?? ""; return /^(https?:\/\/|mailto:)/i.test(href) && inner.trim() ? `<a href="${esc(href).replace(/"/g, "&quot;")}">${inner}</a>` : inner; }
       case "br": return "<br>";
+      case "h3": case "h4": return inline ? inner : inner.trim() ? `<${tag}>${inner}</${tag}>` : ""; // an inline heading, for example Component availability
       case "p": case "div": return inline ? inner : inner.replace(/<br>/g, "").trim() ? `<p>${inner}</p>` : "";
       case "ul": case "ol": return inline ? inner : `<${tag}>${inner}</${tag}>`;
       case "li": return inline ? `${inner} ` : `<li>${inner}</li>`;
@@ -194,6 +196,7 @@ function badgeEl(raw: string): HTMLElement | null {
 }
 function blockEl(b: any): HTMLElement {
   switch (b.type) {
+    case "title": return fieldEl(`${b.id}:text`, `h${Math.min(Math.max(Math.round(b.level) || 4, 2), 6)}`, "Heading"); // a title inside a column, for example in Related Links
     case "text": { const w = h("div", "txt"); w.append(fieldEl(`${b.id}:html`, "div", "Write text")); return w; }
     case "message-strip": {
       const w = h("div", `ms ${b.style}`); w.append(icon("info", 16, 16, "ms-icon"), fieldEl(`${b.id}:html`, "div"), icon("close", 16, 16, "ms-close")); return w;

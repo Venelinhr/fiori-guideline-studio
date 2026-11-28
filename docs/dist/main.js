@@ -19,6 +19,11 @@ function htmlToMd(html) {
   });
   h2 = h2.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (_m, inner) => "\n" + inner.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (_x, t) => `- ${t.trim()}
 `) + "\n");
+  h2 = h2.replace(/<h([2-6])[^>]*>([\s\S]*?)<\/h\1>/gi, (_m, n, t) => `
+
+${"#".repeat(Number(n))} ${t.replace(/<[^>]+>/g, "").trim()}
+
+`);
   h2 = h2.replace(/<\/p>\s*<p[^>]*>/gi, "\n\n").replace(/<\/?p[^>]*>/gi, "\n");
   h2 = h2.replace(/<[^>]+>/g, "");
   return decode(h2).split("\n").map((l) => l.trim()).join("\n").replace(/\n{3,}/g, "\n\n").trim();
@@ -75,6 +80,45 @@ function renderGuidelineMd(m, meta = {}) {
   return head + "\n" + m.sections.map(renderSection).join("\n\n") + "\n";
 }
 var isGuidelineImage = (b) => /^\d{2}_/.test(b.figmaName ?? "");
+
+// src/export/reference.ts
+var CA = /^component availability$/i;
+var isRelated = (t) => /^related links$/i.test(t.trim());
+var isRelatedExternal = (t) => /^related links\s*\(\s*external only\s*\)$/i.test(t.trim());
+var level = (s) => s.titleLevel ?? "h2";
+var isSub = (s) => level(s) === "h3" || level(s) === "h4";
+function referenceProblems(m) {
+  const out = [];
+  for (const s of m.sections) {
+    if (CA.test(s.title.trim())) out.push({
+      rule: "component-availability-layout",
+      where: s.title,
+      message: "Component availability is its own section. In the reference it is an inline heading inside the Intro section, followed by its table (and info box)."
+    });
+    if (isRelatedExternal(s.title)) out.push({
+      rule: "related-links-layout",
+      where: s.title,
+      message: '"Related Links (external only)" is its own section. In the reference there is one Related Links section with an [external_only] block inside.'
+    });
+  }
+  const rl = m.sections.find((s) => isRelated(s.title));
+  if (rl) {
+    const hasSubs = isSub(m.sections[m.sections.indexOf(rl) + 1] ?? { titleLevel: "h2" });
+    if (hasSubs) out.push({
+      rule: "related-links-layout",
+      where: rl.title,
+      message: "Related Links has sub-sections (Guidelines, Implementation, \u2026). In the reference these are the columns of one columns block, with titles inside."
+    });
+    if (!hasSubs && !rl.blocks.some((b) => b.type === "columns"))
+      out.push({ rule: "related-links-layout", where: rl.title, message: "Related Links has no columns block. In the reference the links sit in a columns block." });
+    const texts = rl.blocks.filter((b) => b.type === "text").map((b) => b.html.replace(/<[^>]+>/g, "").trim());
+    const cols = rl.blocks.filter((b) => b.type === "columns").length;
+    const has = (w) => texts.includes(w);
+    if (cols >= 2 && !(has("[internal_only]") && has("[/internal_only]") && has("[external_only]") && has("[/external_only]")))
+      out.push({ rule: "related-links-layout", where: rl.title, message: "Related Links has two sets of links but not the marker lines [internal_only] [/internal_only] [external_only] [/external_only]." });
+  }
+  return out;
+}
 
 // src/export/ruleAudit.ts
 var ENT2 = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&nbsp;": " " };
@@ -168,6 +212,8 @@ function auditModel(m, R) {
   for (const it of items) if (!skip(it.text)) {
     for (const ph of R.placeholders) if (new RegExp(`\\b${esc(ph)}\\b`, "i").test(it.text)) add("error", "structure", "placeholder", `Placeholder text "${ph}" in: "${it.text.slice(0, 80)}".`, at(it));
   }
+  if (R.style.requireReferenceLayout !== false)
+    for (const p of referenceProblems(m)) add("error", "structure", p.rule, p.message, p.where, "Run the Figma export again: it writes the reference layout. Or move the content by hand in the editor.");
   const real = images.filter((i) => isGuidelineImage(i.block));
   const captionLine = (blocks, i) => {
     const nx = blocks[i + 1];
@@ -551,7 +597,7 @@ function assignIds(m) {
     walk(s.blocks, s.id);
   });
 }
-var LABEL = { text: "Text", info: "Info box", "message-strip": "Message strip", table: "Table", "when-to-use": "Do / Don't", image: "Image" };
+var LABEL = { text: "Text", title: "Column heading", info: "Info box", "message-strip": "Message strip", table: "Table", "when-to-use": "Do / Don't", image: "Image" };
 function collect(m) {
   const out = /* @__PURE__ */ new Map();
   let parent = "";
@@ -575,6 +621,11 @@ function collect(m) {
         case "message-strip":
           add(`${b.id}:html`, "html", L, path, where, () => b.html, (v) => {
             b.html = v;
+          });
+          break;
+        case "title":
+          add(`${b.id}:text`, "plain", "Heading", path, where, () => b.text, (v) => {
+            b.text = v;
           });
           break;
         case "image":
@@ -605,7 +656,7 @@ function collect(m) {
   return out;
 }
 var esc2 = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-var BLOCK = /* @__PURE__ */ new Set(["p", "div", "ul", "ol"]);
+var BLOCK = /* @__PURE__ */ new Set(["p", "div", "ul", "ol", "h3", "h4"]);
 function clean(html, inline = false) {
   const doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
   const out = (n) => {
@@ -627,6 +678,10 @@ function clean(html, inline = false) {
       }
       case "br":
         return "<br>";
+      case "h3":
+      case "h4":
+        return inline ? inner : inner.trim() ? `<${tag}>${inner}</${tag}>` : "";
+      // an inline heading, for example Component availability
       case "p":
       case "div":
         return inline ? inner : inner.replace(/<br>/g, "").trim() ? `<p>${inner}</p>` : "";
@@ -757,6 +812,9 @@ function badgeEl(raw) {
 }
 function blockEl(b) {
   switch (b.type) {
+    case "title":
+      return fieldEl(`${b.id}:text`, `h${Math.min(Math.max(Math.round(b.level) || 4, 2), 6)}`, "Heading");
+    // a title inside a column, for example in Related Links
     case "text": {
       const w = h("div", "txt");
       w.append(fieldEl(`${b.id}:html`, "div", "Write text"));
